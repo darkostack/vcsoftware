@@ -9,5 +9,5 @@ set(unittest-test-sources
     src/core/instance/test_instance.cpp
 )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMTOS_PROJECT_CORE_CONFIG_FILE='\"mtos-core-unittest-config.h\"'")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMTOS_PROJECT_CORE_CONFIG_FILE='\"mtos-core-unittest-config.h\"'")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPROJECT_CORE_CONFIG_FILE='\"core-unittest-config.h\"'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPROJECT_CORE_CONFIG_FILE='\"core-unittest-config.h\"'")

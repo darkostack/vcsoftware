@@ -1,7 +1,7 @@
 #ifndef CORE_INSTANCE_HPP
 #define CORE_INSTANCE_HPP
 
-#include "core/config/mtos-core-config.h"
+#include "core/config.h"
 
 #include <stdint.h>
 #include <stdbool.h>

@@ -1,7 +1,7 @@
 #ifndef CORE_LOCATOR_GETTERS_HPP
 #define CORE_LOCATOR_GETTERS_HPP
 
-#include "core/config/mtos-core-config.h"
+#include "core/config.h"
 
 #include "core/instance.hpp"
 #include "core/locator.hpp"
