@@ -8,7 +8,7 @@ namespace mt {
 class List : public mtListNode
 {
 public:
-    explicit List(void) { mNext = NULL; }
+    List(void) { mNext = NULL; }
 
     void Add(List *aNode)
     {

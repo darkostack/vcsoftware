@@ -12,7 +12,7 @@ namespace mt {
 class Clist : public List
 {
 public:
-    explicit Clist(void) { mNext = NULL; }
+    Clist(void) { mNext = NULL; }
 
     void RightPush(Clist *aNode)
     {
