@@ -40,6 +40,7 @@ public:
         {
             return static_cast<int>(mReadCount++ & mMask);
         }
+
         return -1;
     }
 
@@ -49,6 +50,7 @@ public:
         {
             return static_cast<int>(mReadCount & mMask);
         }
+
         return -1;
     }
 

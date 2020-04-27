@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "cib.hpp"
+#include "core/cib.hpp"
 
 using namespace mt;
 
