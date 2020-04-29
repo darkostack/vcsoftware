@@ -29,13 +29,15 @@ typedef enum
     THREAD_STATUS_NUMOF
 } mtThreadStatus;
 
+#define THREAD_STATUS_NOT_FOUND ((mtThreadStatus)-1)
+
 typedef struct mtThread
 {
-    char *mSp;
+    char *mStackPointer;
     mtThreadStatus mStatus;
     uint8_t mPriority;
     mtKernelPid mPid;
-    mtListNode mtRunQueueEntry;
+    mtListNode mRunqueueEntry;
     void *mWaitData;
     mtListNode mMsgWaiters;
     mtCib mMsgQueue;
@@ -44,6 +46,10 @@ typedef struct mtThread
     const char *mName;
     int mStackSize;
 } mtThread;
+
+#define THREAD_FLAGS_CREATE_SLEEPING (0x1)
+#define THREAD_FLAGS_CREATE_WOUT_YIELD_OTHER_THREAD (0x2)
+#define THREAD_FLAGS_CREATE_STACKMARKER (0x4)
 
 #ifdef __cplusplus
 }

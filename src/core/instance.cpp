@@ -12,6 +12,7 @@ mtDEFINE_ALIGNED_VAR(gInstanceRaw, sizeof(Instance), uint64_t);
 
 Instance::Instance(void)
     : mIsInitialized(false)
+    , mThreadScheduler()
 {
 }
 

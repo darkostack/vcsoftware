@@ -7,7 +7,7 @@ set(unittest-sources
 )
 
 set(unittest-test-sources
-    src/core/instance/test_instance.cpp
+    src/core/thread/test_thread.cpp
 )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPROJECT_CORE_CONFIG_FILE='\"core-unittest-config.h\"'")

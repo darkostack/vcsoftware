@@ -8,6 +8,8 @@
 
 #include <mtos/instance.h>
 
+#include "core/thread.hpp"
+
 typedef struct mtInstance
 {
 } mtInstance;
@@ -31,13 +33,22 @@ public:
 
     bool IsInitialized(void) const { return mIsInitialized; }
 
+    template <typename Type> inline Type &Get(void);
+
 private:
     explicit Instance(void);
 
     void AfterInit(void);
 
+    ThreadScheduler mThreadScheduler;
+
     bool mIsInitialized;
 };
+
+template <> inline ThreadScheduler &Instance::Get(void)
+{
+    return mThreadScheduler;
+}
 
 } // namespace mt
 
