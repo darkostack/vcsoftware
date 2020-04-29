@@ -58,7 +58,7 @@ Thread *Thread::Init(Instance &aInstance,
         *(uintptr_t *)aStack = reinterpret_cast<uintptr_t>(aStack);
     }
 
-    // TODO: unsigned state = mtCpuIrqDisable();
+    unsigned state = mtCpuIrqDisable();
 
     /* initialize instances for this thread */
     tcb->InstanceLocatorInit::Init(aInstance);
@@ -76,7 +76,7 @@ Thread *Thread::Init(Instance &aInstance,
 
     if (pid == KERNEL_PID_UNDEF)
     {
-        // TODO: mtCpuIrqRestore(state);
+        mtCpuIrqRestore(state);
         return NULL;
     }
 
@@ -110,9 +110,9 @@ Thread *Thread::Init(Instance &aInstance,
     {
         tcb->Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(tcb, THREAD_STATUS_PENDING);
 
-        if (!(aFlags & THREAD_FLAGS_CREATE_WOUT_YIELD_OTHER_THREAD))
+        if (!(aFlags & THREAD_FLAGS_CREATE_WOUT_YIELD))
         {
-            // TODO: mtCpuIrqRestore(state);
+            mtCpuIrqRestore(state);
 
             tcb->Get<ThreadScheduler>().ContextSwitch(aPriority);
 
@@ -120,7 +120,7 @@ Thread *Thread::Init(Instance &aInstance,
         }
     }
 
-    // TODO: mtCpuIrqRestore(state);
+    mtCpuIrqRestore(state);
 
     return tcb;
 }
@@ -191,7 +191,30 @@ void ThreadScheduler::SetThreadStatusAndUpdateRunqueue(Thread *aThread, mtThread
 
 void ThreadScheduler::ContextSwitch(uint8_t aPriorityToSwitch)
 {
-    (void) aPriorityToSwitch;
+    Thread *currentThread = GetCurrentActiveThread();
+
+    uint8_t currentPriority = currentThread->GetPriority();
+
+    int isInRunqueue = (currentThread->GetStatus() >= THREAD_STATUS_RUNNING);
+
+    /* Note: the lowest priority number is the highest priority thread */
+
+    if (!isInRunqueue || (currentPriority > aPriorityToSwitch))
+    {
+        if (mtCpuIsInISR())
+        {
+            EnableContextSwitchRequest();
+        }
+        else
+        {
+            YieldHigherPriorityThread();
+        }
+    }
+}
+
+void ThreadScheduler::YieldHigherPriorityThread(void)
+{
+    mtCpuTriggerPendSVInterrupt();
 }
 
 uint8_t ThreadScheduler::GetLSBIndexFromRunqueue(void)

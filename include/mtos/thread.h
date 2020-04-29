@@ -48,7 +48,7 @@ typedef struct mtThread
 } mtThread;
 
 #define THREAD_FLAGS_CREATE_SLEEPING (0x1)
-#define THREAD_FLAGS_CREATE_WOUT_YIELD_OTHER_THREAD (0x2)
+#define THREAD_FLAGS_CREATE_WOUT_YIELD (0x2)
 #define THREAD_FLAGS_CREATE_STACKMARKER (0x4)
 
 #ifdef __cplusplus

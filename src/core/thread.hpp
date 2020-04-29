@@ -5,6 +5,7 @@
 
 #include <mtos/thread.h>
 #include <mtos/stat.h>
+#include <mtos/cpu.h>
 
 #include "core/clist.hpp"
 #include "core/locator.hpp"
@@ -104,6 +105,8 @@ public:
     void SetThreadStatusAndUpdateRunqueue(Thread *aThread, mtThreadStatus aStatus);
 
     void ContextSwitch(uint8_t aPriority);
+
+    void YieldHigherPriorityThread(void);
 
 private:
     uint32_t GetRunqueueBitCache(void) { return mRunqueueBitCache; }
