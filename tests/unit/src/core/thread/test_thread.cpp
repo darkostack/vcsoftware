@@ -326,3 +326,164 @@ TEST_F(TestThread, multipleThread)
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), task1Thread->GetPid());
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
 }
+
+TEST_F(TestThread, multipleInstanceMultiThreads)
+{
+    mtDEFINE_ALIGNED_VAR(buffer1, sizeof(Instance), uint64_t);
+    mtDEFINE_ALIGNED_VAR(buffer2, sizeof(Instance), uint64_t);
+
+    uint32_t size1 = mtARRAY_LENGTH(buffer1);
+    uint32_t size2 = mtARRAY_LENGTH(buffer2);
+
+    Instance instance1 = Instance::Init((void *)buffer1, (size_t *)&size1);
+    Instance instance2 = Instance::Init((void *)buffer2, (size_t *)&size2);
+
+    EXPECT_TRUE(instance1.IsInitialized());
+    EXPECT_TRUE(instance2.IsInitialized());
+
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 0);
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
+
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 0);
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
+
+    /**
+     * -------------------------------------------------------------------------
+     * [TEST CASE] create multiple instances and multiple threads in those
+     * instances
+     * -------------------------------------------------------------------------
+     **/
+
+    /* Note: create "thread1" and "thread2" in instance1 */
+
+    char instance1Stack1[128];
+    char instance1Stack2[128];
+
+    Thread *instance1Thread1 = Thread::Init(instance1, instance1Stack1, sizeof(instance1Stack1), 15,
+                                            THREAD_FLAGS_CREATE_WOUT_YIELD | \
+                                            THREAD_FLAGS_CREATE_STACKMARKER,
+                                            NULL, NULL, "thread1");
+
+    Thread *instance1Thread2 = Thread::Init(instance1, instance1Stack2, sizeof(instance1Stack2), 15,
+                                            THREAD_FLAGS_CREATE_WOUT_YIELD | \
+                                            THREAD_FLAGS_CREATE_STACKMARKER,
+                                            NULL, NULL, "thread2");
+
+    EXPECT_NE(instance1Thread1, nullptr);
+    EXPECT_NE(instance1Thread2, nullptr);
+
+    EXPECT_EQ(instance1Thread1->GetPid(), 1);
+    EXPECT_EQ(instance1Thread1->GetPriority(), 15);
+    EXPECT_EQ(instance1Thread1->GetName(), "thread1");
+    EXPECT_EQ(instance1Thread1->GetStatus(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(instance1Thread2->GetPid(), 2);
+    EXPECT_EQ(instance1Thread2->GetPriority(), 15);
+    EXPECT_EQ(instance1Thread2->GetName(), "thread2");
+    EXPECT_EQ(instance1Thread2->GetStatus(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 2);
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetThreadFromScheduler(1), instance1Thread1);
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetThreadFromScheduler(2), instance1Thread2);
+    EXPECT_FALSE(instance1.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
+
+    instance1.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(instance1Thread1->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(instance1Thread2->GetStatus(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetCurrentActiveThread(), instance1Thread1);
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetCurrentActivePid(), instance1Thread1->GetPid());
+    EXPECT_EQ(instance1.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 2);
+
+    /* Note: create "thread1" and "thread2" in instance2 */
+
+    char instance2Stack1[128];
+    char instance2Stack2[128];
+
+    Thread *instance2Thread1 = Thread::Init(instance2, instance2Stack1, sizeof(instance2Stack1), 15,
+                                            THREAD_FLAGS_CREATE_WOUT_YIELD | \
+                                            THREAD_FLAGS_CREATE_STACKMARKER,
+                                            NULL, NULL, "thread1");
+
+    Thread *instance2Thread2 = Thread::Init(instance2, instance2Stack2, sizeof(instance2Stack2), 15,
+                                            THREAD_FLAGS_CREATE_WOUT_YIELD | \
+                                            THREAD_FLAGS_CREATE_STACKMARKER,
+                                            NULL, NULL, "thread2");
+
+    EXPECT_NE(instance2Thread1, nullptr);
+    EXPECT_NE(instance2Thread2, nullptr);
+
+    EXPECT_EQ(instance2Thread1->GetPid(), 1);
+    EXPECT_EQ(instance2Thread1->GetPriority(), 15);
+    EXPECT_EQ(instance2Thread1->GetName(), "thread1");
+    EXPECT_EQ(instance2Thread1->GetStatus(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(instance2Thread2->GetPid(), 2);
+    EXPECT_EQ(instance2Thread2->GetPriority(), 15);
+    EXPECT_EQ(instance2Thread2->GetName(), "thread2");
+    EXPECT_EQ(instance2Thread2->GetStatus(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 2);
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetThreadFromScheduler(1), instance2Thread1);
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetThreadFromScheduler(2), instance2Thread2);
+    EXPECT_FALSE(instance2.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
+
+    instance2.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(instance2Thread1->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(instance2Thread2->GetStatus(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActiveThread(), instance2Thread1);
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActivePid(), instance2Thread1->GetPid());
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 2);
+
+    /**
+     * ------------------------------------------------------------------------------
+     * [TEST CASE] set "thread2" in instance2 to pending state, since "thread1" and
+     * "thread2" have the same priority all of those thread will not run
+     * unless one of those thread in blocked state and expected to run the thread
+     * with the pending state or status 
+     * ------------------------------------------------------------------------------
+     **/
+
+    instance2.Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(instance2Thread1, THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(instance2Thread1->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(instance2Thread2->GetStatus(), THREAD_STATUS_PENDING);
+
+    instance2.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(instance2Thread1->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(instance2Thread2->GetStatus(), THREAD_STATUS_PENDING);
+
+    instance2.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(instance2Thread1->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(instance2Thread2->GetStatus(), THREAD_STATUS_PENDING);
+
+    instance2.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(instance2Thread1->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(instance2Thread2->GetStatus(), THREAD_STATUS_PENDING);
+
+    instance2.Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(instance2Thread1, THREAD_STATUS_RECEIVE_BLOCKED);
+
+    EXPECT_EQ(instance2Thread1->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(instance2Thread2->GetStatus(), THREAD_STATUS_PENDING);
+
+    instance2.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(instance2Thread1->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(instance2Thread2->GetStatus(), THREAD_STATUS_RUNNING);
+
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActiveThread(), instance2Thread2);
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActivePid(), instance2Thread2->GetPid());
+    EXPECT_EQ(instance2.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 2);
+}
