@@ -1,6 +1,6 @@
 ## MTOS (MicroThread OS)
 
-A micro RTOS (Real Time OS) designed for microcontrollers.
+A micro RTOS (Real Time Operating System) designed for microcontrollers.
 
 ``` 
         __________________________________________________
@@ -9,7 +9,7 @@ A micro RTOS (Real Time OS) designed for microcontrollers.
        | |     |        | .__.  .__. |  ..  | | _____'     |
        | |     |  |\/|  |    |  |    |  |   | '____  |     |
        | |     |  |  |  |    |  |    |  '   | .----' |     |
-       . |     '--'  '--'    '--'    '------' '------'     |
+       . |     '--'  '--'    '--'    '------' '------'     |    Designed By: Darko Pancev
          '-------------------------------------------------'
 
 ```

@@ -3,14 +3,9 @@
 
 namespace mt {
 
-Thread *Thread::Init(Instance &aInstance,
-                     char *aStack,
-                     int aStackSize,
-                     char aPriority,
-                     int aFlags,
-                     mtThreadHandlerFunc aHandlerFunc,
-                     void *aArg,
-                     const char *aName)
+Thread *Thread::Init(Instance &aInstance, char *aStack, int aStackSize,
+                     char aPriority, int aFlags, mtThreadHandlerFunc aHandlerFunc,
+                     void *aArg, const char *aName)
 {
     if (aPriority >= MTOS_CONFIG_THREAD_SCHED_PRIO_LEVELS) return NULL;
 
