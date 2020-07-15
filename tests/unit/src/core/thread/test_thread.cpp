@@ -268,6 +268,34 @@ TEST_F(TestThread, multipleThread)
 
     /**
      * -------------------------------------------------------------------------
+     * [TEST CASE] try to set sleep in ISR
+     * -------------------------------------------------------------------------
+     **/
+
+    testHelperSetCpuInISR(); // artificially set CPU in ISR
+
+    instance.Get<ThreadScheduler>().SleepingCurrentThread();
+
+    /* Note: we can't sleep in ISR functions so nothing is expected to happen */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), task1Thread);
+    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), task1Thread->GetPid());
+    EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
+
+    testHelperResetCpuInISR();
+
+    /**
+     * -------------------------------------------------------------------------
      * [TEST CASE] try to context swithing to lower priority thread than current
      * running thread
      * -------------------------------------------------------------------------
