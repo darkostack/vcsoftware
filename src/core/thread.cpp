@@ -39,7 +39,7 @@ Thread *Thread::Init(Instance &aInstance, char *aStack, int aStackSize,
     {
         /* assign each int of the stack the value of it's address, for test purposes */
         uintptr_t *stackmax = reinterpret_cast<uintptr_t *>(aStack + aStackSize);
-        uintptr_t *stackp   = reinterpret_cast<uintptr_t *>(aStack);
+        uintptr_t *stackp = reinterpret_cast<uintptr_t *>(aStack);
 
         while (stackp < stackmax)
         {
@@ -122,15 +122,12 @@ Thread *Thread::Init(Instance &aInstance, char *aStack, int aStackSize,
 
 void Thread::StackInit(mtThreadHandlerFunc aFunction, void *aArg, void *aStackStart, int aStackSize)
 {
-    (void) aFunction;
-    (void) aArg;
-    (void) aStackStart;
-    (void) aStackSize;
+    this->SetStackPointer(mtThreadArchStackInit(aFunction, aArg, aStackStart, aStackSize));
 }
 
 void ThreadScheduler::Run(void)
 {
-    DisableContextSwitchRequest();
+    DisableContextSwitchRequestFromISR();
 
     Thread *currentThread = GetCurrentActiveThread();
 
@@ -198,7 +195,7 @@ void ThreadScheduler::ContextSwitch(uint8_t aPriorityToSwitch)
     {
         if (mtCpuIsInISR())
         {
-            EnableContextSwitchRequest();
+            EnableContextSwitchRequestFromISR();
         }
         else
         {
@@ -242,6 +239,68 @@ Thread *ThreadScheduler::GetNextThreadFromRunqueue(void)
     mtThread *thread = container_of(threadPtrInQueue, mtThread, mRunqueueEntry);
 
     return static_cast<Thread *>(thread);
+}
+
+void ThreadScheduler::SleepingCurrentThread(void)
+{
+    if (mtCpuIsInISR())
+    {
+        return;
+    }
+
+    unsigned state = mtCpuIrqDisable();
+
+    SetThreadStatusAndUpdateRunqueue(GetCurrentActiveThread(), THREAD_STATUS_SLEEPING);
+
+    mtCpuIrqRestore(state);
+
+    YieldHigherPriorityThread();
+}
+
+int ThreadScheduler::WakeupThread(mtKernelPid aPid)
+{
+    unsigned state = mtCpuIrqDisable();
+
+    Thread *threadToWakeup = GetThreadFromScheduler(aPid);
+
+    if (!threadToWakeup)
+    {
+        //TODO: Warning thread does not exist!
+    }
+    else if (threadToWakeup->GetStatus() == THREAD_STATUS_SLEEPING)
+    {
+        SetThreadStatusAndUpdateRunqueue(threadToWakeup, THREAD_STATUS_RUNNING);
+
+        mtCpuIrqRestore(state);
+
+        ContextSwitch(threadToWakeup->GetPriority());
+
+        return 1;
+    }
+    else
+    {
+        // TODO: Warning thread is not sleeping!
+    }
+
+    mtCpuIrqRestore(state);
+
+    return (int)THREAD_STATUS_NOT_FOUND;
+}
+
+void ThreadScheduler::Yield(void)
+{
+    unsigned state = mtCpuIrqDisable();
+
+    Thread *currentThread = GetCurrentActiveThread();
+
+    if (currentThread->GetStatus() >= THREAD_STATUS_RUNNING)
+    {
+        mSchedulerRunqueue[currentThread->GetPriority()].LeftPopRightPush();
+    }
+
+    mtCpuIrqRestore(state);
+
+    YieldHigherPriorityThread();
 }
 
 } // namespace mt

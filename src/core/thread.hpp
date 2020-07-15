@@ -65,7 +65,7 @@ class ThreadScheduler : public Clist
 public:
     ThreadScheduler(void)
         : mNumOfThreadsInScheduler(0)
-        , mContextSwithRequest(0)
+        , mContextSwitchRequestFromISR(0)
         , mCurrentActiveThread(NULL)
         , mCurrentActivePid(KERNEL_PID_UNDEF)
         , mRunqueueBitCache(0)
@@ -76,15 +76,15 @@ public:
         }
     }
 
-    void *GetThreadFromScheduler(mtKernelPid aPid) { return mScheduledThreads[aPid]; }
+    Thread *GetThreadFromScheduler(mtKernelPid aPid) { return mScheduledThreads[aPid]; }
 
     void SetThreadToScheduler(Thread *aThread, mtKernelPid aPid) { mScheduledThreads[aPid] = aThread; }
 
-    unsigned int IsContextSwitchRequested(void) { return mContextSwithRequest; }
+    unsigned int IsContextSwitchRequestedFromISR(void) { return mContextSwitchRequestFromISR; }
 
-    void EnableContextSwitchRequest(void) { mContextSwithRequest = 1; }
+    void EnableContextSwitchRequestFromISR(void) { mContextSwitchRequestFromISR = 1; }
 
-    void DisableContextSwitchRequest(void) { mContextSwithRequest = 0; }
+    void DisableContextSwitchRequestFromISR(void) { mContextSwitchRequestFromISR = 0; }
 
     int GetNumOfThreadsInScheduler(void) { return mNumOfThreadsInScheduler; }
 
@@ -106,7 +106,11 @@ public:
 
     void ContextSwitch(uint8_t aPriority);
 
-    void YieldHigherPriorityThread(void);
+    void SleepingCurrentThread(void);
+
+    int WakeupThread(mtKernelPid aPid);
+
+    void Yield(void);
 
 private:
     uint32_t GetRunqueueBitCache(void) { return mRunqueueBitCache; }
@@ -119,9 +123,11 @@ private:
 
     uint8_t GetLSBIndexFromRunqueue(void);
 
+    void YieldHigherPriorityThread(void);
+
     int mNumOfThreadsInScheduler;
 
-    unsigned int mContextSwithRequest;
+    unsigned int mContextSwitchRequestFromISR;
 
     Thread *mScheduledThreads[KERNEL_PID_LAST + 1];
 

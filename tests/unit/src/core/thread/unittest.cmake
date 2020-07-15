@@ -5,6 +5,8 @@ set(unittest-sources
     ../../src/core/instance.cpp
     ../../src/core/thread.cpp
     stubs/cpu_stub.c
+    stubs/thread_stub.c
+    stubs/thread_arch_stub.c
 )
 
 set(unittest-test-sources

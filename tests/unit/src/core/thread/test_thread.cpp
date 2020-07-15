@@ -58,7 +58,7 @@ TEST_F(TestThread, singleThread)
 
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 1);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(thread->GetPid()), thread);
-    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
 
@@ -124,7 +124,7 @@ TEST_F(TestThread, multipleThread)
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 2);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(idleThread->GetPid()), idleThread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(mainThread->GetPid()), mainThread);
-    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
 
@@ -188,10 +188,10 @@ TEST_F(TestThread, multipleThread)
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
 
     /* Note: at this point cpu should immediately yield the "task1" by
-     * triggering the PendSV interrupt and context switch is not requested */
+     * triggering the PendSV interrupt and context switch from ISR is not requested */
 
     EXPECT_TRUE(testHelperIsPendSVInterruptTriggered());
-    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
 
     instance.Get<ThreadScheduler>().Run();
 
@@ -205,6 +205,66 @@ TEST_F(TestThread, multipleThread)
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), task1Thread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), task1Thread->GetPid());
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
+
+    /**
+     * -------------------------------------------------------------------------
+     * [TEST CASE] try to set current active thread to sleep and wakeup
+     * -------------------------------------------------------------------------
+     **/
+
+    instance.Get<ThreadScheduler>().SleepingCurrentThread();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    /* Note: at this point both mainThread and task1Thread are in blocking
+     * status, so the next expected thread to run is idleThread because
+     * idleThread was in pending status. */
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), idleThread);
+    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), idleThread->GetPid());
+    EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
+
+    EXPECT_EQ(instance.Get<ThreadScheduler>().WakeupThread(mainThread->GetPid()), THREAD_STATUS_NOT_FOUND);
+
+    /* Note: because mainThread is not is SLEEPING status, we expect nothing to
+     * happen. */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    /* Note: now we wakeup task1Thread which was in sleeping status */
+
+    EXPECT_EQ(instance.Get<ThreadScheduler>().WakeupThread(task1Thread->GetPid()), true);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /* Note: note that both idleThread and task1Thread is in running status,
+     * that's okay, after calling ThreadScheduler::Run() it will fixed threads
+     * status and run highest priority thread. In this case we expect idleThread
+     * should be in PENDING status and task1Thread in RUNNING status */
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
 
     /**
      * -------------------------------------------------------------------------
@@ -229,7 +289,7 @@ TEST_F(TestThread, multipleThread)
 
     EXPECT_FALSE(testHelperIsPendSVInterruptTriggered());
 
-    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
 
     EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
@@ -277,7 +337,7 @@ TEST_F(TestThread, multipleThread)
 
     EXPECT_FALSE(testHelperIsPendSVInterruptTriggered());
 
-    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
 
     /* Note: because it is in ISR at this point context switch is requested
      * instead of immediatelly yield to "task1" */
@@ -310,7 +370,7 @@ TEST_F(TestThread, multipleThread)
 
     EXPECT_TRUE(testHelperIsPendSVInterruptTriggered());
 
-    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
 
     instance.Get<ThreadScheduler>().Run();
 
@@ -387,7 +447,7 @@ TEST_F(TestThread, multipleInstanceMultiThreads)
     EXPECT_EQ(instance1.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 2);
     EXPECT_EQ(instance1.Get<ThreadScheduler>().GetThreadFromScheduler(1), instance1Thread1);
     EXPECT_EQ(instance1.Get<ThreadScheduler>().GetThreadFromScheduler(2), instance1Thread2);
-    EXPECT_FALSE(instance1.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_FALSE(instance1.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
     EXPECT_EQ(instance1.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
     EXPECT_EQ(instance1.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
 
@@ -431,7 +491,7 @@ TEST_F(TestThread, multipleInstanceMultiThreads)
     EXPECT_EQ(instance2.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 2);
     EXPECT_EQ(instance2.Get<ThreadScheduler>().GetThreadFromScheduler(1), instance2Thread1);
     EXPECT_EQ(instance2.Get<ThreadScheduler>().GetThreadFromScheduler(2), instance2Thread2);
-    EXPECT_FALSE(instance2.Get<ThreadScheduler>().IsContextSwitchRequested());
+    EXPECT_FALSE(instance2.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
     EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
     EXPECT_EQ(instance2.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
 

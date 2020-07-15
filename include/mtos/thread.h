@@ -5,6 +5,7 @@
 #include <mtos/cib.h>
 #include <mtos/clist.h>
 #include <mtos/msg.h>
+#include <mtos/instance.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +51,28 @@ typedef struct mtThread
 #define THREAD_FLAGS_CREATE_SLEEPING (0x1)
 #define THREAD_FLAGS_CREATE_WOUT_YIELD (0x2)
 #define THREAD_FLAGS_CREATE_STACKMARKER (0x4)
+
+void mtThreadSchedulerRun(mtInstance *aInstance);
+
+void mtThreadTaskExit(void);
+
+int mtThreadPidIsValid(mtKernelPid aPid);
+
+void mtThreadYield(void);
+
+mtThread *mtThreadCurrent(mtInstance *aInstance);
+
+mtKernelPid mtThreadCurrentPid(void);
+
+char *mtThreadArchStackInit(mtThreadHandlerFunc aFunction, void *aArg, void *aStackStart, int aStackSize);
+
+void mtThreadArchStackPrint(void);
+
+int mtThreadArchStackUsage(void);
+
+void *mtThreadArchIsrStackPointer(void);
+
+void *mtThreadArchStackStart(void);
 
 #ifdef __cplusplus
 }
