@@ -1,5 +1,8 @@
+#include <assert.h>
+
 #include "core/locator-getters.hpp"
 #include "core/thread.hpp"
+#include "core/code_utils.hpp"
 
 namespace mt {
 
@@ -125,6 +128,40 @@ void Thread::StackInit(mtThreadHandlerFunc aFunction, void *aArg, void *aStackSt
     this->SetStackPointer(mtThreadArchStackInit(aFunction, aArg, aStackStart, aStackSize));
 }
 
+void Thread::AddToList(List *aList)
+{
+    assert(GetStatus() < THREAD_STATUS_RUNNING);
+
+    uint8_t myPriority = GetPriority();
+
+    List *myNode = static_cast<List *>(GetRunqueueEntry());
+
+    while (aList->mNext)
+    {
+        Thread *threadOnList = Thread::GetThreadPointerFromItsListMember(static_cast<List *>(aList->mNext));
+
+        if (threadOnList->GetPriority() > myPriority)
+        {
+            break;
+        }
+
+        aList = static_cast<List *>(aList->mNext);
+    }
+
+    myNode->mNext = aList->mNext;
+
+    aList->mNext = myNode;
+}
+
+Thread *Thread::GetThreadPointerFromItsListMember(List *aList)
+{
+    mtListNode *list = static_cast<mtListNode *>(aList);
+
+    mtThread *thread = mtCONTAINER_OF(list, mtThread, mRunqueueEntry);
+
+    return static_cast<Thread *>(thread);
+}
+
 void ThreadScheduler::Run(void)
 {
     DisableContextSwitchRequestFromISR();
@@ -226,17 +263,13 @@ uint8_t ThreadScheduler::GetLSBIndexFromRunqueue(void)
     return index;
 }
 
-#define container_of(ptr, type, member) ({                    \
-        const typeof( ((type *)0)->member ) *__mptr = (ptr);  \
-        (type *)( (char *)__mptr - offsetof(type,member) );})
-
 Thread *ThreadScheduler::GetNextThreadFromRunqueue(void)
 {
     uint8_t threadIdx = GetLSBIndexFromRunqueue();
 
     mtListNode *threadPtrInQueue = static_cast<mtListNode *>((mSchedulerRunqueue[threadIdx].mNext)->mNext);
 
-    mtThread *thread = container_of(threadPtrInQueue, mtThread, mRunqueueEntry);
+    mtThread *thread = mtCONTAINER_OF(threadPtrInQueue, mtThread, mRunqueueEntry);
 
     return static_cast<Thread *>(thread);
 }
@@ -301,6 +334,62 @@ void ThreadScheduler::Yield(void)
     mtCpuIrqRestore(state);
 
     YieldHigherPriorityThread();
+}
+
+const char *ThreadScheduler::ThreadStatusToString(mtThreadStatus aStatus)
+{
+    const char *retval;
+
+    switch (aStatus)
+    {
+    case THREAD_STATUS_RUNNING:
+        retval = "running";
+        break;
+
+    case THREAD_STATUS_PENDING:
+        retval = "pending";
+        break;
+
+    case THREAD_STATUS_STOPPED:
+        retval = "stopped";
+        break;
+
+    case THREAD_STATUS_SLEEPING:
+        retval = "sleeping";
+        break;
+
+    case THREAD_STATUS_MUTEX_BLOCKED:
+        retval = "bl mutex";
+        break;
+
+    case THREAD_STATUS_RECEIVE_BLOCKED:
+        retval = "bl rx";
+        break;
+
+    case THREAD_STATUS_SEND_BLOCKED:
+        retval = "bl send";
+        break;
+
+    case THREAD_STATUS_REPLY_BLOCKED:
+        retval = "bl reply";
+        break;
+
+    default:
+        retval = "unknown";
+        break;
+    }
+
+    return retval;
+}
+
+extern "C" void mtCpuEndOfISR(mtInstance *aInstance)
+{
+    Instance &instance = *static_cast<Instance *>(aInstance);
+
+    if (instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR())
+    {
+        ThreadScheduler::YieldHigherPriorityThread();
+    }
 }
 
 } // namespace mt

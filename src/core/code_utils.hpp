@@ -12,6 +12,10 @@
 #define mtDEFINE_ALIGNED_VAR(aName, aSize, aAlignType) \
     aAlignType aName[(((aSize) + (sizeof(aAlignType) - 1)) / sizeof(aAlignType))]
 
+#define mtCONTAINER_OF(ptr, type, member) ({                  \
+        const typeof( ((type *)0)->member ) *__mptr = (ptr);  \
+        (type *)( (char *)__mptr - offsetof(type,member) );})
+
 #define SuccessOrExit(aStatus) \
     do                         \
     {                          \

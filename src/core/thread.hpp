@@ -44,6 +44,10 @@ public:
 
     const char *GetName(void) { return mName; }
 
+    void AddToList(List *aList);
+
+    static Thread *GetThreadPointerFromItsListMember(List *aList);
+
 private:
     void InitRunqueueEntry(void) { mRunqueueEntry.mNext = NULL; }
 
@@ -112,6 +116,10 @@ public:
 
     void Yield(void);
 
+    static void YieldHigherPriorityThread(void);
+
+    const char *ThreadStatusToString(mtThreadStatus aStatus);
+
 private:
     uint32_t GetRunqueueBitCache(void) { return mRunqueueBitCache; }
 
@@ -122,8 +130,6 @@ private:
     Thread *GetNextThreadFromRunqueue(void);
 
     uint8_t GetLSBIndexFromRunqueue(void);
-
-    void YieldHigherPriorityThread(void);
 
     int mNumOfThreadsInScheduler;
 

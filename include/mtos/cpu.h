@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include <mtos/instance.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -28,6 +30,8 @@ unsigned mtCpuIrqEnable(void);
 void mtCpuIrqRestore(unsigned aState);
 
 int mtCpuIsInISR(void);
+
+void mtCpuEndOfISR(mtInstance *aInstance);
 
 void mtCpuTriggerPendSVInterrupt(void);
 
