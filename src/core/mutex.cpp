@@ -2,6 +2,8 @@
 #include "core/mutex.hpp"
 #include "core/thread.hpp"
 
+#include <stdio.h>
+
 namespace mt {
 
 int Mutex::SetLock(int aBlocking)
@@ -35,7 +37,7 @@ int Mutex::SetLock(int aBlocking)
 
         mtCpuIrqRestore(state);
 
-        Get<ThreadScheduler>().YieldHigherPriorityThread();
+        ThreadScheduler::YieldHigherPriorityThread();
 
         return 1;
     }

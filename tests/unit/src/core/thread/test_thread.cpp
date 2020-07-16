@@ -3,6 +3,7 @@
 #include "core/instance.hpp"
 #include "core/code_utils.hpp"
 #include "core/locator-getters.hpp"
+#include "core/mutex.hpp"
 
 #include "test-helper.h"
 
@@ -205,6 +206,147 @@ TEST_F(TestThread, multipleThread)
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), task1Thread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), task1Thread->GetPid());
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
+
+    /**
+     * -------------------------------------------------------------------------
+     * [TEST CASE] mutexes
+     * -------------------------------------------------------------------------
+     **/
+
+    Mutex mutex = Mutex(instance);
+
+    mutex.Lock();
+
+    /* Note: mutex was unlocked, set to locked for the first time,
+     * current active thread (task1Thread) will not change it's status until
+     * second time `mutex.Lock()` is call */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    mutex.Lock();
+
+    /* Note: mutex was locked, calling `mutex.Lock()` for the second time in current active
+     * thread (task1Thread), now it will set current active thread status to mutex_blocked and
+     * yield to higher priority thread or remain thread */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+
+    mutex.Unlock();
+
+    /* Note: this will unlock `task1Thread` and set to pending status and yield
+     * to highest priority task */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /* Note: set mainThread status to pending */
+
+    instance.Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(mainThread, THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    mutex.Lock(); // call this in task1Thread : HEAD
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+
+    mutex.Lock(); // call this in mainThread
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+
+    /* Note: at this point both mainThread and task1Thread is in MUTEX LOCKED
+     * status. */
+
+    mutex.Unlock();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+
+    /* Note: task1Thread was in HEAD of the mutex queue, it will unlock this
+     * task first. */
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /* Note: task1Thread have higher priority than idleThread, so run
+     * task1Thread. */
+
+    mutex.Unlock();
+
+    /* This will change mainThread status to pending */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /* Note: task1Thread has higher priority than mainThread, so keep running
+     * task1Thread. */
+
+    mutex.Unlock();
+
+    /* No thread was waiting this mutex, set to NULL */
+
+    EXPECT_EQ(mutex.mQueue.mNext, nullptr);
+
+    /* Note: set mainThread status back to receive blocked */
+
+    instance.Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(mainThread, THREAD_STATUS_RECEIVE_BLOCKED);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
 
     /**
      * -------------------------------------------------------------------------
