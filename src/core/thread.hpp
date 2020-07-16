@@ -7,6 +7,8 @@
 #include <mtos/stat.h>
 #include <mtos/cpu.h>
 
+#include "core/msg.hpp"
+#include "core/cib.hpp"
 #include "core/clist.hpp"
 #include "core/locator.hpp"
 
@@ -48,10 +50,12 @@ public:
 
     static Thread *GetThreadPointerFromItsListMember(List *aList);
 
+    void InitMsgQueue(Msg *aArg, int aNum);
+
 private:
     void InitRunqueueEntry(void) { mRunqueueEntry.mNext = NULL; }
 
-    void InitMsgWaiters(void) { mMsgWaiters.mNext = NULL; }
+    void InitMsg(void);
 
     void SetStackStart(char *aPtr) { mStackStart = aPtr; }
 

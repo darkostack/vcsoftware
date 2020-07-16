@@ -20,6 +20,18 @@ typedef struct mtMsg
     } mContent;
 } mtMsg;
 
+int mtMsgReceive(mtMsg *aMsg);
+
+int mtMsgSend(mtMsg *aMsg, mtKernelPid aPid);
+
+int mtMsgTrySend(mtMsg *aMsg, mtKernelPid aPid);
+
+int mtMsgSendReceive(mtMsg *aMsg, mtMsg *aReply, mtKernelPid aPid);
+
+int mtMsgReply(mtMsg *aMsg, mtMsg *aReply);
+
+void mtMsgActiveThreadQueuePrint(void);
+
 #ifdef __cplusplus
 }
 #endif

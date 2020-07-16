@@ -96,7 +96,7 @@ Thread *Thread::Init(Instance &aInstance, char *aStack, int aStackSize,
 
     tcb->InitRunqueueEntry();
 
-    tcb->InitMsgWaiters();
+    tcb->InitMsg();
 
     tcb->Get<ThreadScheduler>().IncrementNumOfThreadsInScheduler();
 
@@ -160,6 +160,21 @@ Thread *Thread::GetThreadPointerFromItsListMember(List *aList)
     mtThread *thread = mtCONTAINER_OF(list, mtThread, mRunqueueEntry);
 
     return static_cast<Thread *>(thread);
+}
+
+void Thread::InitMsgQueue(Msg *aArray, int aNum)
+{
+    mMsgArray = aArray;
+
+    (static_cast<Cib *>(&mMsgQueue))->Init(aNum);
+}
+
+void Thread::InitMsg(void)
+{
+    mWaitData = NULL;
+    mMsgWaiters.mNext = NULL;
+    (static_cast<Cib *>(&mMsgQueue))->Init(0);
+    mMsgArray = NULL;
 }
 
 void ThreadScheduler::Run(void)
