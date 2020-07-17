@@ -169,6 +169,28 @@ void Thread::InitMsgQueue(Msg *aArray, int aNum)
     (static_cast<Cib *>(&mMsgQueue))->Init(aNum);
 }
 
+int Thread::IsPidValid(mtKernelPid aPid)
+{
+    return ((KERNEL_PID_FIRST <= aPid) && (aPid <= KERNEL_PID_LAST));
+}
+
+int Thread::QueuedMsg(Msg *aMsg)
+{
+    int index = (static_cast<Cib *>(&mMsgQueue))->Put();
+
+    if (index < 0)
+    {
+        // TODO: warning thread message queue is full
+        return 0;
+    }
+
+    Msg *dest = static_cast<Msg *>(&mMsgArray[index]);
+
+    *dest = *aMsg;
+
+    return 1;
+}
+
 void Thread::InitMsg(void)
 {
     mWaitData = NULL;

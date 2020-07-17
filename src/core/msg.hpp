@@ -24,10 +24,6 @@ public:
         mContent.mValue = 0;
     }
 
-    int Send(mtKernelPid aTargetPid, bool aBlocking, unsigned aState);
-
-    int Receive(int aBlock);
-
     int QueuedMsg(Thread *aTarget);
 
     int Send(mtKernelPid aTargetPid);
@@ -40,9 +36,9 @@ public:
 
     int IsSentByISR(void) { return mSenderPid == KERNEL_PID_ISR; }
 
-    int Receive(void);
+    int Receive(void) { return Receive(1); }
 
-    int TryReceive(void);
+    int TryReceive(void) { return Receive(0); }
 
     int SendReceive(Msg *aReply, mtKernelPid aTargetPid);
 
@@ -51,6 +47,11 @@ public:
     int ReplyInISR(Msg *aReply);
 
     int Available(void);
+
+private:
+    int Send(mtKernelPid aTargetPid, int aBlocking, unsigned aState);
+
+    int Receive(int aBlocking);
 };
 
 } // namespace mt

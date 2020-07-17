@@ -52,6 +52,10 @@ public:
 
     void InitMsgQueue(Msg *aArg, int aNum);
 
+    static int IsPidValid(mtKernelPid aPid);
+
+    int QueuedMsg(Msg *aMsg);
+
 private:
     void InitRunqueueEntry(void) { mRunqueueEntry.mNext = NULL; }
 
