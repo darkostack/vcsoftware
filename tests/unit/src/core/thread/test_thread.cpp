@@ -207,6 +207,26 @@ TEST_F(TestThread, multipleThread)
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), task1Thread->GetPid());
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
 
+    instance.Get<ThreadScheduler>().Yield(); /* this function will run higher priority thread */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /* task1Thread already the highest priority thread currently running, so
+     * nothing change */
+
+    EXPECT_EQ(ThreadScheduler::ThreadStatusToString(mainThread->GetStatus()), "bl rx");
+    EXPECT_EQ(ThreadScheduler::ThreadStatusToString(idleThread->GetStatus()), "pending");
+    EXPECT_EQ(ThreadScheduler::ThreadStatusToString(task1Thread->GetStatus()), "running");
+
+    EXPECT_EQ(ThreadScheduler::ThreadStatusToString(THREAD_STATUS_STOPPED), "stopped");
+    EXPECT_EQ(ThreadScheduler::ThreadStatusToString(THREAD_STATUS_SLEEPING), "sleeping");
+    EXPECT_EQ(ThreadScheduler::ThreadStatusToString(THREAD_STATUS_MUTEX_BLOCKED), "bl mutex");
+    EXPECT_EQ(ThreadScheduler::ThreadStatusToString(THREAD_STATUS_SEND_BLOCKED), "bl send");
+    EXPECT_EQ(ThreadScheduler::ThreadStatusToString(THREAD_STATUS_REPLY_BLOCKED), "bl reply");
+    EXPECT_EQ(ThreadScheduler::ThreadStatusToString(static_cast<mtThreadStatus>(100)), "unknown");
+
     /**
      * -------------------------------------------------------------------------
      * [TEST CASE] mutexes
@@ -517,6 +537,12 @@ TEST_F(TestThread, multipleThread)
      * requested, therefore after exiting ISR function PendSV interrupt will be
      * triggered and run thread scheduler */
 
+    mtCpuEndOfISR((mtInstance *)&instance);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+
     testHelperResetCpuInISR(); /* artificially out from ISR */
 
     EXPECT_FALSE(mtCpuIsInISR());
@@ -555,6 +581,55 @@ TEST_F(TestThread, multipleThread)
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), task1Thread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), task1Thread->GetPid());
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
+
+    /**
+     * ------------------------------------------------------------------------------
+     * [TEST CASE] create a thread with highest priority but with THREAD_FLAGS
+     * sleeping and not using THREAD_FLAGS create stack marker.
+     * ------------------------------------------------------------------------------
+     **/
+
+    char task2Stack[128];
+
+    /* Note: intentionally create thread with misaligment stack boundary on
+     * 16/32 bit boundary (&task2Stack[1]) will do the job */
+
+    Thread *task2Thread = Thread::Init(instance, &task2Stack[1], sizeof(task2Stack), 1,
+                                       THREAD_FLAGS_CREATE_SLEEPING,
+                                       NULL, NULL, "task2");
+
+    EXPECT_NE(task2Thread, nullptr);
+
+    EXPECT_EQ(task2Thread->GetPid(), 4);
+    EXPECT_EQ(task2Thread->GetPriority(), 1);
+    EXPECT_EQ(task2Thread->GetName(), "task2");
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    instance.Get<ThreadScheduler>().WakeupThread(task2Thread->GetPid());
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_RUNNING);
 }
 
 TEST_F(TestThread, multipleInstanceMultiThreads)

@@ -379,4 +379,72 @@ TEST_F(TestMutex, singleInstanceMutex)
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /**
+     * -------------------------------------------------------------------------
+     * [TEST CASE] unlock and sleeping current thread
+     * -------------------------------------------------------------------------
+     **/
+
+    mutex3.Lock(); /* this will set task2Thread to mutex blocked status */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
+
+    mutex3.UnlockAndSleepingCurrentThread(); /* this will unlock task2Thread and set task1Thread to sleeping */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_PENDING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    mutex3.UnlockAndSleepingCurrentThread();
+
+    /* Note: No thread was blocked by mutex3, nothing to unlocked but keep set
+     * the currentThread to sleeping */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    mutex3.UnlockAndSleepingCurrentThread();
+
+    /* Note: No thread was blocked by mutex3, nothing to unlocked but keep set
+     * the currentThread to sleeping */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_SLEEPING);
 }

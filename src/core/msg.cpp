@@ -188,7 +188,7 @@ int Msg::Send(mtKernelPid aTargetPid)
 
     if (Get<ThreadScheduler>().GetCurrentActivePid() == aTargetPid)
     {
-        return SendToSelf();
+        return SendToSelfQueue();
     }
 
     return Send(aTargetPid, 1 /* blocking */, mtCpuIrqDisable());
@@ -203,13 +203,13 @@ int Msg::TrySend(mtKernelPid aTargetPid)
 
     if (Get<ThreadScheduler>().GetCurrentActivePid() == aTargetPid)
     {
-        return SendToSelf();
+        return SendToSelfQueue();
     }
 
     return Send(aTargetPid, 0 /* non-blocking */, mtCpuIrqDisable());
 }
 
-int Msg::SendToSelf(void)
+int Msg::SendToSelfQueue(void)
 {
     unsigned state = mtCpuIrqDisable();
 
@@ -231,7 +231,7 @@ int Msg::SendInISR(mtKernelPid aTargetPid)
         // TODO: warning pit is not valid
     }
 
-    Thread *targetThread = Get<ThreadScheduler>().GetCurrentActiveThread();
+    Thread *targetThread = Get<ThreadScheduler>().GetThreadFromScheduler(aTargetPid);
 
     if (targetThread == NULL)
     {
@@ -329,7 +329,7 @@ int Msg::ReplyInISR(Msg *aReply)
     return 1;
 }
 
-int Msg::Available(void)
+int Msg::AvailableInQueue(void)
 {
     Thread *currentThread = Get<ThreadScheduler>().GetCurrentActiveThread();
 

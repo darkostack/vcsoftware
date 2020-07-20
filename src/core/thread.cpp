@@ -180,7 +180,6 @@ int Thread::QueuedMsg(Msg *aMsg)
 
     if (index < 0)
     {
-        // TODO: warning thread message queue is full
         return 0;
     }
 

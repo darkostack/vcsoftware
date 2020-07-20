@@ -31,7 +31,7 @@ public:
 
     int TrySend(mtKernelPid aTargetPid);
 
-    int SendToSelf(void);
+    int SendToSelfQueue(void);
 
     int SendInISR(mtKernelPid aTargetPid);
 
@@ -47,7 +47,7 @@ public:
 
     int ReplyInISR(Msg *aReply);
 
-    int Available(void);
+    int AvailableInQueue(void);
 
 private:
     int Send(mtKernelPid aTargetPid, int aBlocking, unsigned aState);

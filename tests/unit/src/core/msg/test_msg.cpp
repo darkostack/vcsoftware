@@ -155,6 +155,8 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
 
+    EXPECT_EQ(msg1.AvailableInQueue(), -1); /* currently we don't use any message queue */
+
     EXPECT_EQ(msg1.mSenderPid, mainThread->GetPid());
     EXPECT_EQ(msg1.mType, 0x20);
     EXPECT_NE(msg1.mContent.mPtr, nullptr);
@@ -210,6 +212,181 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     /* Note: at this point msg3 already received by mainThread and because
      * task1Thread has higher priority than mainThread, kernel will context
      * switch to task1Thread */
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /**
+     * -------------------------------------------------------------------------
+     * [TEST CASE] try send a message to a thread that doesn't in receive
+     * blocked status
+     * -------------------------------------------------------------------------
+     **/
+
+    Msg msg5 = Msg(instance);
+
+    EXPECT_EQ(msg5.mSenderPid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg5.mType, 0);
+    EXPECT_EQ(msg5.mContent.mPtr, nullptr);
+    EXPECT_EQ(msg5.mContent.mValue, 0);
+
+    msg5.mType = 0x22;
+    msg5.mContent.mValue = 0xdeadbeef;
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /* Note: none of these TrySend message will works unless the target thread
+     * is in receive blocked status */
+
+    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
+    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
+    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
+    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
+    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
+    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    instance.Get<ThreadScheduler>().SleepingCurrentThread();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    Msg msg6 = Msg(instance);
+
+    EXPECT_EQ(msg6.mSenderPid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg6.mType, 0);
+    EXPECT_EQ(msg6.mContent.mPtr, nullptr);
+    EXPECT_EQ(msg6.mContent.mValue, 0);
+
+    msg6.Receive();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    instance.Get<ThreadScheduler>().WakeupThread(task1Thread->GetPid());
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /* Note: now TrySend() will succeed */
+
+    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 1);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /* message is successfully received */
+
+    EXPECT_EQ(msg6.mSenderPid, task1Thread->GetPid());
+    EXPECT_EQ(msg6.mType, 0x22);
+    EXPECT_EQ(msg6.mContent.mValue, 0xdeadbeef);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    EXPECT_EQ(msg5.SendToSelfQueue(), 0); /* we dont use message queue yet */
+
+    /**
+     * -------------------------------------------------------------------------
+     * [TEST CASE] send message from ISR
+     * -------------------------------------------------------------------------
+     **/
+
+    msg6.Receive();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+
+    testHelperSetCpuInISR();
+
+    msg5.mType = 0xff;
+    msg5.mContent.mValue = 0x12345678;
+
+    EXPECT_EQ(msg5.Send(task1Thread->GetPid()), 1);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+
+    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
+
+    mtCpuEndOfISR((mtInstance *)&instance);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+
+    testHelperResetCpuInISR();
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    EXPECT_EQ(msg6.mSenderPid, KERNEL_PID_ISR);
+    EXPECT_EQ(msg6.mType, 0xff);
+    EXPECT_EQ(msg6.mContent.mValue, 0x12345678);
+
+    /* Note: send message from ISR when the target is not in receive blocked */
+
+    testHelperSetCpuInISR();
+
+    EXPECT_EQ(msg5.Send(task1Thread->GetPid()), 0);
+
+    mtCpuEndOfISR((mtInstance *)&instance);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    testHelperResetCpuInISR();
 
     instance.Get<ThreadScheduler>().Run();
 

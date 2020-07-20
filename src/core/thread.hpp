@@ -126,7 +126,7 @@ public:
 
     static void YieldHigherPriorityThread(void);
 
-    const char *ThreadStatusToString(mtThreadStatus aStatus);
+    static const char *ThreadStatusToString(mtThreadStatus aStatus);
 
 private:
     uint32_t GetRunqueueBitCache(void) { return mRunqueueBitCache; }
