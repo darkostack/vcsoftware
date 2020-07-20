@@ -78,7 +78,7 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     EXPECT_EQ(task1Thread->GetName(), "task1");
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
 
-     EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
+    EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(idleThread->GetPid()), idleThread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(mainThread->GetPid()), mainThread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(task1Thread->GetPid()), task1Thread);
