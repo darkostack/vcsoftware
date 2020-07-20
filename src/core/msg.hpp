@@ -16,8 +16,9 @@ class Thread;
 class Msg : public mtMsg, public List, public InstanceLocatorInit
 {
 public:
-    explicit Msg(void)
+    explicit Msg(Instance &aInstance)
     {
+        InstanceLocatorInit::Init(aInstance);
         mSenderPid = KERNEL_PID_UNDEF;
         mType = 0;
         mContent.mPtr = NULL;
