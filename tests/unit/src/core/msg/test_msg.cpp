@@ -393,6 +393,154 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    /**
+     * -------------------------------------------------------------------------
+     * [TEST CASE] send and then immediately set to receive state by calling
+     * sendReceive function.
+     * -------------------------------------------------------------------------
+     **/
+
+    Msg msg7 = Msg(instance);
+    Msg msg7Reply = Msg(instance);
+
+    EXPECT_EQ(msg7.mSenderPid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg7.mType, 0);
+    EXPECT_EQ(msg7.mContent.mPtr, nullptr);
+    EXPECT_EQ(msg7.mContent.mValue, 0);
+
+    EXPECT_EQ(msg7Reply.mSenderPid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg7Reply.mType, 0);
+    EXPECT_EQ(msg7Reply.mContent.mPtr, nullptr);
+    EXPECT_EQ(msg7Reply.mContent.mValue, 0);
+
+    uint32_t msg7Data = 0xdeeeaaad;
+
+    msg7.mType = 0xfe;
+    msg7.mContent.mPtr = static_cast<void *>(&msg7Data);
+
+    EXPECT_EQ(msg7.SendReceive(&msg7Reply, mainThread->GetPid()), 1);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+
+    Msg msg8 = Msg(instance);
+    Msg msg8Reply = Msg(instance);
+
+    EXPECT_EQ(msg8.mSenderPid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg8.mType, 0);
+    EXPECT_EQ(msg8.mContent.mPtr, nullptr);
+    EXPECT_EQ(msg8.mContent.mValue, 0);
+
+    EXPECT_EQ(msg8Reply.mSenderPid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg8Reply.mType, 0);
+    EXPECT_EQ(msg8Reply.mContent.mPtr, nullptr);
+    EXPECT_EQ(msg8Reply.mContent.mValue, 0);
+
+    msg8.Receive();
+
+    EXPECT_EQ(msg8.mSenderPid, task1Thread->GetPid());
+    EXPECT_EQ(msg8.mType, 0xfe);
+    EXPECT_EQ(*static_cast<uint32_t *>(msg8.mContent.mPtr), 0xdeeeaaad);
+
+    /* Note: at this point msg7 is received */
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+
+    msg8Reply.mType = 0xff;
+    msg8Reply.mContent.mValue = 0xdeadbeef;
+
+    EXPECT_EQ(msg8.Reply(&msg8Reply), 1);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    EXPECT_EQ(msg7Reply.mType, 0xff);
+    EXPECT_EQ(msg7Reply.mContent.mValue, 0xdeadbeef);
+
+    /* Note: reply msg does not care who was replying the message */
+
+    /**
+     * -------------------------------------------------------------------------
+     * [TEST CASE] send and then immediately set to receive state by calling
+     * sendReceive function. Reply function would be in ISR.
+     * -------------------------------------------------------------------------
+     **/
+
+    msg7.mType = 0xab;
+    msg7.mContent.mValue = 0xaaaabbbb;
+
+    EXPECT_EQ(msg7.SendReceive(&msg7Reply, mainThread->GetPid()), 1);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+
+    msg8.Receive();
+
+    EXPECT_EQ(msg8.mSenderPid, task1Thread->GetPid());
+    EXPECT_EQ(msg8.mType, 0xab);
+    EXPECT_EQ(msg8.mContent.mValue, 0xaaaabbbb);
+
+    /* Note: at this point msg7 is received */
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+
+    msg8Reply.mType = 0xcd;
+    msg8Reply.mContent.mValue = 0xccccdddd;
+
+    testHelperSetCpuInISR(); /* ----------------- set cpu artificially in ISR */
+
+    EXPECT_EQ(msg8.ReplyInISR(&msg8Reply), 1);
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+
+    mtCpuEndOfISR(&instance);
+
+    testHelperResetCpuInISR(); /* ---------------------------------- exit ISR */
+
+    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
+
+    instance.Get<ThreadScheduler>().Run();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    EXPECT_EQ(msg7Reply.mType, 0xcd);
+    EXPECT_EQ(msg7Reply.mContent.mValue, 0xccccdddd);
+
+    /* Note: reply message was sent from ISR */
 }
 
 TEST_F(TestMsg, multipleSendReceiveMsg)
