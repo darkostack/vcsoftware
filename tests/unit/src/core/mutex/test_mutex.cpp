@@ -447,4 +447,18 @@ TEST_F(TestMutex, singleInstanceMutex)
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
     EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    mutex3.Unlock();
+    mutex3.Unlock();
+    mutex3.Unlock();
+    mutex3.Unlock();
+    mutex3.Unlock();
+    mutex3.Unlock();
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+
+    /* Note: mutex3 was unlocked, nothing happen */
 }
