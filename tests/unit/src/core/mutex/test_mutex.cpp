@@ -139,6 +139,13 @@ TEST_F(TestMutex, singleInstanceMutex)
     /* Note: mutex was unlocked, set to locked for the first time and still
      * running current thread */
 
+    mutex.TryLock();
+    mutex.TryLock();
+    mutex.TryLock();
+    mutex.TryLock();
+
+    /* Note: mutex already in locked, so nothing happen when calling TryLock() at this point */
+
     EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
