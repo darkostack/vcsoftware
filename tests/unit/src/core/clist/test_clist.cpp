@@ -23,6 +23,8 @@ protected:
 TEST_F(TestClist, constructor)
 {
     EXPECT_TRUE(obj);
+
+    EXPECT_EQ(sizeof(Clist), sizeof(mtListNode));
 }
 
 TEST_F(TestClist, right_push)

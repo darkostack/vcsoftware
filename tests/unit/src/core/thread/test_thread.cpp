@@ -36,6 +36,14 @@ TEST_F(TestThread, singleThread)
 
     /**
      * -------------------------------------------------------------------------
+     * [TEST CASE] make sure Thread class size is correct
+     * -------------------------------------------------------------------------
+     **/
+
+    EXPECT_EQ(sizeof(Thread), sizeof(mtThread));
+
+    /**
+     * -------------------------------------------------------------------------
      * [TEST CASE] create single thread and run the thread scheduler, that
      * thread is expected to be in running state and become current active
      * thread

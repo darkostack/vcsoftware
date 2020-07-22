@@ -23,6 +23,8 @@ protected:
 TEST_F(TestCib, constructor)
 {
     EXPECT_TRUE(obj);
+
+    EXPECT_EQ(sizeof(Cib), sizeof(mtCib));
 }
 
 TEST_F(TestCib, functions)

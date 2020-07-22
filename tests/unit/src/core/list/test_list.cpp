@@ -23,6 +23,8 @@ protected:
 TEST_F(TestList, constructor)
 {
     EXPECT_TRUE(obj);
+
+    EXPECT_EQ(sizeof(List), sizeof(mtListNode));
 }
 
 TEST_F(TestList, functions)
