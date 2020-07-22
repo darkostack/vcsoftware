@@ -174,16 +174,16 @@ int Thread::HasMsgQueue(void)
     return mMsgArray != NULL;
 }
 
-int Thread::GetMsgAvailableInQueue(void)
+int Thread::GetNumOfMsgInQueue(void)
 {
-    int queueIndex = -1;
+    int queuedMsg = -1;
 
     if (HasMsgQueue())
     {
-        queueIndex = (static_cast<Cib *>(&mMsgQueue))->Avail();
+        queuedMsg = (static_cast<Cib *>(&mMsgQueue))->Avail();
     }
 
-    return queueIndex;
+    return queuedMsg;
 }
 
 int Thread::IsPidValid(mtKernelPid aPid)

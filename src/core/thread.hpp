@@ -56,7 +56,7 @@ public:
 
     int QueuedMsg(Msg *aMsg);
 
-    int GetMsgAvailableInQueue(void);
+    int GetNumOfMsgInQueue(void);
 
     int HasMsgQueue(void);
 
