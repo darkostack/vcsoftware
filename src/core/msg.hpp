@@ -33,9 +33,9 @@ public:
 
     int SendToSelfQueue(void);
 
-    int SendInISR(mtKernelPid aTargetPid);
+    int SendInIsr(mtKernelPid aTargetPid);
 
-    int IsSentByISR(void) { return mSenderPid == KERNEL_PID_ISR; }
+    int IsSentByIsr(void) { return mSenderPid == KERNEL_PID_ISR; }
 
     int Receive(void) { return Receive(1); }
 
@@ -45,9 +45,7 @@ public:
 
     int Reply(Msg *aReply);
 
-    int ReplyInISR(Msg *aReply);
-
-    int AvailableInQueue(void);
+    int ReplyInIsr(Msg *aReply);
 
 private:
     int Send(mtKernelPid aTargetPid, int aBlocking, unsigned aState);

@@ -9,9 +9,9 @@
 extern "C" {
 #endif
 
-void testHelperSetCpuInISR(void);
+void testHelperSetCpuInIsr(void);
 
-void testHelperResetCpuInISR(void);
+void testHelperResetCpuInIsr(void);
 
 int testHelperIsPendSVInterruptTriggered(void);
 

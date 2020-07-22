@@ -50,11 +50,15 @@ public:
 
     static Thread *GetThreadPointerFromItsListMember(List *aList);
 
-    void InitMsgQueue(Msg *aArg, int aNum);
-
     static int IsPidValid(mtKernelPid aPid);
 
+    void InitMsgQueue(Msg *aArg, int aNum);
+
     int QueuedMsg(Msg *aMsg);
+
+    int GetMsgAvailableInQueue(void);
+
+    int HasMsgQueue(void);
 
 private:
     void InitRunqueueEntry(void) { mRunqueueEntry.mNext = NULL; }
@@ -77,7 +81,7 @@ class ThreadScheduler : public Clist
 public:
     ThreadScheduler(void)
         : mNumOfThreadsInScheduler(0)
-        , mContextSwitchRequestFromISR(0)
+        , mContextSwitchRequestFromIsr(0)
         , mCurrentActiveThread(NULL)
         , mCurrentActivePid(KERNEL_PID_UNDEF)
         , mRunqueueBitCache(0)
@@ -92,11 +96,11 @@ public:
 
     void SetThreadToScheduler(Thread *aThread, mtKernelPid aPid) { mScheduledThreads[aPid] = aThread; }
 
-    unsigned int IsContextSwitchRequestedFromISR(void) { return mContextSwitchRequestFromISR; }
+    unsigned int IsContextSwitchRequestedFromIsr(void) { return mContextSwitchRequestFromIsr; }
 
-    void EnableContextSwitchRequestFromISR(void) { mContextSwitchRequestFromISR = 1; }
+    void EnableContextSwitchRequestFromIsr(void) { mContextSwitchRequestFromIsr = 1; }
 
-    void DisableContextSwitchRequestFromISR(void) { mContextSwitchRequestFromISR = 0; }
+    void DisableContextSwitchRequestFromIsr(void) { mContextSwitchRequestFromIsr = 0; }
 
     int GetNumOfThreadsInScheduler(void) { return mNumOfThreadsInScheduler; }
 
@@ -141,7 +145,7 @@ private:
 
     int mNumOfThreadsInScheduler;
 
-    unsigned int mContextSwitchRequestFromISR;
+    unsigned int mContextSwitchRequestFromIsr;
 
     Thread *mScheduledThreads[KERNEL_PID_LAST + 1];
 

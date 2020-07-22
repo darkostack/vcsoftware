@@ -1,16 +1,16 @@
 #include "test-helper.h"
 
-static int isCpuInISR = 0;
+static int isCpuInIsr = 0;
 static int isPendSVInterruptTriggered = 0;
 
-void testHelperSetCpuInISR(void)
+void testHelperSetCpuInIsr(void)
 {
-    isCpuInISR = 1;
+    isCpuInIsr = 1;
 }
 
-void testHelperResetCpuInISR(void)
+void testHelperResetCpuInIsr(void)
 {
-    isCpuInISR = 0;
+    isCpuInIsr = 0;
 }
 
 int testHelperIsPendSVInterruptTriggered(void)
@@ -38,9 +38,9 @@ void mtCpuIrqRestore(unsigned aState)
     (void) aState;
 }
 
-int mtCpuIsInISR(void)
+int mtCpuIsInIsr(void)
 {
-    return isCpuInISR;
+    return isCpuInIsr;
 }
 
 void mtCpuTriggerPendSVInterrupt(void)

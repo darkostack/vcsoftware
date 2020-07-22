@@ -96,7 +96,7 @@ TEST_F(TestMutex, singleInstanceMutex)
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(mainThread->GetPid()), mainThread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(task1Thread->GetPid()), task1Thread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(task2Thread->GetPid()), task2Thread);
-    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
+    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr());
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
 
@@ -351,7 +351,7 @@ TEST_F(TestMutex, singleInstanceMutex)
 
     /**
      * -------------------------------------------------------------------------
-     * [TEST CASE] unlock mutex in ISR
+     * [TEST CASE] unlock mutex in Isr
      * -------------------------------------------------------------------------
      **/
 
@@ -369,11 +369,11 @@ TEST_F(TestMutex, singleInstanceMutex)
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(task2Thread->GetStatus(), THREAD_STATUS_RUNNING);
 
-    testHelperSetCpuInISR(); // artificially set CPU in ISR
+    testHelperSetCpuInIsr(); // artificially set CPU in Isr
 
     mutex3.Unlock();
 
-    testHelperResetCpuInISR();
+    testHelperResetCpuInIsr();
 
     EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);

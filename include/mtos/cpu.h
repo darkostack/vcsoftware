@@ -29,9 +29,9 @@ unsigned mtCpuIrqEnable(void);
 
 void mtCpuIrqRestore(unsigned aState);
 
-int mtCpuIsInISR(void);
+int mtCpuIsInIsr(void);
 
-void mtCpuEndOfISR(mtInstance *aInstance);
+void mtCpuEndOfIsr(mtInstance *aInstance);
 
 void mtCpuTriggerPendSVInterrupt(void);
 

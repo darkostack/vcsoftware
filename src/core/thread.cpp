@@ -169,6 +169,23 @@ void Thread::InitMsgQueue(Msg *aArray, int aNum)
     (static_cast<Cib *>(&mMsgQueue))->Init(aNum);
 }
 
+int Thread::HasMsgQueue(void)
+{
+    return mMsgArray != NULL;
+}
+
+int Thread::GetMsgAvailableInQueue(void)
+{
+    int queueIndex = -1;
+
+    if (HasMsgQueue())
+    {
+        queueIndex = (static_cast<Cib *>(&mMsgQueue))->Avail();
+    }
+
+    return queueIndex;
+}
+
 int Thread::IsPidValid(mtKernelPid aPid)
 {
     return ((KERNEL_PID_FIRST <= aPid) && (aPid <= KERNEL_PID_LAST));
@@ -200,7 +217,7 @@ void Thread::InitMsg(void)
 
 void ThreadScheduler::Run(void)
 {
-    DisableContextSwitchRequestFromISR();
+    DisableContextSwitchRequestFromIsr();
 
     Thread *currentThread = GetCurrentActiveThread();
 
@@ -266,9 +283,9 @@ void ThreadScheduler::ContextSwitch(uint8_t aPriorityToSwitch)
 
     if (!isInRunqueue || (currentPriority > aPriorityToSwitch))
     {
-        if (mtCpuIsInISR())
+        if (mtCpuIsInIsr())
         {
-            EnableContextSwitchRequestFromISR();
+            EnableContextSwitchRequestFromIsr();
         }
         else
         {
@@ -312,7 +329,7 @@ Thread *ThreadScheduler::GetNextThreadFromRunqueue(void)
 
 void ThreadScheduler::SleepingCurrentThread(void)
 {
-    if (mtCpuIsInISR())
+    if (mtCpuIsInIsr())
     {
         return;
     }
@@ -418,11 +435,11 @@ const char *ThreadScheduler::ThreadStatusToString(mtThreadStatus aStatus)
     return retval;
 }
 
-extern "C" void mtCpuEndOfISR(mtInstance *aInstance)
+extern "C" void mtCpuEndOfIsr(mtInstance *aInstance)
 {
     Instance &instance = *static_cast<Instance *>(aInstance);
 
-    if (instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR())
+    if (instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr())
     {
         ThreadScheduler::YieldHigherPriorityThread();
     }

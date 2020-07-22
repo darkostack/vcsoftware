@@ -82,7 +82,7 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(idleThread->GetPid()), idleThread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(mainThread->GetPid()), mainThread);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(task1Thread->GetPid()), task1Thread);
-    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
+    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr());
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
     EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
 
@@ -154,8 +154,6 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
-
-    EXPECT_EQ(msg1.AvailableInQueue(), -1); /* currently we don't use any message queue */
 
     EXPECT_EQ(msg1.mSenderPid, mainThread->GetPid());
     EXPECT_EQ(msg1.mType, 0x20);
@@ -327,7 +325,7 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
 
     /**
      * -------------------------------------------------------------------------
-     * [TEST CASE] send message from ISR
+     * [TEST CASE] send message from Isr
      * -------------------------------------------------------------------------
      **/
 
@@ -343,7 +341,7 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
 
-    testHelperSetCpuInISR();
+    testHelperSetCpuInIsr();
 
     msg5.mType = 0xff;
     msg5.mContent.mValue = 0x12345678;
@@ -354,15 +352,15 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
 
-    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
+    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr());
 
-    mtCpuEndOfISR((mtInstance *)&instance);
+    mtCpuEndOfIsr((mtInstance *)&instance);
 
     EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
 
-    testHelperResetCpuInISR();
+    testHelperResetCpuInIsr();
 
     instance.Get<ThreadScheduler>().Run();
 
@@ -374,19 +372,19 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     EXPECT_EQ(msg6.mType, 0xff);
     EXPECT_EQ(msg6.mContent.mValue, 0x12345678);
 
-    /* Note: send message from ISR when the target is not in receive blocked */
+    /* Note: send message from Isr when the target is not in receive blocked */
 
-    testHelperSetCpuInISR();
+    testHelperSetCpuInIsr();
 
     EXPECT_EQ(msg5.Send(task1Thread->GetPid()), 0);
 
-    mtCpuEndOfISR((mtInstance *)&instance);
+    mtCpuEndOfIsr((mtInstance *)&instance);
 
     EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
 
-    testHelperResetCpuInISR();
+    testHelperResetCpuInIsr();
 
     instance.Get<ThreadScheduler>().Run();
 
@@ -481,7 +479,7 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     /**
      * -------------------------------------------------------------------------
      * [TEST CASE] send and then immediately set to receive state by calling
-     * sendReceive function. Reply function would be in ISR.
+     * sendReceive function. Reply function would be in Isr.
      * -------------------------------------------------------------------------
      **/
 
@@ -517,19 +515,19 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     msg8Reply.mType = 0xcd;
     msg8Reply.mContent.mValue = 0xccccdddd;
 
-    testHelperSetCpuInISR(); /* ----------------- set cpu artificially in ISR */
+    testHelperSetCpuInIsr(); /* ----------------- set cpu artificially in Isr */
 
-    EXPECT_EQ(msg8.ReplyInISR(&msg8Reply), 1);
+    EXPECT_EQ(msg8.ReplyInIsr(&msg8Reply), 1);
 
     EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
 
-    mtCpuEndOfISR(&instance);
+    mtCpuEndOfIsr(&instance);
 
-    testHelperResetCpuInISR(); /* ---------------------------------- exit ISR */
+    testHelperResetCpuInIsr(); /* ---------------------------------- exit Isr */
 
-    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromISR());
+    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr());
 
     instance.Get<ThreadScheduler>().Run();
 
@@ -540,7 +538,7 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
     EXPECT_EQ(msg7Reply.mType, 0xcd);
     EXPECT_EQ(msg7Reply.mContent.mValue, 0xccccdddd);
 
-    /* Note: reply message was sent from ISR */
+    /* Note: reply message was sent from Isr */
 }
 
 TEST_F(TestMsg, multipleSendReceiveMsg)

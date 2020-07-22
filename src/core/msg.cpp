@@ -181,9 +181,9 @@ int Msg::Receive(int aBlocking)
 
 int Msg::Send(mtKernelPid aTargetPid)
 {
-    if (mtCpuIsInISR())
+    if (mtCpuIsInIsr())
     {
-        return SendInISR(aTargetPid);
+        return SendInIsr(aTargetPid);
     }
 
     if (Get<ThreadScheduler>().GetCurrentActivePid() == aTargetPid)
@@ -196,9 +196,9 @@ int Msg::Send(mtKernelPid aTargetPid)
 
 int Msg::TrySend(mtKernelPid aTargetPid)
 {
-    if (mtCpuIsInISR())
+    if (mtCpuIsInIsr())
     {
-        return SendInISR(aTargetPid);
+        return SendInIsr(aTargetPid);
     }
 
     if (Get<ThreadScheduler>().GetCurrentActivePid() == aTargetPid)
@@ -224,7 +224,7 @@ int Msg::SendToSelfQueue(void)
     return result;
 }
 
-int Msg::SendInISR(mtKernelPid aTargetPid)
+int Msg::SendInIsr(mtKernelPid aTargetPid)
 {
     if (!Thread::IsPidValid(aTargetPid))
     {
@@ -248,7 +248,7 @@ int Msg::SendInISR(mtKernelPid aTargetPid)
 
         Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(targetThread, THREAD_STATUS_PENDING);
 
-        Get<ThreadScheduler>().EnableContextSwitchRequestFromISR();
+        Get<ThreadScheduler>().EnableContextSwitchRequestFromIsr();
 
         return 1;
     }
@@ -309,7 +309,7 @@ int Msg::Reply(Msg *aReply)
     return 1;
 }
 
-int Msg::ReplyInISR(Msg *aReply)
+int Msg::ReplyInIsr(Msg *aReply)
 {
     Thread *targetThread = Get<ThreadScheduler>().GetThreadFromScheduler(mSenderPid);
 
@@ -324,23 +324,9 @@ int Msg::ReplyInISR(Msg *aReply)
 
     Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(targetThread, THREAD_STATUS_PENDING);
 
-    Get<ThreadScheduler>().EnableContextSwitchRequestFromISR();
+    Get<ThreadScheduler>().EnableContextSwitchRequestFromIsr();
 
     return 1;
-}
-
-int Msg::AvailableInQueue(void)
-{
-    Thread *currentThread = Get<ThreadScheduler>().GetCurrentActiveThread();
-
-    int queueIndex = -1;
-
-    if (currentThread->mMsgArray != NULL)
-    {
-        queueIndex = (static_cast<Cib *>(&currentThread->mMsgQueue))->Avail();
-    }
-
-    return queueIndex;
 }
 
 } // namespace mt
