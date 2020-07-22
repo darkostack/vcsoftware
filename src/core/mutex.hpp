@@ -45,10 +45,10 @@ public:
 
     void UnlockAndSleepingCurrentThread(void);
 
-    template <typename Type> inline Type &Get(void) const; 
-
 private:
     int SetLock(int aBlocking);
+
+    template <typename Type> inline Type &Get(void) const; 
 
 #if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
     Instance &GetInstance(void) const { return *static_cast<Instance *>(mInstance); }

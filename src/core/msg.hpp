@@ -65,12 +65,12 @@ public:
 
     int ReplyInIsr(Msg *aReply);
 
-    template <typename Type> inline Type &Get(void) const; 
-
 private:
     int Send(mtKernelPid aTargetPid, int aBlocking, unsigned aState);
 
     int Receive(int aBlocking);
+
+    template <typename Type> inline Type &Get(void) const; 
 
 #if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
     Instance &GetInstance(void) const { return *static_cast<Instance *>(mInstance); }

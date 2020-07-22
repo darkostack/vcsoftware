@@ -22,8 +22,6 @@ extern uint64_t gInstanceRaw[];
 
 class Thread : public mtThread
 {
-    friend class ThreadScheduler;
-
 public:
     static Thread *Init(Instance &aInstance,
                         char *aStack,
@@ -64,8 +62,6 @@ public:
 
     int HasMsgQueue(void);
 
-    template <typename Type> inline Type &Get(void) const; 
-
 private:
     void InitRunqueueEntry(void) { mRunqueueEntry.mNext = NULL; }
 
@@ -80,6 +76,8 @@ private:
     void SetStackPointer(char *aPtr) { mStackPointer = aPtr; }
 
     void StackInit(mtThreadHandlerFunc aHandlerFunc, void *aArg, void *aStackStart, int aStackSize);
+
+    template <typename Type> inline Type &Get(void) const; 
 
 #if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
     Instance &GetInstance(void) const { return *static_cast<Instance *>(mInstance); }
