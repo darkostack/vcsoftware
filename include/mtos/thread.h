@@ -1,6 +1,7 @@
 #ifndef MTOS_THREAD_H
 #define MTOS_THREAD_H
 
+#include <mtos/config.h>
 #include <mtos/kernel.h>
 #include <mtos/cib.h>
 #include <mtos/clist.h>
@@ -46,6 +47,9 @@ typedef struct mtThread
     char *mStackStart;
     const char *mName;
     int mStackSize;
+#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    void *mInstance;
+#endif
 } mtThread;
 
 #define THREAD_FLAGS_CREATE_SLEEPING (0x1)

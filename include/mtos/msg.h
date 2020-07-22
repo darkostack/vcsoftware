@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include <mtos/config.h>
 #include <mtos/kernel.h>
 
 #ifdef __cplusplus
@@ -18,6 +19,9 @@ typedef struct mtMsg
         void *mPtr;
         uint32_t mValue;
     } mContent;
+#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    void *mInstance;
+#endif
 } mtMsg;
 
 int mtMsgReceive(mtMsg *aMsg);

@@ -2,7 +2,6 @@
 
 #include "core/instance.hpp"
 #include "core/code_utils.hpp"
-#include "core/locator-getters.hpp"
 #include "core/mutex.hpp"
 #include "core/msg.hpp"
 
@@ -701,22 +700,80 @@ TEST_F(TestMsg, multipleSendReceiveMsg)
 
     EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 4);
 
-    Msg msg1InTask1 = Msg(instance);
-    //Msg msg2InTask1 = Msg(instance);
+    Msg msgInTask1 = Msg(instance);
 
-    EXPECT_EQ(msg1InTask1.Receive(), 1);
+    EXPECT_EQ(msgInTask1.Receive(), 1);
 
-    EXPECT_EQ(msg1InTask1.mSenderPid, mainThread->GetPid());
-    EXPECT_EQ(msg1InTask1.mType, 0xff);
-    EXPECT_EQ(msg1InTask1.mContent.mValue, 0x01); /* get msg1 */
+    EXPECT_EQ(msgInTask1.mSenderPid, mainThread->GetPid());
+    EXPECT_EQ(msgInTask1.mType, 0xff);
+    EXPECT_EQ(msgInTask1.mContent.mValue, 0x01); /* get msg1 */
 
-    EXPECT_EQ(msg1InTask1.Receive(), 1);
+    EXPECT_EQ(msgInTask1.Receive(), 1);
 
-    //EXPECT_EQ(msg2InTask1.Receive(), 1);
+    EXPECT_EQ(msgInTask1.mSenderPid, mainThread->GetPid());
+    EXPECT_EQ(msgInTask1.mType, 0xff);
+    EXPECT_EQ(msgInTask1.mContent.mValue, 0x02); /* get msg2 */
 
-    //EXPECT_EQ(msg2InTask1.mSenderPid, mainThread->GetPid());
-    //EXPECT_EQ(msg2InTask1.mType, 0xff);
-    //EXPECT_EQ(msg2InTask1.mContent.mValue, 0x02); /* get msg2 */
+     EXPECT_EQ(msgInTask1.Receive(), 1);
 
+    EXPECT_EQ(msgInTask1.mSenderPid, mainThread->GetPid());
+    EXPECT_EQ(msgInTask1.mType, 0xff);
+    EXPECT_EQ(msgInTask1.mContent.mValue, 0x03); /* get msg3 */
 
+    EXPECT_EQ(msgInTask1.Receive(), 1);
+
+    EXPECT_EQ(msgInTask1.mSenderPid, mainThread->GetPid());
+    EXPECT_EQ(msgInTask1.mType, 0xff);
+    EXPECT_EQ(msgInTask1.mContent.mValue, 0x04); /* get msg4 */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 0);
+
+    /* Note: at this point we already got all the message from queue */
+
+    /**
+     * -------------------------------------------------------------------------
+     * [TEST CASE] send message to itself
+     * -------------------------------------------------------------------------
+     **/
+
+    EXPECT_EQ(msg1.Send(task1Thread->GetPid()), 1);
+    EXPECT_EQ(msg2.TrySend(task1Thread->GetPid()), 1);
+    EXPECT_EQ(msg3.Send(task1Thread->GetPid()), 1);
+    EXPECT_EQ(msg4.TrySend(task1Thread->GetPid()), 1);
+
+    EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 4);
+
+    EXPECT_EQ(msgInTask1.Receive(), 1);
+
+    EXPECT_EQ(msgInTask1.mSenderPid, task1Thread->GetPid());
+    EXPECT_EQ(msgInTask1.mType, 0xff);
+    EXPECT_EQ(msgInTask1.mContent.mValue, 0x01); /* get msg1 */
+
+    EXPECT_EQ(msgInTask1.Receive(), 1);
+
+    EXPECT_EQ(msgInTask1.mSenderPid, task1Thread->GetPid());
+    EXPECT_EQ(msgInTask1.mType, 0xff);
+    EXPECT_EQ(msgInTask1.mContent.mValue, 0x02); /* get msg2 */
+
+     EXPECT_EQ(msgInTask1.Receive(), 1);
+
+    EXPECT_EQ(msgInTask1.mSenderPid, task1Thread->GetPid());
+    EXPECT_EQ(msgInTask1.mType, 0xff);
+    EXPECT_EQ(msgInTask1.mContent.mValue, 0x03); /* get msg3 */
+
+    EXPECT_EQ(msgInTask1.Receive(), 1);
+
+    EXPECT_EQ(msgInTask1.mSenderPid, task1Thread->GetPid());
+    EXPECT_EQ(msgInTask1.mType, 0xff);
+    EXPECT_EQ(msgInTask1.mContent.mValue, 0x04); /* get msg4 */
+
+    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+
+    EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 0);
 }

@@ -1,8 +1,6 @@
-#include "core/locator-getters.hpp"
+#include "core/instance.hpp"
 #include "core/mutex.hpp"
 #include "core/thread.hpp"
-
-#include <stdio.h>
 
 namespace mt {
 
@@ -114,6 +112,16 @@ void Mutex::UnlockAndSleepingCurrentThread(void)
     mtCpuIrqRestore(state);
 
     Get<ThreadScheduler>().SleepingCurrentThread();
+}
+
+template <> inline Instance &Mutex::Get(void) const
+{
+    return GetInstance();
+}
+
+template <typename Type> inline Type &Mutex::Get(void) const
+{
+    return GetInstance().Get<Type>();
 }
 
 } // namespace mt

@@ -1,6 +1,7 @@
 #ifndef MTOS_MUTEX_H
 #define MTOS_MUTEX_H
 
+#include <mtos/config.h>
 #include <mtos/list.h>
 
 #ifdef __cplusplus
@@ -12,6 +13,9 @@ extern "C" {
 typedef struct mtMutex
 {
     mtListNode mQueue;
+#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    void *mInstance;
+#endif
 } mtMutex;
 
 void mtMutexLock(mtMutex *aMutex);

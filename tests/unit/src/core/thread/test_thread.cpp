@@ -2,7 +2,6 @@
 
 #include "core/instance.hpp"
 #include "core/code_utils.hpp"
-#include "core/locator-getters.hpp"
 #include "core/mutex.hpp"
 
 #include "test-helper.h"

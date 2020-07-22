@@ -1,6 +1,4 @@
-#include <assert.h>
-
-#include "core/locator-getters.hpp"
+#include "core/instance.hpp"
 #include "core/msg.hpp"
 
 namespace mt {
@@ -327,6 +325,16 @@ int Msg::ReplyInIsr(Msg *aReply)
     Get<ThreadScheduler>().EnableContextSwitchRequestFromIsr();
 
     return 1;
+}
+
+template <> inline Instance &Msg::Get(void) const
+{
+    return GetInstance();
+}
+
+template <typename Type> inline Type &Msg::Get(void) const
+{
+    return GetInstance().Get<Type>();
 }
 
 } // namespace mt

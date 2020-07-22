@@ -4,19 +4,36 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <mtos/config.h>
 #include <mtos/mutex.h>
 
 #include "core/list.hpp"
-#include "core/locator.hpp"
 
 namespace mt {
 
-class Mutex : public mtMutex, public InstanceLocatorInit
+class Instance;
+
+#if !MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+extern uint64_t gInstanceRaw[];
+#endif
+
+class Mutex : public mtMutex
 {
 public:
+    Mutex(void) {}
+
     explicit Mutex(Instance &aInstance)
     {
-        InstanceLocatorInit::Init(aInstance);
+        Init(aInstance);
+    }
+
+    void Init(Instance &aInstance)
+    {
+#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+        mInstance = static_cast<void *>(&aInstance);
+#else
+        (void)aInstance;
+#endif
         mQueue.mNext = NULL;
     }
 
@@ -28,8 +45,16 @@ public:
 
     void UnlockAndSleepingCurrentThread(void);
 
+    template <typename Type> inline Type &Get(void) const; 
+
 private:
     int SetLock(int aBlocking);
+
+#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    Instance &GetInstance(void) const { return *static_cast<Instance *>(mInstance); }
+#else
+    Instance &GetInstance(void) const { return *reinterpret_cast<Instance *>(&gInstanceRaw); }
+#endif
 };
 
 } // namespace mt

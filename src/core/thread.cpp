@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "core/locator-getters.hpp"
+#include "core/instance.hpp"
 #include "core/thread.hpp"
 #include "core/code_utils.hpp"
 
@@ -10,7 +10,7 @@ Thread *Thread::Init(Instance &aInstance, char *aStack, int aStackSize,
                      char aPriority, int aFlags, mtThreadHandlerFunc aHandlerFunc,
                      void *aArg, const char *aName)
 {
-    if (aPriority >= MTOS_CONFIG_THREAD_SCHED_PRIO_LEVELS) return NULL;
+    if (aPriority >= MTOS_CONFIG_THREAD_PRIORITY_LEVELS) return NULL;
 
     int totalStackSize = aStackSize;
 
@@ -59,7 +59,11 @@ Thread *Thread::Init(Instance &aInstance, char *aStack, int aStackSize,
     unsigned state = mtCpuIrqDisable();
 
     /* initialize instances for this thread */
-    tcb->InstanceLocatorInit::Init(aInstance);
+#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    tcb->mInstance = static_cast<void *>(&aInstance);
+#else
+    (void)aInstance;
+#endif
 
     mtKernelPid pid = KERNEL_PID_UNDEF;
 
@@ -443,6 +447,16 @@ extern "C" void mtCpuEndOfIsr(mtInstance *aInstance)
     {
         ThreadScheduler::YieldHigherPriorityThread();
     }
+}
+
+template <> inline Instance &Thread::Get(void) const
+{
+    return GetInstance();
+}
+
+template <typename Type> inline Type &Thread::Get(void) const
+{
+    return GetInstance().Get<Type>();
 }
 
 } // namespace mt

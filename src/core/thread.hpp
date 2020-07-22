@@ -1,8 +1,7 @@
 #ifndef CORE_THREAD_HPP
 #define CORE_THREAD_HPP
 
-#include "core/config.h"
-
+#include <mtos/config.h>
 #include <mtos/thread.h>
 #include <mtos/stat.h>
 #include <mtos/cpu.h>
@@ -10,13 +9,18 @@
 #include "core/msg.hpp"
 #include "core/cib.hpp"
 #include "core/clist.hpp"
-#include "core/locator.hpp"
 
 namespace mt {
 
 class ThreadScheduler;
 
-class Thread : public mtThread, public InstanceLocatorInit
+class Instance;
+
+#if !MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+extern uint64_t gInstanceRaw[];
+#endif
+
+class Thread : public mtThread
 {
     friend class ThreadScheduler;
 
@@ -60,6 +64,8 @@ public:
 
     int HasMsgQueue(void);
 
+    template <typename Type> inline Type &Get(void) const; 
+
 private:
     void InitRunqueueEntry(void) { mRunqueueEntry.mNext = NULL; }
 
@@ -74,6 +80,12 @@ private:
     void SetStackPointer(char *aPtr) { mStackPointer = aPtr; }
 
     void StackInit(mtThreadHandlerFunc aHandlerFunc, void *aArg, void *aStackStart, int aStackSize);
+
+#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    Instance &GetInstance(void) const { return *static_cast<Instance *>(mInstance); }
+#else
+    Instance &GetInstance(void) const { return *reinterpret_cast<Instance *>(&gInstanceRaw); }
+#endif
 };
 
 class ThreadScheduler : public Clist
@@ -153,7 +165,7 @@ private:
 
     mtKernelPid mCurrentActivePid;
 
-    Clist mSchedulerRunqueue[MTOS_CONFIG_THREAD_SCHED_PRIO_LEVELS];
+    Clist mSchedulerRunqueue[MTOS_CONFIG_THREAD_PRIORITY_LEVELS];
 
     uint32_t mRunqueueBitCache;
 
