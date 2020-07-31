@@ -61,7 +61,7 @@ Instance &Instance::get(void)
 #endif /* #if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
 
 #ifndef UNITTEST
-char event_queue_stack[128];
+char event_queue_stack[THREAD_EVENT_STACK_SIZE];
 #endif
 
 void Instance::after_init(void)
@@ -70,7 +70,7 @@ void Instance::after_init(void)
 
     /* initialized event queue */
 #ifndef UNITTEST
-    event_queue.init(event_queue_stack, sizeof(event_queue_stack), KERNEL_THREAD_PRIORITY_MAIN);
+    event_queue.init(event_queue_stack, sizeof(event_queue_stack), THREAD_EVENT_PRIORITY);
 #endif
 }
 

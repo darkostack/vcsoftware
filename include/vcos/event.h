@@ -10,6 +10,9 @@ extern "C" {
 
 #define THREAD_FLAG_EVENT (0x1)
 
+#define THREAD_EVENT_STACK_SIZE 128
+#define THREAD_EVENT_PRIORITY (KERNEL_THREAD_PRIORITY_MAIN - 1)
+
 typedef struct event event_t;
 
 typedef void (*event_handler_func_t)(event_t *);
