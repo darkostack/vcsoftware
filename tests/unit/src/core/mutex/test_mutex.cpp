@@ -83,7 +83,7 @@ TEST_F(TestMutex, single_instance_mutex)
     EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(main_thread->get_pid()), main_thread);
     EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(task1_thread->get_pid()), task1_thread);
     EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(task2_thread->get_pid()), task2_thread);
-    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested());
     EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
     EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 

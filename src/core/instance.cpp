@@ -13,6 +13,7 @@ DEFINE_ALIGNED_VAR(instance_raw, sizeof(Instance), uint64_t);
 Instance::Instance(void)
     : initialized(false)
     , thread_scheduler()
+    , thread_flags(this->thread_scheduler)
 {
 }
 

@@ -33,12 +33,15 @@ typedef enum
 
 #define THREAD_STATUS_NOT_FOUND ((thread_status_t)-1)
 
+typedef uint16_t thread_flags_t;
+
 typedef struct thread
 {
     char *stack_pointer;
     thread_status_t status;
     uint8_t priority;
     kernel_pid_t pid;
+    thread_flags_t flags;
     list_node_t runqueue_entry;
     void *wait_data;
     list_node_t msg_waiters;

@@ -13,7 +13,6 @@
 namespace vc {
 
 class ThreadScheduler;
-
 class Instance;
 
 #if !VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
@@ -85,7 +84,7 @@ class ThreadScheduler : public Clist
 public:
     ThreadScheduler(void)
         : numof_threads_in_scheduler(0)
-        , context_switch_request_from_isr(0)
+        , context_switch_request(0)
         , current_active_thread(NULL)
         , current_active_pid(KERNEL_PID_UNDEF)
         , runqueue_bitcache(0)
@@ -100,11 +99,11 @@ public:
 
     void set_thread_to_scheduler(Thread *thread, kernel_pid_t pid) { scheduled_threads[pid] = thread; }
 
-    unsigned int is_context_switch_requested_from_isr(void) { return context_switch_request_from_isr; }
+    unsigned int is_context_switch_requested(void) { return context_switch_request; }
 
-    void enable_context_switch_request_from_isr(void) { context_switch_request_from_isr = 1; }
+    void enable_context_switch_request(void) { context_switch_request = 1; }
 
-    void disable_context_switch_request_from_isr(void) { context_switch_request_from_isr = 0; }
+    void disable_context_switch_request(void) { context_switch_request = 0; }
 
     int get_numof_threads_in_scheduler(void) { return numof_threads_in_scheduler; }
 
@@ -149,7 +148,7 @@ private:
 
     int numof_threads_in_scheduler;
 
-    unsigned int context_switch_request_from_isr;
+    unsigned int context_switch_request;
 
     Thread *scheduled_threads[KERNEL_PID_LAST + 1];
 
@@ -162,6 +161,36 @@ private:
     uint32_t runqueue_bitcache;
 
     scheduler_stat_t scheduler_stats[KERNEL_PID_LAST + 1];
+};
+
+class ThreadFlags
+{
+public:
+    explicit ThreadFlags(ThreadScheduler &scheduler)
+    {
+        thread_scheduler = scheduler;
+    }
+
+    void set(Thread *thread, thread_flags_t mask);
+
+    thread_flags_t clear(thread_flags_t mask);
+
+    thread_flags_t wait_any(thread_flags_t mask);
+
+    thread_flags_t wait_all(thread_flags_t mask);
+
+    thread_flags_t wait_one(thread_flags_t mask);
+
+    int wake(Thread *thread);
+
+private:
+    thread_flags_t clear_atomic(Thread *thread, thread_flags_t mask);
+
+    void wait(thread_flags_t mask, Thread *thread, thread_status_t thread_status, unsigned irqstate);
+
+    void wait_any_blocked(thread_flags_t mask);
+
+    ThreadScheduler thread_scheduler;
 };
 
 } // namespace vc

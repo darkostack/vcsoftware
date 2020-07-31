@@ -246,7 +246,7 @@ int Msg::send_in_isr(kernel_pid_t target_pid)
 
         get<ThreadScheduler>().set_thread_status(target_thread, THREAD_STATUS_PENDING);
 
-        get<ThreadScheduler>().enable_context_switch_request_from_isr();
+        get<ThreadScheduler>().enable_context_switch_request();
 
         return 1;
     }
@@ -322,7 +322,7 @@ int Msg::reply_in_isr(Msg *reply)
 
     get<ThreadScheduler>().set_thread_status(target_thread, THREAD_STATUS_PENDING);
 
-    get<ThreadScheduler>().enable_context_switch_request_from_isr();
+    get<ThreadScheduler>().enable_context_switch_request();
 
     return 1;
 }

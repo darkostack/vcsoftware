@@ -36,12 +36,19 @@ private:
 
     ThreadScheduler thread_scheduler;
 
+    ThreadFlags thread_flags;
+
     bool initialized;
 };
 
 template <> inline ThreadScheduler &Instance::get(void)
 {
     return thread_scheduler;
+}
+
+template <> inline ThreadFlags &Instance::get(void)
+{
+    return thread_flags;
 }
 
 } // namespace vc

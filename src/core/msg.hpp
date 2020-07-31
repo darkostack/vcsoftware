@@ -13,8 +13,9 @@
 namespace vc {
 
 class Thread;
-
 class Instance;
+class MsgBusEntry;
+class MsgBus;
 
 #if !VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
 extern uint64_t instance_raw[];
@@ -77,6 +78,26 @@ private:
 #else
     Instance &get_instance(void) const { return *reinterpret_cast<Instance *>(&instance_raw); }
 #endif
+};
+
+extern uint16_t msg_bus_count;
+
+class MsgBus : public msg_bus_t
+{
+public:
+
+    explicit MsgBus(void)
+    {
+        subs.next = NULL;
+        id = msg_bus_count++;
+    }
+
+private:
+
+};
+
+class MsgBusEntry : public msg_bus_entry_t
+{
 };
 
 } // namespace vc

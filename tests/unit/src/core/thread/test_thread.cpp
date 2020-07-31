@@ -57,7 +57,7 @@ TEST_F(TestThread, single_thread)
 
     EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 1);
     EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(thread->get_pid()), thread);
-    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested());
     EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
     EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
@@ -121,7 +121,7 @@ TEST_F(TestThread, multiple_thread)
     EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 2);
     EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(idle_thread->get_pid()), idle_thread);
     EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(main_thread->get_pid()), main_thread);
-    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested());
     EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
     EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
@@ -188,7 +188,7 @@ TEST_F(TestThread, multiple_thread)
      * triggering the PendSV interrupt and context switch from Isr is not requested */
 
     EXPECT_TRUE(test_helper_is_pendsv_interrupt_triggered());
-    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested());
 
     instance.get<ThreadScheduler>().run();
 
@@ -475,7 +475,7 @@ TEST_F(TestThread, multiple_thread)
 
     EXPECT_FALSE(test_helper_is_pendsv_interrupt_triggered());
 
-    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested());
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -523,7 +523,7 @@ TEST_F(TestThread, multiple_thread)
 
     EXPECT_FALSE(test_helper_is_pendsv_interrupt_triggered());
 
-    EXPECT_TRUE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_TRUE(instance.get<ThreadScheduler>().is_context_switch_requested());
 
     /* Note: because it is in Isr at this point context switch is requested
      * instead of immediatelly yield to "task1" */
@@ -562,7 +562,7 @@ TEST_F(TestThread, multiple_thread)
 
     EXPECT_TRUE(test_helper_is_pendsv_interrupt_triggered());
 
-    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested());
 
     instance.get<ThreadScheduler>().run();
 
@@ -686,7 +686,7 @@ TEST_F(TestThread, multiple_instance_multithreads)
     EXPECT_EQ(instance1.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 2);
     EXPECT_EQ(instance1.get<ThreadScheduler>().get_thread_from_scheduler(1), instance1_thread1);
     EXPECT_EQ(instance1.get<ThreadScheduler>().get_thread_from_scheduler(2), instance1_thread2);
-    EXPECT_FALSE(instance1.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_FALSE(instance1.get<ThreadScheduler>().is_context_switch_requested());
     EXPECT_EQ(instance1.get<ThreadScheduler>().get_current_active_thread(), nullptr);
     EXPECT_EQ(instance1.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
@@ -728,7 +728,7 @@ TEST_F(TestThread, multiple_instance_multithreads)
     EXPECT_EQ(instance2.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 2);
     EXPECT_EQ(instance2.get<ThreadScheduler>().get_thread_from_scheduler(1), instance2_thread1);
     EXPECT_EQ(instance2.get<ThreadScheduler>().get_thread_from_scheduler(2), instance2_thread2);
-    EXPECT_FALSE(instance2.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_FALSE(instance2.get<ThreadScheduler>().is_context_switch_requested());
     EXPECT_EQ(instance2.get<ThreadScheduler>().get_current_active_thread(), nullptr);
     EXPECT_EQ(instance2.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
