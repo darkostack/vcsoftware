@@ -8,6 +8,7 @@
 #include <vcos/instance.h>
 
 #include "core/thread.hpp"
+#include "core/event.hpp"
 
 typedef struct instance
 {
@@ -38,6 +39,8 @@ private:
 
     ThreadFlags thread_flags;
 
+    EventQueue event_queue;
+
     bool initialized;
 };
 
@@ -49,6 +52,11 @@ template <> inline ThreadScheduler &Instance::get(void)
 template <> inline ThreadFlags &Instance::get(void)
 {
     return thread_flags;
+}
+
+template <> inline EventQueue &Instance::get(void)
+{
+    return event_queue;
 }
 
 } // namespace vc

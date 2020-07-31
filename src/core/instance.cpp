@@ -5,15 +5,14 @@
 namespace vc {
 
 #if !VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-
 DEFINE_ALIGNED_VAR(instance_raw, sizeof(Instance), uint64_t);
-
-#endif /* #if !VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
+#endif
 
 Instance::Instance(void)
     : initialized(false)
     , thread_scheduler()
-    , thread_flags(this->thread_scheduler)
+    , thread_flags(this)
+    , event_queue(this)
 {
 }
 
@@ -61,9 +60,18 @@ Instance &Instance::get(void)
 
 #endif /* #if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
 
+#ifndef UNITTEST
+char event_queue_stack[128];
+#endif
+
 void Instance::after_init(void)
 {
     initialized = true;
+
+    /* initialized event queue */
+#ifndef UNITTEST
+    event_queue.init(event_queue_stack, sizeof(event_queue_stack), KERNEL_THREAD_PRIORITY_MAIN);
+#endif
 }
 
 } // namespace vc
