@@ -78,9 +78,11 @@ Event  *EventQueue::wait(void)
     result = reinterpret_cast<Event *>(event_list.left_pop());
     cpu_irq_restore(state);
 
-    if (result == NULL)
+    if (result)
     {
         get<ThreadFlags>().wait_any(THREAD_FLAG_EVENT);
+
+        result->list_node.next = NULL;
     }
 
 #else
@@ -98,9 +100,9 @@ Event  *EventQueue::wait(void)
 
     } while (result == NULL);
 
-#endif
-
     result->list_node.next = NULL;
+
+#endif
 
     return result;
 }
