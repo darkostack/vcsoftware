@@ -2,67 +2,67 @@
 #include "core/code_utils.hpp"
 #include "core/new.hpp"
 
-namespace mt {
+namespace vc {
 
-#if !MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+#if !VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
 
-mtDEFINE_ALIGNED_VAR(gInstanceRaw, sizeof(Instance), uint64_t);
+DEFINE_ALIGNED_VAR(instance_raw, sizeof(Instance), uint64_t);
 
-#endif /* #if !MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
+#endif /* #if !VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
 
 Instance::Instance(void)
-    : mIsInitialized(false)
-    , mThreadScheduler()
+    : initialized(false)
+    , thread_scheduler()
 {
 }
 
-#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+#if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
 
-Instance &Instance::Init(void *aBuffer, size_t *aBufferSize)
+Instance &Instance::init(void *buffer, size_t *size)
 {
     Instance *instance = NULL;
 
-    VerifyOrExit(aBufferSize != NULL);
+    VERIFY_OR_EXIT(size != NULL);
 
-    VerifyOrExit(sizeof(Instance) <= *aBufferSize, *aBufferSize = sizeof(Instance));
+    VERIFY_OR_EXIT(sizeof(Instance) <= *size, *size = sizeof(Instance));
 
-    VerifyOrExit(aBuffer != NULL);
+    VERIFY_OR_EXIT(buffer != NULL);
 
-    instance = new (aBuffer) Instance();
+    instance = new (buffer) Instance();
 
-    instance->AfterInit();
+    instance->after_init();
 
 exit:
     return *instance;
 }
 
-#else /* #if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
+#else /* #if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
 
-Instance &Instance::InitSingle(void)
+Instance &Instance::init_single(void)
 {
-    Instance *instance = &Get();
+    Instance *instance = &get();
 
-    VerifyOrExit(instance->mIsInitialized == false);
+    VERIFY_OR_EXIT(instance->is_initialized == false);
 
-    instance = new (&gInstanceRaw) Instance();
+    instance = new (&instance_raw) Instance();
 
-    instance->AfterInit();
+    instance->after_init();
+
 exit:
     return *instance;
 }
 
-Instance &Instance::Get(void)
+Instance &Instance::get(void)
 {
-    void *instance = &gInstanceRaw;
-
+    void *instance = &instance_raw;
     return *static_cast<Instance *>(instance);
 }
 
-#endif /* #if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
+#endif /* #if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
 
-void Instance::AfterInit(void)
+void Instance::after_init(void)
 {
-    mIsInitialized = true;
+    initialized = true;
 }
 
-} // namespace mt
+} // namespace vc

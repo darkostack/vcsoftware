@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 
-extern void mtAssertFailure(const char *aFile, unsigned aLine);
+extern void assert_failure(const char *file, unsigned line);
 
-#define assert(aCond) ((aCond) ? (void)0 : mtAssertFailure(__FILE__, __LINE__))
+#define assert(cond) ((cond) ? (void)0 : assert_failure(__FILE__, __LINE__))
 
 #ifdef __cplusplus
 }

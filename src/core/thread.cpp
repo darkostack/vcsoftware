@@ -4,45 +4,44 @@
 #include "core/thread.hpp"
 #include "core/code_utils.hpp"
 
-namespace mt {
+namespace vc {
 
-Thread *Thread::Init(Instance &aInstance, char *aStack, int aStackSize,
-                     char aPriority, int aFlags, mtThreadHandlerFunc aHandlerFunc,
-                     void *aArg, const char *aName)
+Thread *Thread::init(Instance &instances, char *stack, int stack_size, char priority, int flags,
+                     thread_handler_func_t handler_func, void *arg, const char *name)
 {
-    if (aPriority >= MTOS_CONFIG_THREAD_PRIORITY_LEVELS) return NULL;
+    if (priority >= VCOS_CONFIG_THREAD_PRIORITY_LEVELS) return NULL;
 
-    int totalStackSize = aStackSize;
+    int total_stack_size = stack_size;
 
     /* aligned the stack on 16/32 bit boundary */
-    uintptr_t misalignment = reinterpret_cast<uintptr_t>(aStack) % 8;
+    uintptr_t misalignment = reinterpret_cast<uintptr_t>(stack) % 8;
 
     if (misalignment)
     {
         misalignment = 8 - misalignment;
-        aStack += misalignment;
-        aStackSize -= misalignment;
+        stack += misalignment;
+        stack_size -= misalignment;
     }
 
     /* make room for the Thread */
-    aStackSize -= sizeof(Thread);
+    stack_size -= sizeof(Thread);
 
     /* round down the stacksize to multiple of Thread aligments (usually 16/32 bit) */
-    aStackSize -= aStackSize % 8;
+    stack_size -= stack_size % 8;
 
-    if (aStackSize < 0)
+    if (stack_size < 0)
     {
         // TODO: warning: stack size is to small
     }
 
     /* allocate thread control block (tcb) at the top of our stackspace */
-    Thread *tcb = (Thread *)(aStack + aStackSize);
+    Thread *tcb = (Thread *)(stack + stack_size);
 
-    if (aFlags & THREAD_FLAGS_CREATE_STACKMARKER)
+    if (flags & THREAD_FLAGS_CREATE_STACKMARKER)
     {
         /* assign each int of the stack the value of it's address, for test purposes */
-        uintptr_t *stackmax = reinterpret_cast<uintptr_t *>(aStack + aStackSize);
-        uintptr_t *stackp = reinterpret_cast<uintptr_t *>(aStack);
+        uintptr_t *stackmax = reinterpret_cast<uintptr_t *>(stack + stack_size);
+        uintptr_t *stackp = reinterpret_cast<uintptr_t *>(stack);
 
         while (stackp < stackmax)
         {
@@ -53,23 +52,23 @@ Thread *Thread::Init(Instance &aInstance, char *aStack, int aStackSize,
     else
     {
         /* create stack guard */
-        *(uintptr_t *)aStack = reinterpret_cast<uintptr_t>(aStack);
+        *(uintptr_t *)stack = reinterpret_cast<uintptr_t>(stack);
     }
 
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
     /* initialize instances for this thread */
-#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-    tcb->mInstance = static_cast<void *>(&aInstance);
+#if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    tcb->instance = static_cast<void *>(&instances);
 #else
-    (void)aInstance;
+    (void)instances;
 #endif
 
-    mtKernelPid pid = KERNEL_PID_UNDEF;
+    kernel_pid_t pid = KERNEL_PID_UNDEF;
 
-    for (mtKernelPid i = KERNEL_PID_FIRST; i <= KERNEL_PID_LAST; ++i)
+    for (kernel_pid_t i = KERNEL_PID_FIRST; i <= KERNEL_PID_LAST; ++i)
     {
-        if (tcb->Get<ThreadScheduler>().GetThreadFromScheduler(i) == NULL)
+        if (tcb->get<ThreadScheduler>().get_thread_from_scheduler(i) == NULL)
         {
             pid = i;
             break;
@@ -78,236 +77,233 @@ Thread *Thread::Init(Instance &aInstance, char *aStack, int aStackSize,
 
     if (pid == KERNEL_PID_UNDEF)
     {
-        mtCpuIrqRestore(state);
+        cpu_irq_restore(state);
         return NULL;
     }
 
-    tcb->Get<ThreadScheduler>().SetThreadToScheduler(tcb, pid);
+    tcb->get<ThreadScheduler>().set_thread_to_scheduler(tcb, pid);
 
-    tcb->SetPid(pid);
+    tcb->set_pid(pid);
 
-    tcb->StackInit(aHandlerFunc, aArg, aStack, aStackSize);
+    tcb->stack_init(handler_func, arg, stack, stack_size);
 
-    tcb->SetStackStart(aStack);
+    tcb->set_stack_start(stack);
 
-    tcb->SetStackSize(totalStackSize);
+    tcb->set_stack_size(total_stack_size);
 
-    tcb->SetName(aName);
+    tcb->set_name(name);
 
-    tcb->SetPriority(aPriority);
+    tcb->set_priority(priority);
 
-    tcb->SetStatus(THREAD_STATUS_STOPPED);
+    tcb->set_status(THREAD_STATUS_STOPPED);
 
-    tcb->InitRunqueueEntry();
+    tcb->init_runqueue_entry();
 
-    tcb->InitMsg();
+    tcb->init_msg();
 
-    tcb->Get<ThreadScheduler>().IncrementNumOfThreadsInScheduler();
+    tcb->get<ThreadScheduler>().increment_numof_threads_in_scheduler();
 
-    if (aFlags & THREAD_FLAGS_CREATE_SLEEPING)
+    if (flags & THREAD_FLAGS_CREATE_SLEEPING)
     {
-        tcb->Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(tcb, THREAD_STATUS_SLEEPING);
+        tcb->get<ThreadScheduler>().set_thread_status(tcb, THREAD_STATUS_SLEEPING);
     }
     else
     {
-        tcb->Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(tcb, THREAD_STATUS_PENDING);
+        tcb->get<ThreadScheduler>().set_thread_status(tcb, THREAD_STATUS_PENDING);
 
-        if (!(aFlags & THREAD_FLAGS_CREATE_WOUT_YIELD))
+        if (!(flags & THREAD_FLAGS_CREATE_WOUT_YIELD))
         {
-            mtCpuIrqRestore(state);
+            cpu_irq_restore(state);
 
-            tcb->Get<ThreadScheduler>().ContextSwitch(aPriority);
+            tcb->get<ThreadScheduler>().context_switch(priority);
 
             return tcb;
         }
     }
 
-    mtCpuIrqRestore(state);
+    cpu_irq_restore(state);
 
     return tcb;
 }
 
-void Thread::StackInit(mtThreadHandlerFunc aFunction, void *aArg, void *aStackStart, int aStackSize)
+void Thread::stack_init(thread_handler_func_t func, void *arg, void *stack_start, int stack_size)
 {
-    this->SetStackPointer(mtThreadArchStackInit(aFunction, aArg, aStackStart, aStackSize));
+    set_stack_pointer(thread_arch_stack_init(func, arg, stack_start, stack_size));
 }
 
-void Thread::AddToList(List *aList)
+void Thread::add_to_list(List *list)
 {
-    assert(GetStatus() < THREAD_STATUS_RUNNING);
+    assert(get_status() < THREAD_STATUS_RUNNING);
 
-    uint8_t myPriority = GetPriority();
+    uint8_t my_priority = get_priority();
 
-    List *myNode = static_cast<List *>(GetRunqueueEntry());
+    List *my_node = static_cast<List *>(get_runqueue_entry());
 
-    while (aList->mNext)
+    while (list->next)
     {
-        Thread *threadOnList = Thread::GetThreadPointerFromItsListMember(static_cast<List *>(aList->mNext));
+        Thread *thread_on_list = Thread::get_thread_pointer_from_list_member(static_cast<List *>(list->next));
 
-        if (threadOnList->GetPriority() > myPriority)
+        if (thread_on_list->get_priority() > my_priority)
         {
             break;
         }
 
-        aList = static_cast<List *>(aList->mNext);
+        list = static_cast<List *>(list->next);
     }
 
-    myNode->mNext = aList->mNext;
+    my_node->next = list->next;
 
-    aList->mNext = myNode;
+    list->next = my_node;
 }
 
-Thread *Thread::GetThreadPointerFromItsListMember(List *aList)
+Thread *Thread::get_thread_pointer_from_list_member(List *list)
 {
-    mtListNode *list = static_cast<mtListNode *>(aList);
-
-    mtThread *thread = mtCONTAINER_OF(list, mtThread, mRunqueueEntry);
-
+    list_node_t *node = static_cast<list_node_t *>(list);
+    thread_t *thread = CONTAINER_OF(node, thread_t, runqueue_entry);
     return static_cast<Thread *>(thread);
 }
 
-void Thread::InitMsgQueue(Msg *aArray, int aNum)
+void Thread::init_msg_queue(Msg *msg, int num)
 {
-    mMsgArray = aArray;
-
-    (static_cast<Cib *>(&mMsgQueue))->Init(aNum);
+    msg_array = msg;
+    (static_cast<Cib *>(&msg_queue))->init(num);
 }
 
-int Thread::HasMsgQueue(void)
+int Thread::has_msg_queue(void)
 {
-    return mMsgArray != NULL;
+    return msg_array != NULL;
 }
 
-int Thread::GetNumOfMsgInQueue(void)
+int Thread::get_numof_msg_in_queue(void)
 {
-    int queuedMsg = -1;
+    int queued_msg = -1;
 
-    if (HasMsgQueue())
+    if (has_msg_queue())
     {
-        queuedMsg = (static_cast<Cib *>(&mMsgQueue))->Avail();
+        queued_msg = (static_cast<Cib *>(&msg_queue))->avail();
     }
 
-    return queuedMsg;
+    return queued_msg;
 }
 
-int Thread::IsPidValid(mtKernelPid aPid)
+int Thread::is_pid_valid(kernel_pid_t pid)
 {
-    return ((KERNEL_PID_FIRST <= aPid) && (aPid <= KERNEL_PID_LAST));
+    return ((KERNEL_PID_FIRST <= pid) && (pid <= KERNEL_PID_LAST));
 }
 
-int Thread::QueuedMsg(Msg *aMsg)
+int Thread::queued_msg(Msg *msg)
 {
-    int index = (static_cast<Cib *>(&mMsgQueue))->Put();
+    int index = (static_cast<Cib *>(&msg_queue))->put();
 
     if (index < 0)
     {
         return 0;
     }
 
-    Msg *dest = static_cast<Msg *>(&mMsgArray[index]);
+    Msg *dest = static_cast<Msg *>(&msg_array[index]);
 
-    *dest = *aMsg;
+    *dest = *msg;
 
     return 1;
 }
 
-void Thread::InitMsg(void)
+void Thread::init_msg(void)
 {
-    mWaitData = NULL;
-    mMsgWaiters.mNext = NULL;
-    (static_cast<Cib *>(&mMsgQueue))->Init(0);
-    mMsgArray = NULL;
+    wait_data = NULL;
+    msg_waiters.next = NULL;
+    (static_cast<Cib *>(&msg_queue))->init(0);
+    msg_array = NULL;
 }
 
-void ThreadScheduler::Run(void)
+void ThreadScheduler::run(void)
 {
-    DisableContextSwitchRequestFromIsr();
+    disable_context_switch_request_from_isr();
 
-    Thread *currentThread = GetCurrentActiveThread();
+    Thread *current_thread = get_current_active_thread();
 
-    Thread *nextThread = GetNextThreadFromRunqueue();
+    Thread *next_thread = get_next_thread_from_runqueue();
 
-    if (currentThread == nextThread) return;
+    if (current_thread == next_thread) return;
 
-    if (currentThread != NULL)
+    if (current_thread != NULL)
     {
-        if (currentThread->GetStatus() == THREAD_STATUS_RUNNING)
+        if (current_thread->get_status() == THREAD_STATUS_RUNNING)
         {
-            currentThread->SetStatus(THREAD_STATUS_PENDING);
+            current_thread->set_status(THREAD_STATUS_PENDING);
         }
     }
 
-    nextThread->SetStatus(THREAD_STATUS_RUNNING);
+    next_thread->set_status(THREAD_STATUS_RUNNING);
 
-    SetCurrentActiveThread(nextThread);
+    set_current_active_thread(next_thread);
 
-    SetCurrentActivePid(nextThread->GetPid());
+    set_current_active_pid(next_thread->get_pid());
 }
 
-void ThreadScheduler::SetThreadStatusAndUpdateRunqueue(Thread *aThread, mtThreadStatus aStatus)
+void ThreadScheduler::set_thread_status(Thread *thread, thread_status_t status)
 {
-    uint8_t priority = aThread->GetPriority();
+    uint8_t priority = thread->get_priority();
 
-    if (aStatus >= THREAD_STATUS_RUNNING)
+    if (status >= THREAD_STATUS_RUNNING)
     {
-        if (aThread->GetStatus() < THREAD_STATUS_RUNNING)
+        if (thread->get_status() < THREAD_STATUS_RUNNING)
         {
-            mtListNode *threadRunqueueEntry = aThread->GetRunqueueEntry();
+            list_node_t *thread_runqueue_entry = thread->get_runqueue_entry();
 
-            mSchedulerRunqueue[priority].RightPush(static_cast<Clist *>(threadRunqueueEntry));
+            scheduler_runqueue[priority].right_push(static_cast<Clist *>(thread_runqueue_entry));
 
-            SetRunqueueBitCache(priority);
+            set_runqueue_bitcache(priority);
         }
     }
     else
     {
-        if (aThread->GetStatus() >= THREAD_STATUS_RUNNING)
+        if (thread->get_status() >= THREAD_STATUS_RUNNING)
         {
-            mSchedulerRunqueue[priority].LeftPop();
+            scheduler_runqueue[priority].left_pop();
 
-            if (mSchedulerRunqueue[priority].mNext == NULL)
+            if (scheduler_runqueue[priority].next == NULL)
             {
-                ResetRunqueueBitCache(priority);
+                reset_runqueue_bitcache(priority);
             }
         }
     }
 
-    aThread->SetStatus(aStatus);
+    thread->set_status(status);
 }
 
-void ThreadScheduler::ContextSwitch(uint8_t aPriorityToSwitch)
+void ThreadScheduler::context_switch(uint8_t priority_to_switch)
 {
-    Thread *currentThread = GetCurrentActiveThread();
+    Thread *current_thread = get_current_active_thread();
 
-    uint8_t currentPriority = currentThread->GetPriority();
+    uint8_t current_priority = current_thread->get_priority();
 
-    int isInRunqueue = (currentThread->GetStatus() >= THREAD_STATUS_RUNNING);
+    int is_in_runqueue = (current_thread->get_status() >= THREAD_STATUS_RUNNING);
 
     /* Note: the lowest priority number is the highest priority thread */
 
-    if (!isInRunqueue || (currentPriority > aPriorityToSwitch))
+    if (!is_in_runqueue || (current_priority > priority_to_switch))
     {
-        if (mtCpuIsInIsr())
+        if (cpu_is_in_isr())
         {
-            EnableContextSwitchRequestFromIsr();
+            enable_context_switch_request_from_isr();
         }
         else
         {
-            YieldHigherPriorityThread();
+            yield_higher_priority_thread();
         }
     }
 }
 
-void ThreadScheduler::YieldHigherPriorityThread(void)
+void ThreadScheduler::yield_higher_priority_thread(void)
 {
-    mtCpuTriggerPendSVInterrupt();
+    cpu_trigger_pendsv_interrupt();
 }
 
-uint8_t ThreadScheduler::GetLSBIndexFromRunqueue(void)
+uint8_t ThreadScheduler::get_lsb_index_from_runqueue(void)
 {
     uint8_t index = 0;
 
-    uint32_t queue = GetRunqueueBitCache();
+    uint32_t queue = get_runqueue_bitcache();
 
     /* [IMPORTANT]: this functions assume there will be at least 1 thread on the queue, (idle) thread */
 
@@ -320,50 +316,50 @@ uint8_t ThreadScheduler::GetLSBIndexFromRunqueue(void)
     return index;
 }
 
-Thread *ThreadScheduler::GetNextThreadFromRunqueue(void)
+Thread *ThreadScheduler::get_next_thread_from_runqueue(void)
 {
-    uint8_t threadIdx = GetLSBIndexFromRunqueue();
+    uint8_t thread_idx = get_lsb_index_from_runqueue();
 
-    mtListNode *threadPtrInQueue = static_cast<mtListNode *>((mSchedulerRunqueue[threadIdx].mNext)->mNext);
+    list_node_t *thread_ptr_in_queue = static_cast<list_node_t *>((scheduler_runqueue[thread_idx].next)->next);
 
-    mtThread *thread = mtCONTAINER_OF(threadPtrInQueue, mtThread, mRunqueueEntry);
+    thread_t *thread = CONTAINER_OF(thread_ptr_in_queue, thread_t, runqueue_entry);
 
     return static_cast<Thread *>(thread);
 }
 
-void ThreadScheduler::SleepingCurrentThread(void)
+void ThreadScheduler::sleeping_current_thread(void)
 {
-    if (mtCpuIsInIsr())
+    if (cpu_is_in_isr())
     {
         return;
     }
 
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    SetThreadStatusAndUpdateRunqueue(GetCurrentActiveThread(), THREAD_STATUS_SLEEPING);
+    set_thread_status(get_current_active_thread(), THREAD_STATUS_SLEEPING);
 
-    mtCpuIrqRestore(state);
+    cpu_irq_restore(state);
 
-    YieldHigherPriorityThread();
+    yield_higher_priority_thread();
 }
 
-int ThreadScheduler::WakeupThread(mtKernelPid aPid)
+int ThreadScheduler::wakeup_thread(kernel_pid_t pid)
 {
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    Thread *threadToWakeup = GetThreadFromScheduler(aPid);
+    Thread *thread_to_wakeup = get_thread_from_scheduler(pid);
 
-    if (!threadToWakeup)
+    if (!thread_to_wakeup)
     {
         //TODO: Warning thread does not exist!
     }
-    else if (threadToWakeup->GetStatus() == THREAD_STATUS_SLEEPING)
+    else if (thread_to_wakeup->get_status() == THREAD_STATUS_SLEEPING)
     {
-        SetThreadStatusAndUpdateRunqueue(threadToWakeup, THREAD_STATUS_RUNNING);
+        set_thread_status(thread_to_wakeup, THREAD_STATUS_RUNNING);
 
-        mtCpuIrqRestore(state);
+        cpu_irq_restore(state);
 
-        ContextSwitch(threadToWakeup->GetPriority());
+        context_switch(thread_to_wakeup->get_priority());
 
         return 1;
     }
@@ -372,32 +368,32 @@ int ThreadScheduler::WakeupThread(mtKernelPid aPid)
         // TODO: Warning thread is not sleeping!
     }
 
-    mtCpuIrqRestore(state);
+    cpu_irq_restore(state);
 
     return (int)THREAD_STATUS_NOT_FOUND;
 }
 
-void ThreadScheduler::Yield(void)
+void ThreadScheduler::yield(void)
 {
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    Thread *currentThread = GetCurrentActiveThread();
+    Thread *current_thread = get_current_active_thread();
 
-    if (currentThread->GetStatus() >= THREAD_STATUS_RUNNING)
+    if (current_thread->get_status() >= THREAD_STATUS_RUNNING)
     {
-        mSchedulerRunqueue[currentThread->GetPriority()].LeftPopRightPush();
+        scheduler_runqueue[current_thread->get_priority()].left_pop_right_push();
     }
 
-    mtCpuIrqRestore(state);
+    cpu_irq_restore(state);
 
-    YieldHigherPriorityThread();
+    yield_higher_priority_thread();
 }
 
-const char *ThreadScheduler::ThreadStatusToString(mtThreadStatus aStatus)
+const char *ThreadScheduler::thread_status_to_string(thread_status_t status)
 {
     const char *retval;
 
-    switch (aStatus)
+    switch (status)
     {
     case THREAD_STATUS_RUNNING:
         retval = "running";
@@ -439,24 +435,24 @@ const char *ThreadScheduler::ThreadStatusToString(mtThreadStatus aStatus)
     return retval;
 }
 
-extern "C" void mtCpuEndOfIsr(mtInstance *aInstance)
+extern "C" void cpu_end_of_isr(instance *instances)
 {
-    Instance &instance = *static_cast<Instance *>(aInstance);
+    Instance &instance = *static_cast<Instance *>(instances);
 
-    if (instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr())
+    if (instance.get<ThreadScheduler>().is_context_switch_requested_from_isr())
     {
-        ThreadScheduler::YieldHigherPriorityThread();
+        ThreadScheduler::yield_higher_priority_thread();
     }
 }
 
-template <> inline Instance &Thread::Get(void) const
+template <> inline Instance &Thread::get(void) const
 {
-    return GetInstance();
+    return get_instance();
 }
 
-template <typename Type> inline Type &Thread::Get(void) const
+template <typename Type> inline Type &Thread::get(void) const
 {
-    return GetInstance().Get<Type>();
+    return get_instance().get<Type>();
 }
 
-} // namespace mt
+} // namespace vc

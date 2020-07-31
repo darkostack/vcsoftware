@@ -4,46 +4,46 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <mtos/config.h>
-#include <mtos/instance.h>
+#include <vcos/config.h>
+#include <vcos/instance.h>
 
 #include "core/thread.hpp"
 
-typedef struct mtInstance
+typedef struct instance
 {
-} mtInstance;
+} instance_t;
 
-namespace mt {
+namespace vc {
 
-class Instance : public mtInstance
+class Instance : public instance_t
 {
 public:
-#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-    static Instance &Init(void *aBuffer, size_t *aBufferSize);
+#if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    static Instance &init(void *buffer, size_t *size);
 #else
-    static Instance &InitSingle(void);
-    static Instance &Get(void);
+    static Instance &init_single(void);
+    static Instance &get(void);
 #endif
 
-    bool IsInitialized(void) const { return mIsInitialized; }
+    bool is_initialized(void) const { return initialized; }
 
-    template <typename Type> inline Type &Get(void);
+    template <typename Type> inline Type &get(void);
 
 private:
     explicit Instance(void);
 
-    void AfterInit(void);
+    void after_init(void);
 
-    ThreadScheduler mThreadScheduler;
+    ThreadScheduler thread_scheduler;
 
-    bool mIsInitialized;
+    bool initialized;
 };
 
-template <> inline ThreadScheduler &Instance::Get(void)
+template <> inline ThreadScheduler &Instance::get(void)
 {
-    return mThreadScheduler;
+    return thread_scheduler;
 }
 
-} // namespace mt
+} // namespace vc
 
 #endif /* CORE_INSTANCE_HPP */

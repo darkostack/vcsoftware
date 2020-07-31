@@ -4,81 +4,81 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include <mtos/config.h>
-#include <mtos/kernel.h>
-#include <mtos/msg.h>
+#include <vcos/config.h>
+#include <vcos/kernel.h>
+#include <vcos/msg.h>
 
 #include "core/list.hpp"
 
-namespace mt {
+namespace vc {
 
 class Thread;
 
 class Instance;
 
-#if !MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-extern uint64_t gInstanceRaw[];
+#if !VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+extern uint64_t instance_raw[];
 #endif
 
-class Msg : public mtMsg
+class Msg : public msg_t
 {
 public:
     Msg(void) {}
 
-    explicit Msg(Instance &aInstance)
+    explicit Msg(Instance &instance)
     {
-        Init(aInstance);
+        init(instance);
     }
 
-    void Init(Instance &aInstance)
+    void init(Instance &instances)
     {
-#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-        mInstance = static_cast<void *>(&aInstance);
+#if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+        instance = static_cast<void *>(&instances);
 #else
-        (void)aInstance;
+        (void)instances;
 #endif
-        mSenderPid = KERNEL_PID_UNDEF;
-        mType = 0;
-        mContent.mPtr = NULL;
-        mContent.mValue = 0;
+        sender_pid = KERNEL_PID_UNDEF;
+        type = 0;
+        content.ptr = NULL;
+        content.value = 0;
     }
 
-    int QueuedMsg(Thread *aTarget);
+    int queued_msg(Thread *target);
 
-    int Send(mtKernelPid aTargetPid);
+    int send(kernel_pid_t target_pid);
 
-    int TrySend(mtKernelPid aTargetPid);
+    int try_send(kernel_pid_t target_pid);
 
-    int SendToSelfQueue(void);
+    int send_to_self_queue(void);
 
-    int SendInIsr(mtKernelPid aTargetPid);
+    int send_in_isr(kernel_pid_t target_pid);
 
-    int IsSentByIsr(void) { return mSenderPid == KERNEL_PID_ISR; }
+    int is_sent_by_isr(void) { return sender_pid == KERNEL_PID_ISR; }
 
-    int Receive(void) { return Receive(1); }
+    int receive(void) { return receive(1); }
 
-    int TryReceive(void) { return Receive(0); }
+    int try_receive(void) { return receive(0); }
 
-    int SendReceive(Msg *aReply, mtKernelPid aTargetPid);
+    int send_receive(Msg *reply, kernel_pid_t target_pid);
 
-    int Reply(Msg *aReply);
+    int reply(Msg *reply);
 
-    int ReplyInIsr(Msg *aReply);
+    int reply_in_isr(Msg *reply);
 
 private:
-    int Send(mtKernelPid aTargetPid, int aBlocking, unsigned aState);
+    int send(kernel_pid_t target_pid, int blocking, unsigned state);
 
-    int Receive(int aBlocking);
+    int receive(int blocking);
 
-    template <typename Type> inline Type &Get(void) const; 
+    template <typename Type> inline Type &get(void) const;
 
-#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-    Instance &GetInstance(void) const { return *static_cast<Instance *>(mInstance); }
+#if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    Instance &get_instance(void) const { return *static_cast<Instance *>(instance); }
 #else
-    Instance &GetInstance(void) const { return *reinterpret_cast<Instance *>(&gInstanceRaw); }
+    Instance &get_instance(void) const { return *reinterpret_cast<Instance *>(&instance_raw); }
 #endif
 };
 
-} // namespace mt
+} // namespace vc
 
 #endif /* CORE_MSG_HPP */

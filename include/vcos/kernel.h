@@ -1,9 +1,9 @@
-#ifndef MTOS_KERNEL_H
-#define MTOS_KERNEL_H
+#ifndef VCOS_KERNEL_H
+#define VCOS_KERNEL_H
 
 #include <stdint.h>
 
-#include <mtos/config.h>
+#include <vcos/config.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,19 +17,19 @@ extern "C" {
 
 #define KERNEL_PID_ISR (KERNEL_PID_LAST - 1)
 
-#define KERNEL_THREAD_PRIORITY_LEVELS MTOS_CONFIG_THREAD_PRIORITY_LEVELS
+#define KERNEL_THREAD_PRIORITY_LEVELS VCOS_CONFIG_THREAD_PRIORITY_LEVELS
 #define KERNEL_THREAD_PRIORITY_MIN (KERNEL_THREAD_PRIORITY_LEVELS - 1)
 #define KERNEL_THREAD_PRIORITY_IDLE KERNEL_THREAD_PRIORITY_MIN
 #define KERNEL_THREAD_PRIORITY_MAIN (KERNEL_THREAD_PRIORITY_MIN - (KERNEL_THREAD_PRIORITY_LEVELS / 2))
 
 #define PRIkernel_pid PRIi16
 
-typedef int16_t mtKernelPid;
+typedef int16_t kernel_pid_t;
 
-void mtKernelInit(void);
+void kernel_init(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MTOS_KERNEL_H */
+#endif /* VCOS_KERNEL_H */

@@ -3,51 +3,51 @@
 
 #include <stdbool.h>
 
-#define mtARRAY_LENGTH(aArray) (sizeof(aArray) / sizeof(aArray[0]))
+#define ARRAY_LENGTH(array) (sizeof(array) / sizeof(array[0]))
 
-#define mtARRAY_END(aArray) (&aArray[mtARRAY_LENGTH(aArray)])
+#define ARRAY_END(array) (&array[ARRAY_LENGTH(array)])
 
-#define mtALIGNED_VAR_SIZE(aSize, aAlignType) (((aSize) + (sizeof(aAlignType) - 1)) / sizeof(aAlignType))
+#define ALIGNED_VAR_SIZE(size, align_type) (((size) + (sizeof(align_type) - 1)) / sizeof(align_type))
 
-#define mtDEFINE_ALIGNED_VAR(aName, aSize, aAlignType) \
-    aAlignType aName[(((aSize) + (sizeof(aAlignType) - 1)) / sizeof(aAlignType))]
+#define DEFINE_ALIGNED_VAR(name, size, align_type) \
+    align_type name[(((size) + (sizeof(align_type) - 1)) / sizeof(align_type))]
 
-#define mtCONTAINER_OF(ptr, type, member) ({                  \
+#define CONTAINER_OF(ptr, type, member) ({                    \
         const typeof( ((type *)0)->member ) *__mptr = (ptr);  \
         (type *)( (char *)__mptr - offsetof(type,member) );})
 
-#define SuccessOrExit(aStatus) \
-    do                         \
-    {                          \
-        if ((aStatus) != 0)    \
-        {                      \
-            goto exit;         \
-        }                      \
+#define SUCCESS_OR_EXIT(status) \
+    do                          \
+    {                           \
+        if ((status) != 0)      \
+        {                       \
+            goto exit;          \
+        }                       \
     } while (false)
 
-#define VerifyOrExit(aCondition, ...) \
-    do                                \
-    {                                 \
-        if (!(aCondition))            \
-        {                             \
-            __VA_ARGS__;              \
-            goto exit;                \
-        }                             \
+#define VERIFY_OR_EXIT(condition, ...) \
+    do                                 \
+    {                                  \
+        if (!(condition))              \
+        {                              \
+            __VA_ARGS__;               \
+            goto exit;                 \
+        }                              \
     } while (false)
 
-#define ExitNow(...) \
-    do               \
-    {                \
-        __VA_ARGS__; \
-        goto exit;   \
+#define EXIT_NOW(...) \
+    do                \
+    {                 \
+        __VA_ARGS__;  \
+        goto exit;    \
     } while (false)
 
-#define IgnoreReturnValue(aStatement) \
-    do                                \
-    {                                 \
-        if (aStatement)               \
-        {                             \
-        }                             \
+#define IGNORE_RETURN_VALUE(statement) \
+    do                                 \
+    {                                  \
+        if (statement)                 \
+        {                              \
+        }                              \
     } while (false)
 
 #endif /* CORE_CODE_UTILS_HPP */

@@ -2,126 +2,125 @@
 #include "core/mutex.hpp"
 #include "core/thread.hpp"
 
-namespace mt {
+namespace vc {
 
-int Mutex::SetLock(int aBlocking)
+int Mutex::set_lock(int blocking)
 {
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    if (mQueue.mNext == NULL)
+    if (queue.next == NULL)
     {
         /* mutex was unlocked */
-        mQueue.mNext = MUTEX_LOCKED;
+        queue.next = MUTEX_LOCKED;
 
-        mtCpuIrqRestore(state);
+        cpu_irq_restore(state);
 
         return 1;
     }
-    else if (aBlocking)
+    else if (blocking)
     {
-        Thread *currentThread = Get<ThreadScheduler>().GetCurrentActiveThread();
+        Thread *current_thread = get<ThreadScheduler>().get_current_active_thread();
 
-        Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(currentThread, THREAD_STATUS_MUTEX_BLOCKED);
+        get<ThreadScheduler>().set_thread_status(current_thread, THREAD_STATUS_MUTEX_BLOCKED);
 
-        if (mQueue.mNext == MUTEX_LOCKED)
+        if (queue.next == MUTEX_LOCKED)
         {
-            mQueue.mNext = currentThread->GetRunqueueEntry();
-            mQueue.mNext->mNext = NULL;
+            queue.next = current_thread->get_runqueue_entry();
+            queue.next->next = NULL;
         }
         else
         {
-            currentThread->AddToList(static_cast<List *>(&mQueue));
+            current_thread->add_to_list(static_cast<List *>(&queue));
         }
 
-        mtCpuIrqRestore(state);
+        cpu_irq_restore(state);
 
-        ThreadScheduler::YieldHigherPriorityThread();
+        ThreadScheduler::yield_higher_priority_thread();
 
         return 1;
     }
     else
     {
-        mtCpuIrqRestore(state);
-
+        cpu_irq_restore(state);
         return 0;
     }
 }
 
-void Mutex::Unlock(void)
+void Mutex::unlock(void)
 {
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    if (mQueue.mNext == NULL)
+    if (queue.next == NULL)
     {
         /* mutex was unlocked */
-        mtCpuIrqRestore(state);
+        cpu_irq_restore(state);
         return;
     }
 
-    if (mQueue.mNext == MUTEX_LOCKED)
+    if (queue.next == MUTEX_LOCKED)
     {
-        mQueue.mNext = NULL;
+        queue.next = NULL;
         /* mutex was locked but no thread was waiting for it */
-        mtCpuIrqRestore(state);
+        cpu_irq_restore(state);
         return;
     }
 
-    List *next = (static_cast<List *>(&mQueue))->RemoveHead();
+    List *next = (static_cast<List *>(&queue))->remove_head();
 
-    Thread *thread = Thread::GetThreadPointerFromItsListMember(next);
+    Thread *thread = Thread::get_thread_pointer_from_list_member(next);
 
-    Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(thread, THREAD_STATUS_PENDING);
+    get<ThreadScheduler>().set_thread_status(thread, THREAD_STATUS_PENDING);
 
-    if (!mQueue.mNext)
+    if (!queue.next)
     {
-        mQueue.mNext = MUTEX_LOCKED;
+        queue.next = MUTEX_LOCKED;
     }
 
-    uint8_t threadPriority = thread->GetPriority();
+    uint8_t thread_priority = thread->get_priority();
 
-    mtCpuIrqRestore(state);
+    cpu_irq_restore(state);
 
-    Get<ThreadScheduler>().ContextSwitch(threadPriority);
+    get<ThreadScheduler>().context_switch(thread_priority);
 }
 
-void Mutex::UnlockAndSleepingCurrentThread(void)
+void Mutex::unlock_and_sleeping_current_thread(void)
 {
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    if (mQueue.mNext)
+    if (queue.next)
     {
-        if (mQueue.mNext == MUTEX_LOCKED)
+        if (queue.next == MUTEX_LOCKED)
         {
-            mQueue.mNext = NULL;
+            queue.next = NULL;
         }
         else
         {
-            List *next = (static_cast<List *>(&mQueue))->RemoveHead();
+            List *next = (static_cast<List *>(&queue))->remove_head();
 
-            Thread *thread = Thread::GetThreadPointerFromItsListMember(next);
+            Thread *thread = Thread::get_thread_pointer_from_list_member(next);
 
-            Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(thread, THREAD_STATUS_PENDING);
+            get<ThreadScheduler>().set_thread_status(thread, THREAD_STATUS_PENDING);
 
-            if (!mQueue.mNext)
+            if (!queue.next)
             {
-                mQueue.mNext = MUTEX_LOCKED;
+                queue.next = MUTEX_LOCKED;
             }
         }
     }
 
-    mtCpuIrqRestore(state);
+    cpu_irq_restore(state);
 
-    Get<ThreadScheduler>().SleepingCurrentThread();
+    get<ThreadScheduler>().sleeping_current_thread();
 }
 
-template <> inline Instance &Mutex::Get(void) const
+template <> inline Instance &Mutex::get(void) const
 {
-    return GetInstance();
+    return get_instance();
 }
 
-template <typename Type> inline Type &Mutex::Get(void) const
+template <typename Type> inline Type &Mutex::get(void) const
 {
-    return GetInstance().Get<Type>();
+    return get_instance().get<Type>();
 }
 
-} // namespace mt
+} // namespace vc

@@ -1,10 +1,10 @@
 #include <assert.h>
 #include <stdio.h>
 
-void mtAssertFailure(const char *aFile, unsigned aLine)
+void assert_failure(const char *file, unsigned line)
 {
-    (void) aFile;
-    (void) aLine;
+    (void) file;
+    (void) line;
 
     return;
 }

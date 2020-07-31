@@ -1,6 +1,6 @@
 #include "test-helper.h"
 
-void mtThreadTaskExit(void)
+void thread_task_exit(void)
 {
 
 }

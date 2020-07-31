@@ -1,49 +1,49 @@
 #include "test-helper.h"
 
-static int isCpuInIsr = 0;
-static int isPendSVInterruptTriggered = 0;
+static int is_cpu_in_isr = 0;
+static int is_pendsv_interrupt_triggered = 0;
 
-void testHelperSetCpuInIsr(void)
+void test_helper_set_cpu_in_isr(void)
 {
-    isCpuInIsr = 1;
+    is_cpu_in_isr = 1;
 }
 
-void testHelperResetCpuInIsr(void)
+void test_helper_reset_cpu_in_isr(void)
 {
-    isCpuInIsr = 0;
+    is_cpu_in_isr = 0;
 }
 
-int testHelperIsPendSVInterruptTriggered(void)
+int test_helper_is_pendsv_interrupt_triggered(void)
 {
-    return isPendSVInterruptTriggered;
+    return is_pendsv_interrupt_triggered;
 }
 
-void testHelperResetPendSVTrigger(void)
+void test_helper_reset_pendsv_trigger(void)
 {
-    isPendSVInterruptTriggered = 0; 
+    is_pendsv_interrupt_triggered = 0;
 }
 
-unsigned mtCpuIrqDisable(void)
+unsigned cpu_irq_disable(void)
 {
     return 0;
 }
 
-unsigned mtCpuIrqEnable(void)
+unsigned cpu_irq_enable(void)
 {
     return 0;
 }
 
-void mtCpuIrqRestore(unsigned aState)
+void cpu_irq_restore(unsigned state)
 {
-    (void) aState;
+    (void) state;
 }
 
-int mtCpuIsInIsr(void)
+int cpu_is_in_isr(void)
 {
-    return isCpuInIsr;
+    return is_cpu_in_isr;
 }
 
-void mtCpuTriggerPendSVInterrupt(void)
+void cpu_trigger_pendsv_interrupt(void)
 {
-    isPendSVInterruptTriggered = 1;
+    is_pendsv_interrupt_triggered = 1;
 }

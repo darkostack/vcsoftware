@@ -1,9 +1,9 @@
-#ifndef MTOS_CPU_H
-#define MTOS_CPU_H
+#ifndef VCOS_CPU_H
+#define VCOS_CPU_H
 
 #include <stdint.h>
 
-#include <mtos/instance.h>
+#include <vcos/instance.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,22 +23,22 @@ extern "C" {
  * of asm("bl #-2\n") or 'while (1);', i.e. an infinite loop */
 #define STACK_CANARY_WORD (0xE7FEE7FEu)
 
-unsigned mtCpuIrqDisable(void);
+unsigned cpu_irq_disable(void);
 
-unsigned mtCpuIrqEnable(void);
+unsigned cpu_irq_enable(void);
 
-void mtCpuIrqRestore(unsigned aState);
+void cpu_irq_restore(unsigned state);
 
-int mtCpuIsInIsr(void);
+int cpu_is_in_isr(void);
 
-void mtCpuEndOfIsr(mtInstance *aInstance);
+void cpu_end_of_isr(instance_t *instance);
 
-void mtCpuTriggerPendSVInterrupt(void);
+void cpu_trigger_pendsv_interrupt(void);
 
-void mtCpuSwitchContextExit(void);
+void cpu_switch_context_exit(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MTOS_CPU_H */
+#endif /* VCOS_CPU_H */

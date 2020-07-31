@@ -3,59 +3,59 @@
 
 #include <stddef.h>
 
-#include <mtos/clist.h>
+#include <vcos/clist.h>
 
 #include "core/list.hpp"
 
-namespace mt {
+namespace vc {
 
 class Clist : public List
 {
 public:
-    Clist(void) { mNext = NULL; }
+    Clist(void) { next = NULL; }
 
-    void RightPush(Clist *aNode)
+    void right_push(Clist *node)
     {
-        if (this->mNext)
+        if (this->next)
         {
-            aNode->mNext = this->mNext->mNext;
-            this->mNext->mNext = aNode;
+            node->next = this->next->next;
+            this->next->next = node;
         }
         else
         {
-            aNode->mNext = aNode;
+            node->next = node;
         }
 
-        this->mNext = aNode;
+        this->next = node;
     }
 
-    void LeftPush(Clist *aNode)
+    void left_push(Clist *node)
     {
-        if (this->mNext)
+        if (this->next)
         {
-            aNode->mNext = this->mNext->mNext;
-            this->mNext->mNext = aNode;
+            node->next = this->next->next;
+            this->next->next = node;
         }
         else
         {
-            aNode->mNext = aNode;
-            this->mNext = aNode;
+            node->next = node;
+            this->next = node;
         }
     }
 
-    Clist *LeftPop(void)
+    Clist *left_pop(void)
     {
-        if (this->mNext)
+        if (this->next)
         {
-            Clist *first = static_cast<Clist *>(this->mNext->mNext);
+            Clist *first = static_cast<Clist *>(this->next->next);
 
-            if (this->mNext == first)
+            if (this->next == first)
             {
-                this->mNext = NULL;
+                this->next = NULL;
             }
             else
             {
-                this->mNext->mNext = first->mNext;
+                this->next->next = first->next;
             }
 
             return first;
@@ -66,38 +66,38 @@ public:
         }
     }
 
-    void LeftPopRightPush(void)
+    void left_pop_right_push(void)
     {
-        if (this->mNext)
+        if (this->next)
         {
-            this->mNext = this->mNext->mNext;
+            this->next = this->next->next;
         }
     }
 
-    Clist *LeftPeek(void)
+    Clist *left_peek(void)
     {
-        if (this->mNext)
+        if (this->next)
         {
-            return static_cast<Clist *>(this->mNext->mNext);
+            return static_cast<Clist *>(this->next->next);
         }
 
         return NULL;
     }
 
-    Clist *RightPeek(void) { return static_cast<Clist *>(this->mNext); }
+    Clist *right_peek(void) { return static_cast<Clist *>(this->next); }
 
-    Clist *RightPop(void)
+    Clist *right_pop(void)
     {
-        if (this->mNext)
+        if (this->next)
         {
-            List *last = static_cast<List *>(this->mNext);
+            List *last = static_cast<List *>(this->next);
 
-            while (this->mNext->mNext != last)
+            while (this->next->next != last)
             {
-                this->LeftPopRightPush();
+                this->left_pop_right_push();
             }
 
-            return this->LeftPop();
+            return this->left_pop();
         }
         else
         {
@@ -105,9 +105,9 @@ public:
         }
     }
 
-    Clist *FindBefore(const Clist *aNode)
+    Clist *find_before(const Clist *node)
     {
-        Clist *pos = static_cast<Clist *>(this->mNext);
+        Clist *pos = static_cast<Clist *>(this->next);
 
         if (!pos)
         {
@@ -116,25 +116,25 @@ public:
 
         do
         {
-            pos = static_cast<Clist *>(pos->mNext);
+            pos = static_cast<Clist *>(pos->next);
 
-            if (pos->mNext == aNode)
+            if (pos->next == node)
             {
                 return pos;
             }
 
-        } while (pos != this->mNext);
+        } while (pos != this->next);
 
         return NULL;
     }
 
-    Clist *Find(const Clist *aNode)
+    Clist *find(const Clist *node)
     {
-        Clist *tmp = this->FindBefore(aNode);
+        Clist *tmp = this->find_before(node);
 
         if (tmp)
         {
-            return static_cast<Clist *>(tmp->mNext);
+            return static_cast<Clist *>(tmp->next);
         }
         else
         {
@@ -142,27 +142,27 @@ public:
         }
     }
 
-    Clist *Remove(Clist *aNode)
+    Clist *remove(Clist *node)
     {
-        if (this->mNext)
+        if (this->next)
         {
-            if (this->mNext->mNext == aNode)
+            if (this->next->next == node)
             {
-                return this->LeftPop();
+                return this->left_pop();
             }
             else
             {
-                Clist *tmp = this->FindBefore(aNode);
+                Clist *tmp = this->find_before(node);
 
                 if (tmp)
                 {
-                    tmp->mNext = tmp->mNext->mNext;
+                    tmp->next = tmp->next->next;
 
-                    if (aNode == this->mNext)
+                    if (node == this->next)
                     {
-                        this->mNext = tmp;
+                        this->next = tmp;
                     }
-                    return aNode;
+                    return node;
                 }
             }
         }
@@ -170,24 +170,24 @@ public:
         return NULL;
     }
 
-    size_t Count(void)
+    size_t count(void)
     {
-        Clist *node = static_cast<Clist *>(this->mNext);
+        Clist *node = static_cast<Clist *>(this->next);
         size_t cnt  = 0;
 
         if (node)
         {
             do
             {
-                node = static_cast<Clist *>(node->mNext);
+                node = static_cast<Clist *>(node->next);
                 ++cnt;
-            } while (node != this->mNext);
+            } while (node != this->next);
         }
 
         return cnt;
     }
 };
 
-} // namespace mt
+} // namespace vc
 
 #endif /* CORE_CLIST_HPP */

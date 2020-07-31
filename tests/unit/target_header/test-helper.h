@@ -9,13 +9,13 @@
 extern "C" {
 #endif
 
-void testHelperSetCpuInIsr(void);
+void test_helper_set_cpu_in_isr(void);
 
-void testHelperResetCpuInIsr(void);
+void test_helper_reset_cpu_in_isr(void);
 
-int testHelperIsPendSVInterruptTriggered(void);
+int test_helper_is_pendsv_interrupt_triggered(void);
 
-void testHelperResetPendSVTrigger(void);
+void test_helper_reset_pendsv_trigger(void);
 
 #ifdef __cplusplus
 }

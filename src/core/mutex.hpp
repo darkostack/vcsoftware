@@ -4,59 +4,59 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <mtos/config.h>
-#include <mtos/mutex.h>
+#include <vcos/config.h>
+#include <vcos/mutex.h>
 
 #include "core/list.hpp"
 
-namespace mt {
+namespace vc {
 
 class Instance;
 
-#if !MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-extern uint64_t gInstanceRaw[];
+#if !VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+extern uint64_t instance_raw[];
 #endif
 
-class Mutex : public mtMutex
+class Mutex : public mutex_t
 {
 public:
     Mutex(void) {}
 
-    explicit Mutex(Instance &aInstance)
+    explicit Mutex(Instance &instance)
     {
-        Init(aInstance);
+        init(instance);
     }
 
-    void Init(Instance &aInstance)
+    void init(Instance &instances)
     {
-#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-        mInstance = static_cast<void *>(&aInstance);
+#if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+        instance = static_cast<void *>(&instances);
 #else
-        (void)aInstance;
+        (void)instances;
 #endif
-        mQueue.mNext = NULL;
+        queue.next = NULL;
     }
 
-    int TryLock(void) { return SetLock(0); }
+    int try_lock(void) { return set_lock(0); }
 
-    void Lock(void) { SetLock(1); }
+    void lock(void) { set_lock(1); }
 
-    void Unlock(void);
+    void unlock(void);
 
-    void UnlockAndSleepingCurrentThread(void);
+    void unlock_and_sleeping_current_thread(void);
 
 private:
-    int SetLock(int aBlocking);
+    int set_lock(int blocking);
 
-    template <typename Type> inline Type &Get(void) const; 
+    template <typename Type> inline Type &get(void) const;
 
-#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-    Instance &GetInstance(void) const { return *static_cast<Instance *>(mInstance); }
+#if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    Instance &get_instance(void) const { return *static_cast<Instance *>(instance); }
 #else
-    Instance &GetInstance(void) const { return *reinterpret_cast<Instance *>(&gInstanceRaw); }
+    Instance &get_instance(void) const { return *reinterpret_cast<Instance *>(&instance_raw); }
 #endif
 };
 
-} // namespace mt
+} // namespace vc
 
 #endif /* CORE_MUTEX_HPP */

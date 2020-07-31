@@ -1,88 +1,82 @@
 #ifndef CORE_THREAD_HPP
 #define CORE_THREAD_HPP
 
-#include <mtos/config.h>
-#include <mtos/thread.h>
-#include <mtos/stat.h>
-#include <mtos/cpu.h>
+#include <vcos/config.h>
+#include <vcos/thread.h>
+#include <vcos/stat.h>
+#include <vcos/cpu.h>
 
 #include "core/msg.hpp"
 #include "core/cib.hpp"
 #include "core/clist.hpp"
 
-namespace mt {
+namespace vc {
 
 class ThreadScheduler;
 
 class Instance;
 
-#if !MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-extern uint64_t gInstanceRaw[];
+#if !VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+extern uint64_t instance_raw[];
 #endif
 
-class Thread : public mtThread
+class Thread : public thread_t
 {
 public:
-    static Thread *Init(Instance &aInstance,
-                        char *aStack,
-                        int aStackSize,
-                        char aPriority,
-                        int aFlags,
-                        mtThreadHandlerFunc aHandlerFunc,
-                        void *aArg,
-                        const char *aName);
+    static Thread *init(Instance &instances, char *stack, int stack_size, char priority, int flags,
+                        thread_handler_func_t handler_func, void *arg, const char *name);
 
-    mtKernelPid GetPid(void) { return mPid; }
+    kernel_pid_t get_pid(void) { return pid; }
 
-    void SetPid(mtKernelPid aPid) { mPid = aPid; }
+    void set_pid(kernel_pid_t pids) { pid = pids; }
 
-    mtThreadStatus GetStatus(void) { return mStatus; }
+    thread_status_t get_status(void) { return status; }
 
-    void SetStatus(mtThreadStatus aStatus) { mStatus = aStatus; }
+    void set_status(thread_status_t new_status) { status = new_status; }
 
-    uint8_t GetPriority(void) { return mPriority; }
+    uint8_t get_priority(void) { return priority; }
 
-    void SetPriority(uint8_t aPriority) { mPriority = aPriority; }
+    void set_priority(uint8_t new_priority) { priority = new_priority; }
 
-    mtListNode *GetRunqueueEntry(void) { return &mRunqueueEntry; }
+    list_node_t *get_runqueue_entry(void) { return &runqueue_entry; }
 
-    const char *GetName(void) { return mName; }
+    const char *get_name(void) { return name; }
 
-    void AddToList(List *aList);
+    void add_to_list(List *list);
 
-    static Thread *GetThreadPointerFromItsListMember(List *aList);
+    static Thread *get_thread_pointer_from_list_member(List *list);
 
-    static int IsPidValid(mtKernelPid aPid);
+    static int is_pid_valid(kernel_pid_t pid);
 
-    void InitMsgQueue(Msg *aArg, int aNum);
+    void init_msg_queue(Msg *msg, int num);
 
-    int QueuedMsg(Msg *aMsg);
+    int queued_msg(Msg *msg);
 
-    int GetNumOfMsgInQueue(void);
+    int get_numof_msg_in_queue(void);
 
-    int HasMsgQueue(void);
+    int has_msg_queue(void);
 
 private:
-    void InitRunqueueEntry(void) { mRunqueueEntry.mNext = NULL; }
+    void init_runqueue_entry(void) { runqueue_entry.next = NULL; }
 
-    void InitMsg(void);
+    void init_msg(void);
 
-    void SetStackStart(char *aPtr) { mStackStart = aPtr; }
+    void set_stack_start(char *ptr) { stack_start = ptr; }
 
-    void SetStackSize(int aStackSize) { mStackSize = aStackSize; }
+    void set_stack_size(int size) { stack_size = size; }
 
-    void SetName(const char *aName) { mName = aName; }
+    void set_name(const char *new_name) { name = new_name; }
 
-    void SetStackPointer(char *aPtr) { mStackPointer = aPtr; }
+    void set_stack_pointer(char *ptr) { stack_pointer = ptr; }
 
-    void StackInit(mtThreadHandlerFunc aHandlerFunc, void *aArg, void *aStackStart, int aStackSize);
+    void stack_init(thread_handler_func_t func, void *arg, void *stack_start, int stack_size);
 
-    template <typename Type> inline Type &Get(void) const; 
+    template <typename Type> inline Type &get(void) const;
 
-#if MTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
-    Instance &GetInstance(void) const { return *static_cast<Instance *>(mInstance); }
+#if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
+    Instance &get_instance(void) const { return *static_cast<Instance *>(instance); }
 #else
-    Instance &GetInstance(void) const { return *reinterpret_cast<Instance *>(&gInstanceRaw); }
+    Instance &get_instance(void) const { return *reinterpret_cast<Instance *>(&instance_raw); }
 #endif
 };
 
@@ -90,86 +84,86 @@ class ThreadScheduler : public Clist
 {
 public:
     ThreadScheduler(void)
-        : mNumOfThreadsInScheduler(0)
-        , mContextSwitchRequestFromIsr(0)
-        , mCurrentActiveThread(NULL)
-        , mCurrentActivePid(KERNEL_PID_UNDEF)
-        , mRunqueueBitCache(0)
+        : numof_threads_in_scheduler(0)
+        , context_switch_request_from_isr(0)
+        , current_active_thread(NULL)
+        , current_active_pid(KERNEL_PID_UNDEF)
+        , runqueue_bitcache(0)
     {
-        for (mtKernelPid i = KERNEL_PID_FIRST; i <= KERNEL_PID_LAST; ++i)
+        for (kernel_pid_t i = KERNEL_PID_FIRST; i <= KERNEL_PID_LAST; ++i)
         {
-            mScheduledThreads[i] = NULL;
+            scheduled_threads[i] = NULL;
         }
     }
 
-    Thread *GetThreadFromScheduler(mtKernelPid aPid) { return mScheduledThreads[aPid]; }
+    Thread *get_thread_from_scheduler(kernel_pid_t pid) { return scheduled_threads[pid]; }
 
-    void SetThreadToScheduler(Thread *aThread, mtKernelPid aPid) { mScheduledThreads[aPid] = aThread; }
+    void set_thread_to_scheduler(Thread *thread, kernel_pid_t pid) { scheduled_threads[pid] = thread; }
 
-    unsigned int IsContextSwitchRequestedFromIsr(void) { return mContextSwitchRequestFromIsr; }
+    unsigned int is_context_switch_requested_from_isr(void) { return context_switch_request_from_isr; }
 
-    void EnableContextSwitchRequestFromIsr(void) { mContextSwitchRequestFromIsr = 1; }
+    void enable_context_switch_request_from_isr(void) { context_switch_request_from_isr = 1; }
 
-    void DisableContextSwitchRequestFromIsr(void) { mContextSwitchRequestFromIsr = 0; }
+    void disable_context_switch_request_from_isr(void) { context_switch_request_from_isr = 0; }
 
-    int GetNumOfThreadsInScheduler(void) { return mNumOfThreadsInScheduler; }
+    int get_numof_threads_in_scheduler(void) { return numof_threads_in_scheduler; }
 
-    void IncrementNumOfThreadsInScheduler(void) { mNumOfThreadsInScheduler++; }
+    void increment_numof_threads_in_scheduler(void) { numof_threads_in_scheduler++; }
 
-    void DecrementNumOfThreadsInScheduler(void) { mNumOfThreadsInScheduler--; }
+    void decrement_numof_threads_in_scheduler(void) { numof_threads_in_scheduler--; }
 
-    Thread *GetCurrentActiveThread(void) { return mCurrentActiveThread; }
+    Thread *get_current_active_thread(void) { return current_active_thread; }
 
-    void SetCurrentActiveThread(Thread *aThread) { mCurrentActiveThread = aThread; }
+    void set_current_active_thread(Thread *thread) { current_active_thread = thread; }
 
-    mtKernelPid GetCurrentActivePid(void) { return mCurrentActivePid; }
+    kernel_pid_t get_current_active_pid(void) { return current_active_pid; }
 
-    void SetCurrentActivePid(mtKernelPid aPid) { mCurrentActivePid = aPid; }
+    void set_current_active_pid(kernel_pid_t pid) { current_active_pid = pid; }
 
-    void Run(void);
+    void run(void);
 
-    void SetThreadStatusAndUpdateRunqueue(Thread *aThread, mtThreadStatus aStatus);
+    void set_thread_status(Thread *thread, thread_status_t status);
 
-    void ContextSwitch(uint8_t aPriority);
+    void context_switch(uint8_t priority_to_switch);
 
-    void SleepingCurrentThread(void);
+    void sleeping_current_thread(void);
 
-    int WakeupThread(mtKernelPid aPid);
+    int wakeup_thread(kernel_pid_t pid);
 
-    void Yield(void);
+    void yield(void);
 
-    static void YieldHigherPriorityThread(void);
+    static void yield_higher_priority_thread(void);
 
-    static const char *ThreadStatusToString(mtThreadStatus aStatus);
+    static const char *thread_status_to_string(thread_status_t status);
 
 private:
-    uint32_t GetRunqueueBitCache(void) { return mRunqueueBitCache; }
+    uint32_t get_runqueue_bitcache(void) { return runqueue_bitcache; }
 
-    void SetRunqueueBitCache(uint8_t aPriority) { mRunqueueBitCache |= 1 << aPriority; }
+    void set_runqueue_bitcache(uint8_t priority) { runqueue_bitcache |= 1 << priority; }
 
-    void ResetRunqueueBitCache(uint8_t aPriority) { mRunqueueBitCache &= ~(1 << aPriority); }
+    void reset_runqueue_bitcache(uint8_t priority) { runqueue_bitcache &= ~(1 << priority); }
 
-    Thread *GetNextThreadFromRunqueue(void);
+    Thread *get_next_thread_from_runqueue(void);
 
-    uint8_t GetLSBIndexFromRunqueue(void);
+    uint8_t get_lsb_index_from_runqueue(void);
 
-    int mNumOfThreadsInScheduler;
+    int numof_threads_in_scheduler;
 
-    unsigned int mContextSwitchRequestFromIsr;
+    unsigned int context_switch_request_from_isr;
 
-    Thread *mScheduledThreads[KERNEL_PID_LAST + 1];
+    Thread *scheduled_threads[KERNEL_PID_LAST + 1];
 
-    Thread *mCurrentActiveThread;
+    Thread *current_active_thread;
 
-    mtKernelPid mCurrentActivePid;
+    kernel_pid_t current_active_pid;
 
-    Clist mSchedulerRunqueue[MTOS_CONFIG_THREAD_PRIORITY_LEVELS];
+    Clist scheduler_runqueue[VCOS_CONFIG_THREAD_PRIORITY_LEVELS];
 
-    uint32_t mRunqueueBitCache;
+    uint32_t runqueue_bitcache;
 
-    mtSchedulerStat mThreadsSchedulerStat[KERNEL_PID_LAST + 1];
+    scheduler_stat_t scheduler_stats[KERNEL_PID_LAST + 1];
 };
 
-} // namespace mt
+} // namespace vc
 
 #endif /* CORE_THREAD_HPP */

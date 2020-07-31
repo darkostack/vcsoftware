@@ -1,49 +1,49 @@
 #ifndef CORE_LIST_HPP
 #define CORE_LIST_HPP
 
-#include <mtos/list.h>
+#include <vcos/list.h>
 
-namespace mt {
+namespace vc {
 
-class List : public mtListNode
+class List : public list_node_t
 {
 public:
-    List(void) { mNext = NULL; }
+    List(void) { next = NULL; }
 
-    void Add(List *aNode)
+    void add(List *node)
     {
-        aNode->mNext = this->mNext;
-        this->mNext = aNode;
+        node->next = this->next;
+        this->next = node;
     }
 
-    List *RemoveHead(void)
+    List *remove_head(void)
     {
-        List *head = static_cast<List *>(this->mNext);
+        List *head = static_cast<List *>(this->next);
 
         if (head)
         {
-            this->mNext = head->mNext;
+            this->next = head->next;
         }
 
         return head;
     }
 
-    static List *Remove(List *aList, List *aNode)
+    static List *remove(List *list, List *node)
     {
-        while (aList->mNext)
+        while (list->next)
         {
-            if (aList->mNext == aNode)
+            if (list->next == node)
             {
-                aList->mNext = aNode->mNext;
-                return aNode;
+                list->next = node->next;
+                return node;
             }
-            aList = static_cast<List *>(aList->mNext);
+            list = static_cast<List *>(list->next);
         }
 
-        return static_cast<List *>(aList->mNext);
+        return static_cast<List *>(list->next);
     }
 };
 
-} // namespace mt
+} // namespace vc
 
 #endif /* CORE_LIST_HPP */

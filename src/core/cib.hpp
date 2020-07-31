@@ -3,70 +3,70 @@
 
 #include <assert.h>
 
-#include <mtos/cib.h>
+#include <vcos/cib.h>
 
-namespace mt {
+namespace vc {
 
-class Cib : public mtCib
+class Cib : public cib_t
 {
 public:
-    explicit Cib(unsigned int aSize) { Init(aSize); }
+    explicit Cib(unsigned int size) { init(size); }
 
-    void Init(unsigned int aSize)
+    void init(unsigned int size)
     {
-        assert(!(aSize & (aSize - 1)));
-        mReadCount = 0;
-        mWriteCount = 0;
-        mMask = aSize - 1;
+        assert(!(size & (size - 1)));
+        read_count = 0;
+        write_count = 0;
+        mask = size - 1;
     }
 
-    unsigned int Avail(void) { return mWriteCount - mReadCount; }
+    unsigned int avail(void) { return write_count - read_count; }
 
-    unsigned int GetReadCount(void) { return mReadCount; }
+    unsigned int get_read_count(void) { return read_count; }
 
-    unsigned int GetWriteCount(void) { return mWriteCount; }
+    unsigned int get_write_count(void) { return write_count; }
 
-    unsigned int GetMask(void) { return mMask; }
+    unsigned int get_mask(void) { return mask; }
 
-    int GetUnsafe(void) { return static_cast<int>(mReadCount++ & mMask); }
+    int get_unsafe(void) { return static_cast<int>(read_count++ & mask); }
 
-    int PutUnsafe(void) { return static_cast<int>(mWriteCount++ & mMask); }
+    int put_unsafe(void) { return static_cast<int>(write_count++ & mask); }
 
-    int Full(void) { return Avail() > static_cast<int>(mMask); }
+    int full(void) { return avail() > static_cast<int>(mask); }
 
-    int Get(void)
+    int get(void)
     {
-        if (Avail())
+        if (avail())
         {
-            return static_cast<int>(mReadCount++ & mMask);
+            return static_cast<int>(read_count++ & mask);
         }
 
         return -1;
     }
 
-    int Peek(void)
+    int peek(void)
     {
-        if (Avail())
+        if (avail())
         {
-            return static_cast<int>(mReadCount & mMask);
+            return static_cast<int>(read_count & mask);
         }
 
         return -1;
     }
 
-    int Put(void)
+    int put(void)
     {
-        int avail = Avail();
+        int available = avail();
 
-        if (avail <= static_cast<int>(mMask))
+        if (available <= static_cast<int>(mask))
         {
-            return static_cast<int>(mWriteCount++ & mMask);
+            return static_cast<int>(write_count++ & mask);
         }
 
         return -1;
     }
 };
 
-} // namespace mt
+} // namespace vc
 
 #endif /* CORE_COMMON_CIB_HPP */

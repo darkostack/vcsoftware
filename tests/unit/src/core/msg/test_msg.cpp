@@ -7,97 +7,89 @@
 
 #include "test-helper.h"
 
-using namespace mt;
+using namespace vc;
 
 class TestMsg : public testing::Test
 {
-protected:
-    virtual void SetUp()
-    {
-    }
-
-    virtual void TearDown()
-    {
-    }
 };
 
-TEST_F(TestMsg, singleSendAndReceiveMsg)
+TEST_F(TestMsg, single_send_and_receive_msg)
 {
-    mtDEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
+    DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
 
-    uint32_t size = mtARRAY_LENGTH(buffer);
+    uint32_t size = ARRAY_LENGTH(buffer);
 
-    Instance instance = Instance::Init((void *)buffer, (size_t *)&size);
+    Instance instance = Instance::init((void *)buffer, (size_t *)&size);
 
-    EXPECT_TRUE(instance.IsInitialized());
+    EXPECT_TRUE(instance.is_initialized());
 
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 0);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 0);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
-    char idleStack[128];
+    char idle_stack[128];
 
-    Thread *idleThread = Thread::Init(instance, idleStack, sizeof(idleStack), 15,
+    Thread *idle_thread = Thread::init(instance, idle_stack, sizeof(idle_stack), 15,
                                       THREAD_FLAGS_CREATE_WOUT_YIELD | \
                                       THREAD_FLAGS_CREATE_STACKMARKER,
                                       NULL, NULL, "idle");
 
-    EXPECT_NE(idleThread, nullptr);
+    EXPECT_NE(idle_thread, nullptr);
 
-    EXPECT_EQ(idleThread->GetPid(), 1);
-    EXPECT_EQ(idleThread->GetPriority(), 15);
-    EXPECT_EQ(idleThread->GetName(), "idle");
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_pid(), 1);
+    EXPECT_EQ(idle_thread->get_priority(), 15);
+    EXPECT_EQ(idle_thread->get_name(), "idle");
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
 
-    char mainStack[128];
+    char main_stack[128];
 
-    Thread *mainThread = Thread::Init(instance, mainStack, sizeof(mainStack), 7,
+    Thread *main_thread = Thread::init(instance, main_stack, sizeof(main_stack), 7,
                                       THREAD_FLAGS_CREATE_WOUT_YIELD | \
                                       THREAD_FLAGS_CREATE_STACKMARKER,
                                       NULL, NULL, "main");
 
-    EXPECT_NE(mainThread, nullptr);
+    EXPECT_NE(main_thread, nullptr);
 
-    EXPECT_EQ(mainThread->GetPid(), 2);
-    EXPECT_EQ(mainThread->GetPriority(), 7);
-    EXPECT_EQ(mainThread->GetName(), "main");
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_pid(), 2);
+    EXPECT_EQ(main_thread->get_priority(), 7);
+    EXPECT_EQ(main_thread->get_name(), "main");
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
 
-    char task1Stack[128];
+    char task1_stack[128];
 
-    Thread *task1Thread = Thread::Init(instance, task1Stack, sizeof(task1Stack), 5,
+    Thread *task1_thread = Thread::init(instance, task1_stack, sizeof(task1_stack), 5,
                                        THREAD_FLAGS_CREATE_WOUT_YIELD | \
                                        THREAD_FLAGS_CREATE_STACKMARKER,
                                        NULL, NULL, "task1");
 
-    EXPECT_NE(task1Thread, nullptr);
+    EXPECT_NE(task1_thread, nullptr);
 
-    EXPECT_EQ(task1Thread->GetPid(), 3);
-    EXPECT_EQ(task1Thread->GetPriority(), 5);
-    EXPECT_EQ(task1Thread->GetName(), "task1");
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_pid(), 3);
+    EXPECT_EQ(task1_thread->get_priority(), 5);
+    EXPECT_EQ(task1_thread->get_name(), "task1");
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(idleThread->GetPid()), idleThread);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(mainThread->GetPid()), mainThread);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(task1Thread->GetPid()), task1Thread);
-    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr());
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(idle_thread->get_pid()), idle_thread);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(main_thread->get_pid()), main_thread);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(task1_thread->get_pid()), task1_thread);
+    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), task1Thread);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), task1Thread->GetPid());
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), task1_thread);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), task1_thread->get_pid());
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
 
     /**
      * -------------------------------------------------------------------------
@@ -105,7 +97,7 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
      * -------------------------------------------------------------------------
      **/
 
-    EXPECT_EQ(sizeof(Msg), sizeof(mtMsg));
+    EXPECT_EQ(sizeof(Msg), sizeof(msg_t));
 
     /**
      * -------------------------------------------------------------------------
@@ -115,57 +107,57 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
 
     Msg msg1 = Msg(instance);
 
-    EXPECT_EQ(msg1.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg1.mType, 0);
-    EXPECT_EQ(msg1.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg1.mContent.mValue, 0);
+    EXPECT_EQ(msg1.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg1.type, 0);
+    EXPECT_EQ(msg1.content.ptr, nullptr);
+    EXPECT_EQ(msg1.content.value, 0);
 
-    /* call msg.Receive() in current thread (task1Thread), it expected to set
+    /* call msg.receive() in current thread (task1_thread), it expected to set
      * current thread status to receive blocking */
 
-    msg1.Receive();
+    msg1.receive();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
 
     Msg msg2 = Msg(instance);
 
-    EXPECT_EQ(msg2.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg2.mType, 0);
-    EXPECT_EQ(msg2.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg2.mContent.mValue, 0);
+    EXPECT_EQ(msg2.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg2.type, 0);
+    EXPECT_EQ(msg2.content.ptr, nullptr);
+    EXPECT_EQ(msg2.content.value, 0);
 
     uint32_t msgValue = 0xdeadbeef;
 
-    msg2.mType = 0x20;
-    msg2.mContent.mPtr = static_cast<void *>(&msgValue);
+    msg2.type = 0x20;
+    msg2.content.ptr = static_cast<void *>(&msgValue);
 
-    EXPECT_EQ(msg2.Send(task1Thread->GetPid()), 1);
+    EXPECT_EQ(msg2.send(task1_thread->get_pid()), 1);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    /* Note: at this point, msg2 is immediately received by task1Thread because
+    /* Note: at this point, msg2 is immediately received by task1_thread because
      * it was in RECEIVE_BLOCKED status */
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(msg1.mSenderPid, mainThread->GetPid());
-    EXPECT_EQ(msg1.mType, 0x20);
-    EXPECT_NE(msg1.mContent.mPtr, nullptr);
-    EXPECT_EQ(*static_cast<uint32_t *>(msg1.mContent.mPtr), 0xdeadbeef);
+    EXPECT_EQ(msg1.sender_pid, main_thread->get_pid());
+    EXPECT_EQ(msg1.type, 0x20);
+    EXPECT_NE(msg1.content.ptr, nullptr);
+    EXPECT_EQ(*static_cast<uint32_t *>(msg1.content.ptr), 0xdeadbeef);
 
     /**
      * -------------------------------------------------------------------------
@@ -175,54 +167,54 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
 
     Msg msg3 = Msg(instance);
 
-    EXPECT_EQ(msg3.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg3.mType, 0);
-    EXPECT_EQ(msg3.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg3.mContent.mValue, 0);
+    EXPECT_EQ(msg3.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg3.type, 0);
+    EXPECT_EQ(msg3.content.ptr, nullptr);
+    EXPECT_EQ(msg3.content.value, 0);
 
-    msg3.mType = 0x21;
-    msg3.mContent.mValue = 0xdeadbeef;
+    msg3.type = 0x21;
+    msg3.content.value = 0xdeadbeef;
 
-    EXPECT_EQ(msg3.Send(mainThread->GetPid()), 1);
+    EXPECT_EQ(msg3.send(main_thread->get_pid()), 1);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SEND_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SEND_BLOCKED);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    /* now we are in mainThread */
+    /* now we are in main_thread */
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SEND_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SEND_BLOCKED);
 
     Msg msg4 = Msg(instance);
 
-    EXPECT_EQ(msg4.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg4.mType, 0);
-    EXPECT_EQ(msg4.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg4.mContent.mValue, 0);
+    EXPECT_EQ(msg4.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg4.type, 0);
+    EXPECT_EQ(msg4.content.ptr, nullptr);
+    EXPECT_EQ(msg4.content.value, 0);
 
-    msg4.Receive(); /* try to receive msg that was sent by task1Thread */
+    msg4.receive(); /* try to receive msg that was sent by task1_thread */
 
-    EXPECT_EQ(msg4.mSenderPid, task1Thread->GetPid());
-    EXPECT_EQ(msg4.mType, 0x21);
-    EXPECT_EQ(msg4.mContent.mValue, 0xdeadbeef);
+    EXPECT_EQ(msg4.sender_pid, task1_thread->get_pid());
+    EXPECT_EQ(msg4.type, 0x21);
+    EXPECT_EQ(msg4.content.value, 0xdeadbeef);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    /* Note: at this point msg3 already received by mainThread and because
-     * task1Thread has higher priority than mainThread, kernel will context
-     * switch to task1Thread */
+    /* Note: at this point msg3 already received by main_thread and because
+     * task1_thread has higher priority than main_thread, kernel will context
+     * switch to task1_thread */
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
     /**
      * -------------------------------------------------------------------------
@@ -233,102 +225,102 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
 
     Msg msg5 = Msg(instance);
 
-    EXPECT_EQ(msg5.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg5.mType, 0);
-    EXPECT_EQ(msg5.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg5.mContent.mValue, 0);
+    EXPECT_EQ(msg5.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg5.type, 0);
+    EXPECT_EQ(msg5.content.ptr, nullptr);
+    EXPECT_EQ(msg5.content.value, 0);
 
-    msg5.mType = 0x22;
-    msg5.mContent.mValue = 0xdeadbeef;
+    msg5.type = 0x22;
+    msg5.content.value = 0xdeadbeef;
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
+    EXPECT_EQ(msg5.try_send(main_thread->get_pid()), 0);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    /* Note: none of these TrySend message will works unless the target thread
+    /* Note: none of these try_send message will works unless the target thread
      * is in receive blocked status */
 
-    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
-    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
-    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
-    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
-    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
-    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 0);
+    EXPECT_EQ(msg5.try_send(main_thread->get_pid()), 0);
+    EXPECT_EQ(msg5.try_send(main_thread->get_pid()), 0);
+    EXPECT_EQ(msg5.try_send(main_thread->get_pid()), 0);
+    EXPECT_EQ(msg5.try_send(main_thread->get_pid()), 0);
+    EXPECT_EQ(msg5.try_send(main_thread->get_pid()), 0);
+    EXPECT_EQ(msg5.try_send(main_thread->get_pid()), 0);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    instance.Get<ThreadScheduler>().SleepingCurrentThread();
+    instance.get<ThreadScheduler>().sleeping_current_thread();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
     Msg msg6 = Msg(instance);
 
-    EXPECT_EQ(msg6.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg6.mType, 0);
-    EXPECT_EQ(msg6.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg6.mContent.mValue, 0);
+    EXPECT_EQ(msg6.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg6.type, 0);
+    EXPECT_EQ(msg6.content.ptr, nullptr);
+    EXPECT_EQ(msg6.content.value, 0);
 
-    msg6.Receive();
+    msg6.receive();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    instance.Get<ThreadScheduler>().WakeupThread(task1Thread->GetPid());
+    instance.get<ThreadScheduler>().wakeup_thread(task1_thread->get_pid());
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    /* Note: now TrySend() will succeed */
+    /* Note: now try_send() will succeed */
 
-    EXPECT_EQ(msg5.TrySend(mainThread->GetPid()), 1);
+    EXPECT_EQ(msg5.try_send(main_thread->get_pid()), 1);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
     /* message is successfully received */
 
-    EXPECT_EQ(msg6.mSenderPid, task1Thread->GetPid());
-    EXPECT_EQ(msg6.mType, 0x22);
-    EXPECT_EQ(msg6.mContent.mValue, 0xdeadbeef);
+    EXPECT_EQ(msg6.sender_pid, task1_thread->get_pid());
+    EXPECT_EQ(msg6.type, 0x22);
+    EXPECT_EQ(msg6.content.value, 0xdeadbeef);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(msg5.SendToSelfQueue(), 0); /* we dont use message queue yet */
+    EXPECT_EQ(msg5.send_to_self_queue(), 0); /* we dont use message queue yet */
 
     /**
      * -------------------------------------------------------------------------
@@ -336,68 +328,68 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
      * -------------------------------------------------------------------------
      **/
 
-    msg6.Receive();
+    msg6.receive();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RECEIVE_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
 
-    testHelperSetCpuInIsr();
+    test_helper_set_cpu_in_isr();
 
-    msg5.mType = 0xff;
-    msg5.mContent.mValue = 0x12345678;
+    msg5.type = 0xff;
+    msg5.content.value = 0x12345678;
 
-    EXPECT_EQ(msg5.Send(task1Thread->GetPid()), 1);
+    EXPECT_EQ(msg5.send(task1_thread->get_pid()), 1);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr());
+    EXPECT_TRUE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
 
-    mtCpuEndOfIsr((mtInstance *)&instance);
+    cpu_end_of_isr((instance_t *)&instance);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    testHelperResetCpuInIsr();
+    test_helper_reset_cpu_in_isr();
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(msg6.mSenderPid, KERNEL_PID_ISR);
-    EXPECT_EQ(msg6.mType, 0xff);
-    EXPECT_EQ(msg6.mContent.mValue, 0x12345678);
+    EXPECT_EQ(msg6.sender_pid, KERNEL_PID_ISR);
+    EXPECT_EQ(msg6.type, 0xff);
+    EXPECT_EQ(msg6.content.value, 0x12345678);
 
     /* Note: send message from Isr when the target is not in receive blocked */
 
-    testHelperSetCpuInIsr();
+    test_helper_set_cpu_in_isr();
 
-    EXPECT_EQ(msg5.Send(task1Thread->GetPid()), 0);
+    EXPECT_EQ(msg5.send(task1_thread->get_pid()), 0);
 
-    mtCpuEndOfIsr((mtInstance *)&instance);
+    cpu_end_of_isr((instance_t *)&instance);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    testHelperResetCpuInIsr();
+    test_helper_reset_cpu_in_isr();
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
     /**
      * -------------------------------------------------------------------------
@@ -407,224 +399,221 @@ TEST_F(TestMsg, singleSendAndReceiveMsg)
      **/
 
     Msg msg7 = Msg(instance);
-    Msg msg7Reply = Msg(instance);
+    Msg msg7_reply = Msg(instance);
 
-    EXPECT_EQ(msg7.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg7.mType, 0);
-    EXPECT_EQ(msg7.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg7.mContent.mValue, 0);
+    EXPECT_EQ(msg7.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg7.type, 0);
+    EXPECT_EQ(msg7.content.ptr, nullptr);
+    EXPECT_EQ(msg7.content.value, 0);
 
-    EXPECT_EQ(msg7Reply.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg7Reply.mType, 0);
-    EXPECT_EQ(msg7Reply.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg7Reply.mContent.mValue, 0);
+    EXPECT_EQ(msg7_reply.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg7_reply.type, 0);
+    EXPECT_EQ(msg7_reply.content.ptr, nullptr);
+    EXPECT_EQ(msg7_reply.content.value, 0);
 
-    uint32_t msg7Data = 0xdeeeaaad;
+    uint32_t msg7_data = 0xdeeeaaad;
 
-    msg7.mType = 0xfe;
-    msg7.mContent.mPtr = static_cast<void *>(&msg7Data);
+    msg7.type = 0xfe;
+    msg7.content.ptr = static_cast<void *>(&msg7_data);
 
-    EXPECT_EQ(msg7.SendReceive(&msg7Reply, mainThread->GetPid()), 1);
+    EXPECT_EQ(msg7.send_receive(&msg7_reply, main_thread->get_pid()), 1);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_REPLY_BLOCKED);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_REPLY_BLOCKED);
 
     Msg msg8 = Msg(instance);
-    Msg msg8Reply = Msg(instance);
+    Msg msg8_reply = Msg(instance);
 
-    EXPECT_EQ(msg8.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg8.mType, 0);
-    EXPECT_EQ(msg8.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg8.mContent.mValue, 0);
+    EXPECT_EQ(msg8.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg8.type, 0);
+    EXPECT_EQ(msg8.content.ptr, nullptr);
+    EXPECT_EQ(msg8.content.value, 0);
 
-    EXPECT_EQ(msg8Reply.mSenderPid, KERNEL_PID_UNDEF);
-    EXPECT_EQ(msg8Reply.mType, 0);
-    EXPECT_EQ(msg8Reply.mContent.mPtr, nullptr);
-    EXPECT_EQ(msg8Reply.mContent.mValue, 0);
+    EXPECT_EQ(msg8_reply.sender_pid, KERNEL_PID_UNDEF);
+    EXPECT_EQ(msg8_reply.type, 0);
+    EXPECT_EQ(msg8_reply.content.ptr, nullptr);
+    EXPECT_EQ(msg8_reply.content.value, 0);
 
-    msg8.Receive();
+    msg8.receive();
 
-    EXPECT_EQ(msg8.mSenderPid, task1Thread->GetPid());
-    EXPECT_EQ(msg8.mType, 0xfe);
-    EXPECT_EQ(*static_cast<uint32_t *>(msg8.mContent.mPtr), 0xdeeeaaad);
+    EXPECT_EQ(msg8.sender_pid, task1_thread->get_pid());
+    EXPECT_EQ(msg8.type, 0xfe);
+    EXPECT_EQ(*static_cast<uint32_t *>(msg8.content.ptr), 0xdeeeaaad);
 
     /* Note: at this point msg7 is received */
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_REPLY_BLOCKED);
 
-    msg8Reply.mType = 0xff;
-    msg8Reply.mContent.mValue = 0xdeadbeef;
+    msg8_reply.type = 0xff;
+    msg8_reply.content.value = 0xdeadbeef;
 
-    EXPECT_EQ(msg8.Reply(&msg8Reply), 1);
+    EXPECT_EQ(msg8.reply(&msg8_reply), 1);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(msg7Reply.mType, 0xff);
-    EXPECT_EQ(msg7Reply.mContent.mValue, 0xdeadbeef);
+    EXPECT_EQ(msg7_reply.type, 0xff);
+    EXPECT_EQ(msg7_reply.content.value, 0xdeadbeef);
 
     /* Note: reply msg does not care who was replying the message */
 
     /**
      * -------------------------------------------------------------------------
      * [TEST CASE] send and then immediately set to receive state by calling
-     * sendReceive function. Reply function would be in Isr.
+     * sendReceive function. reply function would be in Isr.
      * -------------------------------------------------------------------------
      **/
 
-    msg7.mType = 0xab;
-    msg7.mContent.mValue = 0xaaaabbbb;
+    msg7.type = 0xab;
+    msg7.content.value = 0xaaaabbbb;
 
-    EXPECT_EQ(msg7.SendReceive(&msg7Reply, mainThread->GetPid()), 1);
+    EXPECT_EQ(msg7.send_receive(&msg7_reply, main_thread->get_pid()), 1);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_REPLY_BLOCKED);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_REPLY_BLOCKED);
 
-    msg8.Receive();
+    msg8.receive();
 
-    EXPECT_EQ(msg8.mSenderPid, task1Thread->GetPid());
-    EXPECT_EQ(msg8.mType, 0xab);
-    EXPECT_EQ(msg8.mContent.mValue, 0xaaaabbbb);
+    EXPECT_EQ(msg8.sender_pid, task1_thread->get_pid());
+    EXPECT_EQ(msg8.type, 0xab);
+    EXPECT_EQ(msg8.content.value, 0xaaaabbbb);
 
     /* Note: at this point msg7 is received */
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_REPLY_BLOCKED);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_REPLY_BLOCKED);
 
-    msg8Reply.mType = 0xcd;
-    msg8Reply.mContent.mValue = 0xccccdddd;
+    msg8_reply.type = 0xcd;
+    msg8_reply.content.value = 0xccccdddd;
 
-    testHelperSetCpuInIsr(); /* ----------------- set cpu artificially in Isr */
+    test_helper_set_cpu_in_isr(); /* ----------------- set cpu artificially in Isr */
 
-    EXPECT_EQ(msg8.ReplyInIsr(&msg8Reply), 1);
+    EXPECT_EQ(msg8.reply_in_isr(&msg8_reply), 1);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    mtCpuEndOfIsr(&instance);
+    cpu_end_of_isr(&instance);
 
-    testHelperResetCpuInIsr(); /* ---------------------------------- exit Isr */
+    test_helper_reset_cpu_in_isr(); /* ---------------------------------- exit Isr */
 
-    EXPECT_TRUE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr());
+    EXPECT_TRUE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(msg7Reply.mType, 0xcd);
-    EXPECT_EQ(msg7Reply.mContent.mValue, 0xccccdddd);
+    EXPECT_EQ(msg7_reply.type, 0xcd);
+    EXPECT_EQ(msg7_reply.content.value, 0xccccdddd);
 
     /* Note: reply message was sent from Isr */
 }
 
-TEST_F(TestMsg, multipleSendReceiveMsg)
+TEST_F(TestMsg, multiple_send_and_receive_msg)
 {
-    mtDEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
+    DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
 
-    uint32_t size = mtARRAY_LENGTH(buffer);
+    uint32_t size = ARRAY_LENGTH(buffer);
 
-    Instance instance = Instance::Init((void *)buffer, (size_t *)&size);
+    Instance instance = Instance::init((void *)buffer, (size_t *)&size);
 
-    EXPECT_TRUE(instance.IsInitialized());
+    EXPECT_TRUE(instance.is_initialized());
 
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 0);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 0);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
-    char idleStack[128];
+    char idle_stack[128];
 
-    Thread *idleThread = Thread::Init(instance, idleStack, sizeof(idleStack), 15,
-                                      THREAD_FLAGS_CREATE_WOUT_YIELD | \
-                                      THREAD_FLAGS_CREATE_STACKMARKER,
-                                      NULL, NULL, "idle");
+    Thread *idle_thread = Thread::init(instance, idle_stack, sizeof(idle_stack), 15,
+                                       THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
+                                       NULL, NULL, "idle");
 
-    EXPECT_NE(idleThread, nullptr);
+    EXPECT_NE(idle_thread, nullptr);
 
-    EXPECT_EQ(idleThread->GetPid(), 1);
-    EXPECT_EQ(idleThread->GetPriority(), 15);
-    EXPECT_EQ(idleThread->GetName(), "idle");
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_pid(), 1);
+    EXPECT_EQ(idle_thread->get_priority(), 15);
+    EXPECT_EQ(idle_thread->get_name(), "idle");
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
 
-    char mainStack[128];
+    char main_stack[128];
 
-    Thread *mainThread = Thread::Init(instance, mainStack, sizeof(mainStack), 7,
-                                      THREAD_FLAGS_CREATE_WOUT_YIELD | \
-                                      THREAD_FLAGS_CREATE_STACKMARKER,
-                                      NULL, NULL, "main");
+    Thread *main_thread = Thread::init(instance, main_stack, sizeof(main_stack), 7,
+                                       THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
+                                       NULL, NULL, "main");
 
-    EXPECT_NE(mainThread, nullptr);
+    EXPECT_NE(main_thread, nullptr);
 
-    EXPECT_EQ(mainThread->GetPid(), 2);
-    EXPECT_EQ(mainThread->GetPriority(), 7);
-    EXPECT_EQ(mainThread->GetName(), "main");
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_pid(), 2);
+    EXPECT_EQ(main_thread->get_priority(), 7);
+    EXPECT_EQ(main_thread->get_name(), "main");
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
 
-    char task1Stack[128];
+    char task1_stack[128];
 
-    Thread *task1Thread = Thread::Init(instance, task1Stack, sizeof(task1Stack), 5,
-                                       THREAD_FLAGS_CREATE_WOUT_YIELD | \
-                                       THREAD_FLAGS_CREATE_STACKMARKER,
-                                       NULL, NULL, "task1");
+    Thread *task1_thread = Thread::init(instance, task1_stack, sizeof(task1_stack), 5,
+                                        THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
+                                        NULL, NULL, "task1");
 
-    EXPECT_NE(task1Thread, nullptr);
+    EXPECT_NE(task1_thread, nullptr);
 
-    EXPECT_EQ(task1Thread->GetPid(), 3);
-    EXPECT_EQ(task1Thread->GetPriority(), 5);
-    EXPECT_EQ(task1Thread->GetName(), "task1");
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_pid(), 3);
+    EXPECT_EQ(task1_thread->get_priority(), 5);
+    EXPECT_EQ(task1_thread->get_name(), "task1");
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(idleThread->GetPid()), idleThread);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(mainThread->GetPid()), mainThread);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetThreadFromScheduler(task1Thread->GetPid()), task1Thread);
-    EXPECT_FALSE(instance.Get<ThreadScheduler>().IsContextSwitchRequestedFromIsr());
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), nullptr);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), KERNEL_PID_UNDEF);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(idle_thread->get_pid()), idle_thread);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(main_thread->get_pid()), main_thread);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(task1_thread->get_pid()), task1_thread);
+    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested_from_isr());
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActiveThread(), task1Thread);
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetCurrentActivePid(), task1Thread->GetPid());
-    EXPECT_EQ(instance.Get<ThreadScheduler>().GetNumOfThreadsInScheduler(), 3);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), task1_thread);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), task1_thread->get_pid());
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
 
     /**
      * -------------------------------------------------------------------------
@@ -632,19 +621,19 @@ TEST_F(TestMsg, multipleSendReceiveMsg)
      * -------------------------------------------------------------------------
      **/
 
-    EXPECT_EQ(task1Thread->HasMsgQueue(), 0);
+    EXPECT_EQ(task1_thread->has_msg_queue(), 0);
 
-    Msg task1MsgArray[16];
+    Msg task1_msg_array[16];
 
     for (int i = 0; i < 16; i++)
     {
-        task1MsgArray[i].Init(instance);
+        task1_msg_array[i].init(instance);
     }
 
-    task1Thread->InitMsgQueue(task1MsgArray, mtARRAY_LENGTH(task1MsgArray));
+    task1_thread->init_msg_queue(task1_msg_array, ARRAY_LENGTH(task1_msg_array));
 
-    EXPECT_EQ(task1Thread->HasMsgQueue(), 1);
-    EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 0);
+    EXPECT_EQ(task1_thread->has_msg_queue(), 1);
+    EXPECT_EQ(task1_thread->get_numof_msg_in_queue(), 0);
 
     /**
      * -------------------------------------------------------------------------
@@ -653,92 +642,92 @@ TEST_F(TestMsg, multipleSendReceiveMsg)
      * -------------------------------------------------------------------------
      **/
 
-    instance.Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(task1Thread, THREAD_STATUS_SLEEPING);
+    instance.get<ThreadScheduler>().set_thread_status(task1_thread, THREAD_STATUS_SLEEPING);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_SLEEPING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
     Msg msg1 = Msg(instance);
     Msg msg2 = Msg(instance);
     Msg msg3 = Msg(instance);
     Msg msg4 = Msg(instance);
 
-    msg1.mType = 0xff;
-    msg1.mContent.mValue = 0x1;
+    msg1.type = 0xff;
+    msg1.content.value = 0x1;
 
-    msg2.mType = 0xff;
-    msg2.mContent.mValue = 0x2;
+    msg2.type = 0xff;
+    msg2.content.value = 0x2;
 
-    msg3.mType = 0xff;
-    msg3.mContent.mValue = 0x3;
+    msg3.type = 0xff;
+    msg3.content.value = 0x3;
 
-    msg4.mType = 0xff;
-    msg4.mContent.mValue = 0x4;
+    msg4.type = 0xff;
+    msg4.content.value = 0x4;
 
-    EXPECT_EQ(msg1.Send(task1Thread->GetPid()), 1);
-    EXPECT_EQ(msg2.Send(task1Thread->GetPid()), 1);
-    EXPECT_EQ(msg3.Send(task1Thread->GetPid()), 1);
-    EXPECT_EQ(msg4.Send(task1Thread->GetPid()), 1);
+    EXPECT_EQ(msg1.send(task1_thread->get_pid()), 1);
+    EXPECT_EQ(msg2.send(task1_thread->get_pid()), 1);
+    EXPECT_EQ(msg3.send(task1_thread->get_pid()), 1);
+    EXPECT_EQ(msg4.send(task1_thread->get_pid()), 1);
 
-    /* Note: task1Thread is in sleeping status and has message queue, so the
-     * message sent to task1Thread should be queued */
+    /* Note: task1_thread is in sleeping status and has message queue, so the
+     * message sent to task1_thread should be queued */
 
-    EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 4);
+    EXPECT_EQ(task1_thread->get_numof_msg_in_queue(), 4);
 
-    /* Note: set task1Thread to running status and dequeque the message */
+    /* Note: set task1_thread to running status and dequeque the message */
 
-    instance.Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(task1Thread, THREAD_STATUS_PENDING);
+    instance.get<ThreadScheduler>().set_thread_status(task1_thread, THREAD_STATUS_PENDING);
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_RUNNING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    instance.Get<ThreadScheduler>().Run();
+    instance.get<ThreadScheduler>().run();
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 4);
+    EXPECT_EQ(task1_thread->get_numof_msg_in_queue(), 4);
 
-    Msg msgInTask1 = Msg(instance);
+    Msg msg_intask1 = Msg(instance);
 
-    EXPECT_EQ(msgInTask1.Receive(), 1);
+    EXPECT_EQ(msg_intask1.receive(), 1);
 
-    EXPECT_EQ(msgInTask1.mSenderPid, mainThread->GetPid());
-    EXPECT_EQ(msgInTask1.mType, 0xff);
-    EXPECT_EQ(msgInTask1.mContent.mValue, 0x01); /* get msg1 */
+    EXPECT_EQ(msg_intask1.sender_pid, main_thread->get_pid());
+    EXPECT_EQ(msg_intask1.type, 0xff);
+    EXPECT_EQ(msg_intask1.content.value, 0x01); /* get msg1 */
 
-    EXPECT_EQ(msgInTask1.Receive(), 1);
+    EXPECT_EQ(msg_intask1.receive(), 1);
 
-    EXPECT_EQ(msgInTask1.mSenderPid, mainThread->GetPid());
-    EXPECT_EQ(msgInTask1.mType, 0xff);
-    EXPECT_EQ(msgInTask1.mContent.mValue, 0x02); /* get msg2 */
+    EXPECT_EQ(msg_intask1.sender_pid, main_thread->get_pid());
+    EXPECT_EQ(msg_intask1.type, 0xff);
+    EXPECT_EQ(msg_intask1.content.value, 0x02); /* get msg2 */
 
-     EXPECT_EQ(msgInTask1.Receive(), 1);
+     EXPECT_EQ(msg_intask1.receive(), 1);
 
-    EXPECT_EQ(msgInTask1.mSenderPid, mainThread->GetPid());
-    EXPECT_EQ(msgInTask1.mType, 0xff);
-    EXPECT_EQ(msgInTask1.mContent.mValue, 0x03); /* get msg3 */
+    EXPECT_EQ(msg_intask1.sender_pid, main_thread->get_pid());
+    EXPECT_EQ(msg_intask1.type, 0xff);
+    EXPECT_EQ(msg_intask1.content.value, 0x03); /* get msg3 */
 
-    EXPECT_EQ(msgInTask1.Receive(), 1);
+    EXPECT_EQ(msg_intask1.receive(), 1);
 
-    EXPECT_EQ(msgInTask1.mSenderPid, mainThread->GetPid());
-    EXPECT_EQ(msgInTask1.mType, 0xff);
-    EXPECT_EQ(msgInTask1.mContent.mValue, 0x04); /* get msg4 */
+    EXPECT_EQ(msg_intask1.sender_pid, main_thread->get_pid());
+    EXPECT_EQ(msg_intask1.type, 0xff);
+    EXPECT_EQ(msg_intask1.content.value, 0x04); /* get msg4 */
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 0);
+    EXPECT_EQ(task1_thread->get_numof_msg_in_queue(), 0);
 
     /* Note: at this point we already got all the message from queue */
 
@@ -748,40 +737,40 @@ TEST_F(TestMsg, multipleSendReceiveMsg)
      * -------------------------------------------------------------------------
      **/
 
-    EXPECT_EQ(msg1.Send(task1Thread->GetPid()), 1);
-    EXPECT_EQ(msg2.TrySend(task1Thread->GetPid()), 1);
-    EXPECT_EQ(msg3.Send(task1Thread->GetPid()), 1);
-    EXPECT_EQ(msg4.TrySend(task1Thread->GetPid()), 1);
+    EXPECT_EQ(msg1.send(task1_thread->get_pid()), 1);
+    EXPECT_EQ(msg2.try_send(task1_thread->get_pid()), 1);
+    EXPECT_EQ(msg3.send(task1_thread->get_pid()), 1);
+    EXPECT_EQ(msg4.try_send(task1_thread->get_pid()), 1);
 
-    EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 4);
+    EXPECT_EQ(task1_thread->get_numof_msg_in_queue(), 4);
 
-    EXPECT_EQ(msgInTask1.Receive(), 1);
+    EXPECT_EQ(msg_intask1.receive(), 1);
 
-    EXPECT_EQ(msgInTask1.mSenderPid, task1Thread->GetPid());
-    EXPECT_EQ(msgInTask1.mType, 0xff);
-    EXPECT_EQ(msgInTask1.mContent.mValue, 0x01); /* get msg1 */
+    EXPECT_EQ(msg_intask1.sender_pid, task1_thread->get_pid());
+    EXPECT_EQ(msg_intask1.type, 0xff);
+    EXPECT_EQ(msg_intask1.content.value, 0x01); /* get msg1 */
 
-    EXPECT_EQ(msgInTask1.Receive(), 1);
+    EXPECT_EQ(msg_intask1.receive(), 1);
 
-    EXPECT_EQ(msgInTask1.mSenderPid, task1Thread->GetPid());
-    EXPECT_EQ(msgInTask1.mType, 0xff);
-    EXPECT_EQ(msgInTask1.mContent.mValue, 0x02); /* get msg2 */
+    EXPECT_EQ(msg_intask1.sender_pid, task1_thread->get_pid());
+    EXPECT_EQ(msg_intask1.type, 0xff);
+    EXPECT_EQ(msg_intask1.content.value, 0x02); /* get msg2 */
 
-     EXPECT_EQ(msgInTask1.Receive(), 1);
+     EXPECT_EQ(msg_intask1.receive(), 1);
 
-    EXPECT_EQ(msgInTask1.mSenderPid, task1Thread->GetPid());
-    EXPECT_EQ(msgInTask1.mType, 0xff);
-    EXPECT_EQ(msgInTask1.mContent.mValue, 0x03); /* get msg3 */
+    EXPECT_EQ(msg_intask1.sender_pid, task1_thread->get_pid());
+    EXPECT_EQ(msg_intask1.type, 0xff);
+    EXPECT_EQ(msg_intask1.content.value, 0x03); /* get msg3 */
 
-    EXPECT_EQ(msgInTask1.Receive(), 1);
+    EXPECT_EQ(msg_intask1.receive(), 1);
 
-    EXPECT_EQ(msgInTask1.mSenderPid, task1Thread->GetPid());
-    EXPECT_EQ(msgInTask1.mType, 0xff);
-    EXPECT_EQ(msgInTask1.mContent.mValue, 0x04); /* get msg4 */
+    EXPECT_EQ(msg_intask1.sender_pid, task1_thread->get_pid());
+    EXPECT_EQ(msg_intask1.type, 0xff);
+    EXPECT_EQ(msg_intask1.content.value, 0x04); /* get msg4 */
 
-    EXPECT_EQ(mainThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(idleThread->GetStatus(), THREAD_STATUS_PENDING);
-    EXPECT_EQ(task1Thread->GetStatus(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(task1Thread->GetNumOfMsgInQueue(), 0);
+    EXPECT_EQ(task1_thread->get_numof_msg_in_queue(), 0);
 }

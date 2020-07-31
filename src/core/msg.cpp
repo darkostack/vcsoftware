@@ -1,340 +1,340 @@
 #include "core/instance.hpp"
 #include "core/msg.hpp"
 
-namespace mt {
+namespace vc {
 
-int Msg::Send(mtKernelPid aTargetPid, int aBlocking, unsigned aState)
+int Msg::send(kernel_pid_t target_pid, int blocking, unsigned state)
 {
-    if (!Thread::IsPidValid(aTargetPid))
+    if (!Thread::is_pid_valid(target_pid))
     {
         //TODO: warning pid it not valid
     }
 
-    Thread *targetThread = Get<ThreadScheduler>().GetThreadFromScheduler(aTargetPid);
+    Thread *target_thread = get<ThreadScheduler>().get_thread_from_scheduler(target_pid);
 
-    mSenderPid = Get<ThreadScheduler>().GetCurrentActivePid();
+    sender_pid = get<ThreadScheduler>().get_current_active_pid();
 
-    if (targetThread == NULL)
+    if (target_thread == NULL)
     {
-        mtCpuIrqRestore(aState);
+        cpu_irq_restore(state);
         return -1;
     }
 
-    Thread *currentThread = Get<ThreadScheduler>().GetCurrentActiveThread();
+    Thread *current_thread = get<ThreadScheduler>().get_current_active_thread();
 
-    if (targetThread->GetStatus() != THREAD_STATUS_RECEIVE_BLOCKED)
+    if (target_thread->get_status() != THREAD_STATUS_RECEIVE_BLOCKED)
     {
-        if (targetThread->QueuedMsg(this))
+        if (target_thread->queued_msg(this))
         {
-            mtCpuIrqRestore(aState);
+            cpu_irq_restore(state);
 
-            if (currentThread->GetStatus() == THREAD_STATUS_REPLY_BLOCKED)
+            if (current_thread->get_status() == THREAD_STATUS_REPLY_BLOCKED)
             {
-                ThreadScheduler::YieldHigherPriorityThread();
+                ThreadScheduler::yield_higher_priority_thread();
             }
 
             return 1;
         }
 
-        if (!aBlocking)
+        if (!blocking)
         {
-            mtCpuIrqRestore(aState);
+            cpu_irq_restore(state);
             return 0;
         }
 
-        currentThread->mWaitData = static_cast<void *>(this);
+        current_thread->wait_data = static_cast<void *>(this);
 
-        mtThreadStatus newStatus;
+        thread_status_t new_status;
 
-        if (currentThread->GetStatus() == THREAD_STATUS_REPLY_BLOCKED)
+        if (current_thread->get_status() == THREAD_STATUS_REPLY_BLOCKED)
         {
-            newStatus = THREAD_STATUS_REPLY_BLOCKED;
+            new_status = THREAD_STATUS_REPLY_BLOCKED;
         }
         else
         {
-            newStatus = THREAD_STATUS_SEND_BLOCKED;
+            new_status = THREAD_STATUS_SEND_BLOCKED;
         }
 
-        Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(currentThread, newStatus);
+        get<ThreadScheduler>().set_thread_status(current_thread, new_status);
 
-        currentThread->AddToList(static_cast<List *>(&targetThread->mMsgWaiters));
+        current_thread->add_to_list(static_cast<List *>(&target_thread->msg_waiters));
 
-        mtCpuIrqRestore(aState);
+        cpu_irq_restore(state);
 
-        ThreadScheduler::YieldHigherPriorityThread();
+        ThreadScheduler::yield_higher_priority_thread();
     }
     else
     {
-        Msg *targetMsg = static_cast<Msg *>(targetThread->mWaitData);
+        Msg *target_msg = static_cast<Msg *>(target_thread->wait_data);
 
-        *targetMsg = *this;
+        *target_msg = *this;
 
-        Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(targetThread, THREAD_STATUS_PENDING);
+        get<ThreadScheduler>().set_thread_status(target_thread, THREAD_STATUS_PENDING);
 
-        mtCpuIrqRestore(aState);
+        cpu_irq_restore(state);
 
-        ThreadScheduler::YieldHigherPriorityThread();
+        ThreadScheduler::yield_higher_priority_thread();
     }
 
     return 1;
 }
 
-int Msg::Receive(int aBlocking)
+int Msg::receive(int blocking)
 {
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    Thread *currentThread = Get<ThreadScheduler>().GetCurrentActiveThread();
+    Thread *current_thread = get<ThreadScheduler>().get_current_active_thread();
 
-    int queueIndex = -1;
+    int queue_index = -1;
 
-    if (currentThread->mMsgArray != NULL)
+    if (current_thread->msg_array != NULL)
     {
-        queueIndex = (static_cast<Cib *>(&currentThread->mMsgQueue))->Get();
+        queue_index = (static_cast<Cib *>(&current_thread->msg_queue))->get();
     }
 
-    if (!aBlocking && (!currentThread->mMsgWaiters.mNext && queueIndex == -1))
+    if (!blocking && (!current_thread->msg_waiters.next && queue_index == -1))
     {
-        mtCpuIrqRestore(state);
+        cpu_irq_restore(state);
         return -1;
     }
 
-    if (queueIndex >= 0)
+    if (queue_index >= 0)
     {
-        *this = *static_cast<Msg *>(&currentThread->mMsgArray[queueIndex]);
+        *this = *static_cast<Msg *>(&current_thread->msg_array[queue_index]);
     }
     else
     {
-        currentThread->mWaitData = static_cast<void *>(this);
+        current_thread->wait_data = static_cast<void *>(this);
     }
 
-    List *next = (static_cast<List *>(&currentThread->mMsgWaiters))->RemoveHead();
+    List *next = (static_cast<List *>(&current_thread->msg_waiters))->remove_head();
 
     if (next == NULL)
     {
-        if (queueIndex < 0)
+        if (queue_index < 0)
         {
-            Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(currentThread, THREAD_STATUS_RECEIVE_BLOCKED);
+            get<ThreadScheduler>().set_thread_status(current_thread, THREAD_STATUS_RECEIVE_BLOCKED);
 
-            mtCpuIrqRestore(state);
+            cpu_irq_restore(state);
 
-            ThreadScheduler::YieldHigherPriorityThread();
+            ThreadScheduler::yield_higher_priority_thread();
 
-            assert(Get<ThreadScheduler>().GetCurrentActiveThread()->GetStatus() != THREAD_STATUS_RECEIVE_BLOCKED);
+            assert(get<ThreadScheduler>().get_current_active_thread()->get_status() != THREAD_STATUS_RECEIVE_BLOCKED);
         }
         else
         {
-            mtCpuIrqRestore(state);
+            cpu_irq_restore(state);
         }
 
         return 1;
     }
     else
     {
-        Thread *senderThread = Thread::GetThreadPointerFromItsListMember(next);
+        Thread *sender_thread = Thread::get_thread_pointer_from_list_member(next);
 
         Msg *tmp = NULL;
 
-        if (queueIndex >= 0)
+        if (queue_index >= 0)
         {
             /* We've already got a message from the queue. As there is a
              * waiter, take it's message into the just freed queue space. */
-            tmp = static_cast<Msg *>(&currentThread->mMsgArray[(static_cast<Cib *>(&currentThread->mMsgQueue))->Put()]);
+            tmp = static_cast<Msg *>(&current_thread->msg_array[(static_cast<Cib *>(&current_thread->msg_queue))->put()]);
         }
 
         /* copy msg */
-        Msg *senderMsg = static_cast<Msg *>(senderThread->mWaitData);
+        Msg *sender_msg = static_cast<Msg *>(sender_thread->wait_data);
 
         if (tmp != NULL)
         {
-            *tmp = *senderMsg;
+            *tmp = *sender_msg;
             *this = *tmp;
         }
         else
         {
-            *this = *senderMsg;
+            *this = *sender_msg;
         }
 
         /* remove sender from queue */
-        uint8_t senderPriority = KERNEL_THREAD_PRIORITY_IDLE;
+        uint8_t sender_priority = KERNEL_THREAD_PRIORITY_IDLE;
 
-        if (senderThread->GetStatus() != THREAD_STATUS_REPLY_BLOCKED)
+        if (sender_thread->get_status() != THREAD_STATUS_REPLY_BLOCKED)
         {
-            senderThread->mWaitData = NULL;
+            sender_thread->wait_data = NULL;
 
-            Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(senderThread, THREAD_STATUS_PENDING);
+            get<ThreadScheduler>().set_thread_status(sender_thread, THREAD_STATUS_PENDING);
 
-            senderPriority = senderThread->GetPriority();
+            sender_priority = sender_thread->get_priority();
         }
 
-        mtCpuIrqRestore(state);
+        cpu_irq_restore(state);
 
-        if (senderPriority < KERNEL_THREAD_PRIORITY_IDLE)
+        if (sender_priority < KERNEL_THREAD_PRIORITY_IDLE)
         {
-            Get<ThreadScheduler>().ContextSwitch(senderPriority);
+            get<ThreadScheduler>().context_switch(sender_priority);
         }
 
         return 1;
     }
 }
 
-int Msg::Send(mtKernelPid aTargetPid)
+int Msg::send(kernel_pid_t target_pid)
 {
-    if (mtCpuIsInIsr())
+    if (cpu_is_in_isr())
     {
-        return SendInIsr(aTargetPid);
+        return send_in_isr(target_pid);
     }
 
-    if (Get<ThreadScheduler>().GetCurrentActivePid() == aTargetPid)
+    if (get<ThreadScheduler>().get_current_active_pid() == target_pid)
     {
-        return SendToSelfQueue();
+        return send_to_self_queue();
     }
 
-    return Send(aTargetPid, 1 /* blocking */, mtCpuIrqDisable());
+    return send(target_pid, 1 /* blocking */, cpu_irq_disable());
 }
 
-int Msg::TrySend(mtKernelPid aTargetPid)
+int Msg::try_send(kernel_pid_t target_pid)
 {
-    if (mtCpuIsInIsr())
+    if (cpu_is_in_isr())
     {
-        return SendInIsr(aTargetPid);
+        return send_in_isr(target_pid);
     }
 
-    if (Get<ThreadScheduler>().GetCurrentActivePid() == aTargetPid)
+    if (get<ThreadScheduler>().get_current_active_pid() == target_pid)
     {
-        return SendToSelfQueue();
+        return send_to_self_queue();
     }
 
-    return Send(aTargetPid, 0 /* non-blocking */, mtCpuIrqDisable());
+    return send(target_pid, 0 /* non-blocking */, cpu_irq_disable());
 }
 
-int Msg::SendToSelfQueue(void)
+int Msg::send_to_self_queue(void)
 {
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    Thread *currentThread = Get<ThreadScheduler>().GetCurrentActiveThread();
+    Thread *current_thread = get<ThreadScheduler>().get_current_active_thread();
 
-    mSenderPid = currentThread->GetPid();
+    sender_pid = current_thread->get_pid();
 
-    int result = currentThread->QueuedMsg(this);
+    int result = current_thread->queued_msg(this);
 
-    mtCpuIrqRestore(state);
+    cpu_irq_restore(state);
 
     return result;
 }
 
-int Msg::SendInIsr(mtKernelPid aTargetPid)
+int Msg::send_in_isr(kernel_pid_t target_pid)
 {
-    if (!Thread::IsPidValid(aTargetPid))
+    if (!Thread::is_pid_valid(target_pid))
     {
         // TODO: warning pit is not valid
     }
 
-    Thread *targetThread = Get<ThreadScheduler>().GetThreadFromScheduler(aTargetPid);
+    Thread *target_thread = get<ThreadScheduler>().get_thread_from_scheduler(target_pid);
 
-    if (targetThread == NULL)
+    if (target_thread == NULL)
     {
         return -1;
     }
 
-    mSenderPid = KERNEL_PID_ISR;
+    sender_pid = KERNEL_PID_ISR;
 
-    if (targetThread->GetStatus() == THREAD_STATUS_RECEIVE_BLOCKED)
+    if (target_thread->get_status() == THREAD_STATUS_RECEIVE_BLOCKED)
     {
-        Msg *targetMsg = static_cast<Msg *>(targetThread->mWaitData);
+        Msg *target_msg = static_cast<Msg *>(target_thread->wait_data);
 
-        *targetMsg = *this;
+        *target_msg = *this;
 
-        Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(targetThread, THREAD_STATUS_PENDING);
+        get<ThreadScheduler>().set_thread_status(target_thread, THREAD_STATUS_PENDING);
 
-        Get<ThreadScheduler>().EnableContextSwitchRequestFromIsr();
+        get<ThreadScheduler>().enable_context_switch_request_from_isr();
 
         return 1;
     }
     else
     {
-        return targetThread->QueuedMsg(this);
+        return target_thread->queued_msg(this);
     }
 }
 
-int Msg::SendReceive(Msg *aReply, mtKernelPid aTargetPid)
+int Msg::send_receive(Msg *reply, kernel_pid_t target_pid)
 {
-    assert(Get<ThreadScheduler>().GetCurrentActivePid() != aTargetPid);
+    assert(get<ThreadScheduler>().get_current_active_pid() != target_pid);
 
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    Thread *currentThread = Get<ThreadScheduler>().GetCurrentActiveThread();
+    Thread *current_thread = get<ThreadScheduler>().get_current_active_thread();
 
-    Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(currentThread, THREAD_STATUS_REPLY_BLOCKED);
+    get<ThreadScheduler>().set_thread_status(current_thread, THREAD_STATUS_REPLY_BLOCKED);
 
-    currentThread->mWaitData = static_cast<void *>(aReply);
+    current_thread->wait_data = static_cast<void *>(reply);
 
     /* we re-use (abuse) reply for sending, because wait_data might be
      * overwritten if the target is not in RECEIVE_BLOCKED */
 
-    *aReply = *this;
+    *reply = *this;
 
     /* Send() blocks until reply received */
-    return aReply->Send(aTargetPid, 1 /* blocking */, state);
+    return reply->send(target_pid, 1 /* blocking */, state);
 }
 
-int Msg::Reply(Msg *aReply)
+int Msg::reply(Msg *reply)
 {
-    unsigned state = mtCpuIrqDisable();
+    unsigned state = cpu_irq_disable();
 
-    Thread *targetThread = Get<ThreadScheduler>().GetThreadFromScheduler(mSenderPid);
+    Thread *target_thread = get<ThreadScheduler>().get_thread_from_scheduler(sender_pid);
 
-    assert(targetThread != NULL);
+    assert(target_thread != NULL);
 
-    if (targetThread->GetStatus() != THREAD_STATUS_REPLY_BLOCKED)
+    if (target_thread->get_status() != THREAD_STATUS_REPLY_BLOCKED)
     {
-        mtCpuIrqRestore(state);
+        cpu_irq_restore(state);
 
         return -1;
     }
 
-    Msg *targetMsg = static_cast<Msg *>(targetThread->mWaitData);
+    Msg *target_msg = static_cast<Msg *>(target_thread->wait_data);
 
-    *targetMsg = *aReply;
+    *target_msg = *reply;
 
-    Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(targetThread, THREAD_STATUS_PENDING);
+    get<ThreadScheduler>().set_thread_status(target_thread, THREAD_STATUS_PENDING);
 
-    uint8_t targetPrio = targetThread->GetPriority();
+    uint8_t target_prio = target_thread->get_priority();
 
-    mtCpuIrqRestore(state);
+    cpu_irq_restore(state);
 
-    Get<ThreadScheduler>().ContextSwitch(targetPrio);
+    get<ThreadScheduler>().context_switch(target_prio);
 
     return 1;
 }
 
-int Msg::ReplyInIsr(Msg *aReply)
+int Msg::reply_in_isr(Msg *reply)
 {
-    Thread *targetThread = Get<ThreadScheduler>().GetThreadFromScheduler(mSenderPid);
+    Thread *target_thread = get<ThreadScheduler>().get_thread_from_scheduler(sender_pid);
 
-    if (targetThread->GetStatus() != THREAD_STATUS_REPLY_BLOCKED)
+    if (target_thread->get_status() != THREAD_STATUS_REPLY_BLOCKED)
     {
         return -1;
     }
 
-    Msg *targetMsg = static_cast<Msg *>(targetThread->mWaitData);
+    Msg *target_msg = static_cast<Msg *>(target_thread->wait_data);
 
-    *targetMsg = *aReply;
+    *target_msg = *reply;
 
-    Get<ThreadScheduler>().SetThreadStatusAndUpdateRunqueue(targetThread, THREAD_STATUS_PENDING);
+    get<ThreadScheduler>().set_thread_status(target_thread, THREAD_STATUS_PENDING);
 
-    Get<ThreadScheduler>().EnableContextSwitchRequestFromIsr();
+    get<ThreadScheduler>().enable_context_switch_request_from_isr();
 
     return 1;
 }
 
-template <> inline Instance &Msg::Get(void) const
+template <> inline Instance &Msg::get(void) const
 {
-    return GetInstance();
+    return get_instance();
 }
 
-template <typename Type> inline Type &Msg::Get(void) const
+template <typename Type> inline Type &Msg::get(void) const
 {
-    return GetInstance().Get<Type>();
+    return get_instance().get<Type>();
 }
 
-} // namespace mt
+} // namespace vc
