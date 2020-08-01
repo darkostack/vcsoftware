@@ -11,8 +11,6 @@ DEFINE_ALIGNED_VAR(instance_raw, sizeof(Instance), uint64_t);
 Instance::Instance(void)
     : initialized(false)
     , thread_scheduler()
-    , thread_flags(this)
-    , event_queue(this)
 {
 }
 
@@ -60,18 +58,9 @@ Instance &Instance::get(void)
 
 #endif /* #if VCOS_CONFIG_MULTIPLE_INSTANCE_ENABLE */
 
-#ifndef UNITTEST
-char event_queue_stack[THREAD_EVENT_STACK_SIZE];
-#endif
-
 void Instance::after_init(void)
 {
     initialized = true;
-
-    /* initialized event queue */
-#ifndef UNITTEST
-    event_queue.init(event_queue_stack, sizeof(event_queue_stack), THREAD_EVENT_PRIORITY);
-#endif
 }
 
 } // namespace vc

@@ -103,6 +103,10 @@ Thread *Thread::init(Instance &instances, char *stack, int stack_size, unsigned 
 
     tcb->get<ThreadScheduler>().increment_numof_threads_in_scheduler();
 
+#if VCOS_CONFIG_THREAD_FLAGS_ENABLE
+    tcb->init_flags();
+#endif
+
     if (flags & THREAD_FLAGS_CREATE_SLEEPING)
     {
         tcb->get<ThreadScheduler>().set_thread_status(tcb, THREAD_STATUS_SLEEPING);
@@ -214,6 +218,14 @@ void Thread::init_msg(void)
     (static_cast<Cib *>(&msg_queue))->init(0);
     msg_array = NULL;
 }
+
+#if VCOS_CONFIG_THREAD_FLAGS_ENABLE
+void Thread::init_flags(void)
+{
+    flags = 0;
+    wait_flags = 0;
+}
+#endif
 
 void ThreadScheduler::run(void)
 {
@@ -435,7 +447,9 @@ const char *ThreadScheduler::thread_status_to_string(thread_status_t status)
     return retval;
 }
 
-thread_flags_t ThreadFlags::clear_atomic(Thread *thread, thread_flags_t mask)
+#if VCOS_CONFIG_THREAD_FLAGS_ENABLE
+
+thread_flags_t ThreadScheduler::thread_flags_clear_atomic(Thread *thread, thread_flags_t mask)
 {
     unsigned state = cpu_irq_disable();
 
@@ -448,26 +462,26 @@ thread_flags_t ThreadFlags::clear_atomic(Thread *thread, thread_flags_t mask)
     return mask;
 }
 
-void ThreadFlags::wait(thread_flags_t mask, Thread *thread, thread_status_t thread_status, unsigned irqstate)
+void ThreadScheduler::thread_flags_wait(thread_flags_t mask, Thread *thread, thread_status_t thread_status, unsigned irqstate)
 {
-    thread->wait_data = static_cast<void *>(&mask);
+    thread->wait_flags = mask;
 
-    get<ThreadScheduler>().set_thread_status(thread, thread_status);
+    set_thread_status(thread, thread_status);
 
     cpu_irq_restore(irqstate);
 
-    ThreadScheduler::yield_higher_priority_thread();
+    yield_higher_priority_thread();
 }
 
-void ThreadFlags::wait_any_blocked(thread_flags_t mask)
+void ThreadScheduler::thread_flags_wait_any_blocked(thread_flags_t mask)
 {
-    Thread *current_thread = get<ThreadScheduler>().get_current_active_thread();
+    Thread *current_thread = get_current_active_thread();
 
     unsigned state = cpu_irq_disable();
 
     if (!(current_thread->flags & mask))
     {
-        wait(mask, current_thread, THREAD_STATUS_FLAG_BLOCKED_ANY, state);
+        thread_flags_wait(mask, current_thread, THREAD_STATUS_FLAG_BLOCKED_ANY, state);
     }
     else
     {
@@ -475,17 +489,17 @@ void ThreadFlags::wait_any_blocked(thread_flags_t mask)
     }
 }
 
-void ThreadFlags::set(Thread *thread, thread_flags_t mask)
+void ThreadScheduler::thread_flags_set(Thread *thread, thread_flags_t mask)
 {
     unsigned state = cpu_irq_disable();
 
     thread->flags |= mask;
 
-    if (wake(thread))
+    if (thread_flags_wake(thread))
     {
         cpu_irq_restore(state);
 
-        ThreadScheduler::yield_higher_priority_thread();
+        yield_higher_priority_thread();
     }
     else
     {
@@ -493,11 +507,11 @@ void ThreadFlags::set(Thread *thread, thread_flags_t mask)
     }
 }
 
-int ThreadFlags::wake(Thread *thread)
+int ThreadScheduler::thread_flags_wake(Thread *thread)
 {
     unsigned wakeup;
 
-    thread_flags_t mask = *static_cast<uint16_t *>(thread->wait_data);
+    thread_flags_t mask = thread->wait_flags;
 
     switch (thread->get_status())
     {
@@ -516,58 +530,208 @@ int ThreadFlags::wake(Thread *thread)
 
     if (wakeup)
     {
-        get<ThreadScheduler>().set_thread_status(thread, THREAD_STATUS_PENDING);
-        get<ThreadScheduler>().enable_context_switch_request();
+        set_thread_status(thread, THREAD_STATUS_PENDING);
+        enable_context_switch_request();
     }
 
     return wakeup;
 }
 
-thread_flags_t ThreadFlags::clear(thread_flags_t mask)
+thread_flags_t ThreadScheduler::thread_flags_clear(thread_flags_t mask)
 {
-    Thread *current_thread = get<ThreadScheduler>().get_current_active_thread();
-    mask = clear_atomic(current_thread, mask);
+    Thread *current_thread = get_current_active_thread();
+
+    mask = thread_flags_clear_atomic(current_thread, mask);
+
     return mask;
 }
 
-thread_flags_t ThreadFlags::wait_any(thread_flags_t mask)
+thread_flags_t ThreadScheduler::thread_flags_wait_any(thread_flags_t mask)
 {
-    Thread *thread = get<ThreadScheduler>().get_current_active_thread();
-    wait_any_blocked(mask);
-    return clear_atomic(thread, mask);
+    Thread *current_thread = get_current_active_thread();
+
+    thread_flags_wait_any_blocked(mask);
+
+    return thread_flags_clear_atomic(current_thread, mask);
 }
 
-thread_flags_t ThreadFlags::wait_all(thread_flags_t mask)
+thread_flags_t ThreadScheduler::thread_flags_wait_all(thread_flags_t mask)
 {
     unsigned state = cpu_irq_disable();
 
-    Thread *current_thread = get<ThreadScheduler>().get_current_active_thread();
+    Thread *current_thread = get_current_active_thread();
 
     if (!((current_thread->flags & mask) == mask))
     {
-        wait(mask, current_thread, THREAD_STATUS_FLAG_BLOCKED_ALL, state);
+        thread_flags_wait(mask, current_thread, THREAD_STATUS_FLAG_BLOCKED_ALL, state);
     }
     else
     {
         cpu_irq_restore(state);
     }
 
-    return clear_atomic(current_thread, mask);
+    return thread_flags_clear_atomic(current_thread, mask);
 }
 
-thread_flags_t ThreadFlags::wait_one(thread_flags_t mask)
+thread_flags_t ThreadScheduler::thread_flags_wait_one(thread_flags_t mask)
 {
-    wait_any_blocked(mask);
+    thread_flags_wait_any_blocked(mask);
 
-    Thread *current_thread = get<ThreadScheduler>().get_current_active_thread();
+    Thread *current_thread = get_current_active_thread();
 
     thread_flags_t tmp = current_thread->flags & mask;
 
     /* clear all but least significant bit */
     tmp &= (~tmp + 1);
 
-    return clear_atomic(current_thread, tmp);
+    return thread_flags_clear_atomic(current_thread, tmp);
 }
+
+#endif // #if VCOS_CONFIG_THREAD_FLAGS_ENABLE
+
+#if VCOS_CONFIG_THREAD_EVENT_ENABLE
+
+void ThreadScheduler::event_claim(void)
+{
+    assert(event_waiter == NULL);
+
+    event_waiter = get_current_active_thread();
+}
+
+void ThreadScheduler::event_post(Event *event)
+{
+    assert(event);
+
+    unsigned state = cpu_irq_disable();
+
+    if (!event->list_node.next)
+    {
+        event_list.right_push(static_cast<Clist *>(&event->list_node));
+    }
+
+    Thread *thread_waiter = event_waiter;
+
+    cpu_irq_restore(state);
+
+    if (thread_waiter != NULL)
+    {
+        thread_flags_set(thread_waiter, THREAD_FLAG_EVENT);
+    }
+}
+
+void ThreadScheduler::event_cancel(Event *event)
+{
+    assert(event);
+
+    unsigned state = cpu_irq_disable();
+
+    event_list.remove(static_cast<Clist *>(&event->list_node));
+
+    event->list_node.next = NULL;
+
+    cpu_irq_restore(state);
+}
+
+Event *ThreadScheduler::event_get(void)
+{
+    unsigned state = cpu_irq_disable();
+
+    Event *result = reinterpret_cast<Event *>(event_list.left_pop());
+
+    cpu_irq_restore(state);
+
+    if (result)
+    {
+        result->list_node.next = NULL;
+    }
+
+    return result;
+}
+
+Event  *ThreadScheduler::event_wait(void)
+{
+    Event *result;
+
+#ifdef UNITTEST
+
+    unsigned state = cpu_irq_disable();
+    result = reinterpret_cast<Event *>(event_list.left_pop());
+    cpu_irq_restore(state);
+
+    if (result)
+    {
+        thread_flags_wait_any(THREAD_FLAG_EVENT);
+
+        result->list_node.next = NULL;
+    }
+
+#else
+
+    do
+    {
+        unsigned state = cpu_irq_disable();
+        result = reinterpret_cast<Event *>(event_list.left_pop());
+        cpu_irq_restore(state);
+
+        if (result == NULL)
+        {
+            thread_flags_wait_any(THREAD_FLAG_EVENT);
+        }
+
+    } while (result == NULL);
+
+    result->list_node.next = NULL;
+
+#endif
+
+    return result;
+}
+
+void ThreadScheduler::event_loop(void)
+{
+    Event *event;
+
+#ifdef UNITTEST
+
+    event = event_wait();
+
+    if (event)
+    {
+        event->handler(static_cast<event_t *>(event));
+    }
+
+#else
+
+    while ((event = event_wait()))
+    {
+        event->handler(static_cast<event_t *>(event));
+    }
+
+#endif
+}
+
+#endif // #if VCOS_CONFIG_THREAD_EVENT_ENABLE
+
+#if 0
+extern "C" void *_event_handler(void *arg)
+{
+    ThreadScheduler *thread_scheduler = static_cast<ThreadScheduler *>(arg);
+
+    thread_scheduler->event_claim();
+
+    thread_scheduler->event_loop();
+
+    /* should not reach here */
+
+    return NULL;
+}
+
+void ThreadScheduler::event_thread_init(char *stack, size_t stack_size, unsigned priority)
+{
+    Thread::init(get_instance(), stack, stack_size, priority, 0, _event_handler, this, "event");
+}
+#endif
+
 
 extern "C" void cpu_end_of_isr(instance_t *instances)
 {
@@ -585,11 +749,6 @@ template <> inline Instance &Thread::get(void) const
 }
 
 template <typename Type> inline Type &Thread::get(void) const
-{
-    return get_instance().get<Type>();
-}
-
-template <typename Type> inline Type &ThreadFlags::get(void) const
 {
     return get_instance().get<Type>();
 }

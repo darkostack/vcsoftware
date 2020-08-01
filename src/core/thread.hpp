@@ -6,6 +6,10 @@
 #include <vcos/stat.h>
 #include <vcos/cpu.h>
 
+#if VCOS_CONFIG_THREAD_EVENT_ENABLE
+#include <vcos/event.h>
+#endif
+
 #include "core/msg.hpp"
 #include "core/cib.hpp"
 #include "core/clist.hpp"
@@ -60,6 +64,10 @@ private:
 
     void init_msg(void);
 
+#if VCOS_CONFIG_THREAD_FLAGS_ENABLE
+    void init_flags(void);
+#endif
+
     void set_stack_start(char *ptr) { stack_start = ptr; }
 
     void set_stack_size(int size) { stack_size = size; }
@@ -79,6 +87,17 @@ private:
 #endif
 };
 
+#if VCOS_CONFIG_THREAD_EVENT_ENABLE
+class Event : public event_t
+{
+public:
+    explicit Event(event_handler_func_t func)
+    {
+        handler = func;
+    }
+};
+#endif
+
 class ThreadScheduler : public Clist
 {
 public:
@@ -88,6 +107,9 @@ public:
         , current_active_thread(NULL)
         , current_active_pid(KERNEL_PID_UNDEF)
         , runqueue_bitcache(0)
+#if VCOS_CONFIG_THREAD_EVENT_ENABLE
+        , event_waiter(NULL)
+#endif
     {
         for (kernel_pid_t i = KERNEL_PID_FIRST; i <= KERNEL_PID_LAST; ++i)
         {
@@ -135,6 +157,34 @@ public:
 
     static const char *thread_status_to_string(thread_status_t status);
 
+#if VCOS_CONFIG_THREAD_FLAGS_ENABLE
+    void thread_flags_set(Thread *thread, thread_flags_t mask);
+
+    thread_flags_t thread_flags_clear(thread_flags_t mask);
+
+    thread_flags_t thread_flags_wait_any(thread_flags_t mask);
+
+    thread_flags_t thread_flags_wait_all(thread_flags_t mask);
+
+    thread_flags_t thread_flags_wait_one(thread_flags_t mask);
+
+    int thread_flags_wake(Thread *thread);
+#endif
+
+#if VCOS_CONFIG_THREAD_EVENT_ENABLE
+    void event_claim(void);
+
+    void event_post(Event *event);
+
+    void event_cancel(Event *event);
+
+    Event *event_get(void);
+
+    Event *event_wait(void);
+
+    void event_loop(void);
+#endif
+
 private:
     uint32_t get_runqueue_bitcache(void) { return runqueue_bitcache; }
 
@@ -145,6 +195,14 @@ private:
     Thread *get_next_thread_from_runqueue(void);
 
     uint8_t get_lsb_index_from_runqueue(void);
+
+#if VCOS_CONFIG_THREAD_FLAGS_ENABLE
+    thread_flags_t thread_flags_clear_atomic(Thread *thread, thread_flags_t mask);
+
+    void thread_flags_wait(thread_flags_t mask, Thread *thread, thread_status_t thread_status, unsigned irqstate);
+
+    void thread_flags_wait_any_blocked(thread_flags_t mask);
+#endif
 
     int numof_threads_in_scheduler;
 
@@ -161,40 +219,12 @@ private:
     uint32_t runqueue_bitcache;
 
     scheduler_stat_t scheduler_stats[KERNEL_PID_LAST + 1];
-};
 
-class ThreadFlags
-{
-public:
-    explicit ThreadFlags(Instance *instances)
-    {
-        instance = static_cast<void *>(instances);
-    }
+#if VCOS_CONFIG_THREAD_EVENT_ENABLE
+    Clist event_list;
 
-    void set(Thread *thread, thread_flags_t mask);
-
-    thread_flags_t clear(thread_flags_t mask);
-
-    thread_flags_t wait_any(thread_flags_t mask);
-
-    thread_flags_t wait_all(thread_flags_t mask);
-
-    thread_flags_t wait_one(thread_flags_t mask);
-
-    int wake(Thread *thread);
-
-private:
-    thread_flags_t clear_atomic(Thread *thread, thread_flags_t mask);
-
-    void wait(thread_flags_t mask, Thread *thread, thread_status_t thread_status, unsigned irqstate);
-
-    void wait_any_blocked(thread_flags_t mask);
-
-    template <typename Type> inline Type &get(void) const;
-
-    Instance &get_instance(void) const { return *static_cast<Instance *>(instance); }
-
-    void *instance;
+    Thread *event_waiter;
+#endif
 };
 
 } // namespace vc

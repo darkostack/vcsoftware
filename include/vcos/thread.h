@@ -33,7 +33,9 @@ typedef enum
 
 #define THREAD_STATUS_NOT_FOUND ((thread_status_t)-1)
 
+#if VCOS_CONFIG_THREAD_FLAGS_ENABLE
 typedef uint16_t thread_flags_t;
+#endif
 
 typedef struct thread
 {
@@ -41,7 +43,10 @@ typedef struct thread
     thread_status_t status;
     uint8_t priority;
     kernel_pid_t pid;
+#if VCOS_CONFIG_THREAD_FLAGS_ENABLE
     thread_flags_t flags;
+    thread_flags_t wait_flags;
+#endif
     list_node_t runqueue_entry;
     void *wait_data;
     list_node_t msg_waiters;

@@ -12,7 +12,7 @@ class TestThread : public testing::Test
 {
 };
 
-TEST_F(TestThread, single_thread)
+TEST_F(TestThread, single_thread_test)
 {
     DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
 
@@ -70,7 +70,7 @@ TEST_F(TestThread, single_thread)
     EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 1);
 }
 
-TEST_F(TestThread, multiple_thread)
+TEST_F(TestThread, multiple_thread_test)
 {
     DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
 
@@ -628,7 +628,7 @@ TEST_F(TestThread, multiple_thread)
     EXPECT_EQ(task2_thread->get_status(), THREAD_STATUS_RUNNING);
 }
 
-TEST_F(TestThread, multiple_instance_multithreads)
+TEST_F(TestThread, multiple_instance_multithreads_test)
 {
     DEFINE_ALIGNED_VAR(buffer1, sizeof(Instance), uint64_t);
     DEFINE_ALIGNED_VAR(buffer2, sizeof(Instance), uint64_t);
@@ -783,4 +783,190 @@ TEST_F(TestThread, multiple_instance_multithreads)
     EXPECT_EQ(instance2.get<ThreadScheduler>().get_current_active_thread(), instance2_thread2);
     EXPECT_EQ(instance2.get<ThreadScheduler>().get_current_active_pid(), instance2_thread2->get_pid());
     EXPECT_EQ(instance2.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 2);
+}
+
+TEST_F(TestThread, thread_flags_test)
+{
+    DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
+
+    uint32_t size = ARRAY_LENGTH(buffer);
+
+    Instance instance = Instance::init((void *)buffer, (size_t *)&size);
+
+    EXPECT_TRUE(instance.is_initialized());
+
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 0);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
+
+    char idle_stack[128];
+
+    Thread *idle_thread = Thread::init(instance, idle_stack, sizeof(idle_stack), 15,
+                                       THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
+                                       NULL, NULL, "idle");
+
+    EXPECT_NE(idle_thread, nullptr);
+
+    EXPECT_EQ(idle_thread->get_pid(), 1);
+    EXPECT_EQ(idle_thread->get_priority(), 15);
+    EXPECT_EQ(idle_thread->get_name(), "idle");
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    char main_stack[128];
+
+    Thread *main_thread = Thread::init(instance, main_stack, sizeof(main_stack), 7,
+                                       THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
+                                       NULL, NULL, "main");
+
+    EXPECT_NE(main_thread, nullptr);
+
+    EXPECT_EQ(main_thread->get_pid(), 2);
+    EXPECT_EQ(main_thread->get_priority(), 7);
+    EXPECT_EQ(main_thread->get_name(), "main");
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 2);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(idle_thread->get_pid()), idle_thread);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(main_thread->get_pid()), main_thread);
+    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested());
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), main_thread);
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), main_thread->get_pid());
+    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 2);
+
+    /**
+     * ------------------------------------------------------------------------------
+     * [TEST CASE] thread flags wait any
+     * ------------------------------------------------------------------------------
+     **/
+
+    instance.get<ThreadScheduler>().thread_flags_wait_any(0xf);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ANY);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(main_thread->flags, 0);
+    EXPECT_EQ(main_thread->wait_flags, 0xf);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ANY);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x1);
+
+    /* any flag set to thread flags will immediately change the thread status to
+     * pending status */
+
+    EXPECT_EQ(main_thread->flags, 0x1);
+    EXPECT_EQ(main_thread->wait_flags, 0xf);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    instance.get<ThreadScheduler>().thread_flags_clear(0xf);
+
+    /* at this point we already clear thread->flags so calling
+     * thread_flags_wait_any will make the current thread in FLAG_BLOCKED_ANY
+     * status */
+
+    EXPECT_EQ(main_thread->flags, 0);
+    EXPECT_EQ(main_thread->wait_flags, 0xf);
+
+    instance.get<ThreadScheduler>().thread_flags_wait_any(0xf);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ANY);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(main_thread->flags, 0);
+    EXPECT_EQ(main_thread->wait_flags, 0xf);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ANY);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x3);
+
+    /* now we use different flag to unlocked main_thread, any flag will unlocked
+     * main_thread */
+
+    EXPECT_EQ(main_thread->flags, 0x3);
+    EXPECT_EQ(main_thread->wait_flags, 0xf);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(main_thread->flags, 0x3);
+    EXPECT_EQ(main_thread->wait_flags, 0xf);
+
+    /**
+     * ------------------------------------------------------------------------------
+     * [TEST CASE] thread flags wait all
+     * ------------------------------------------------------------------------------
+     **/
+
+    instance.get<ThreadScheduler>().thread_flags_wait_all(0xff);
+
+    /* note: wait all will clear the previous main_thread flags */
+
+    EXPECT_EQ(main_thread->flags, 0);
+    EXPECT_EQ(main_thread->wait_flags, 0xff);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ALL);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ALL);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x1);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x2);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x4);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x8);
+
+    /* the thread should remain in FLAG_BLOCKED_ALL status until all flags is
+     * filled */
+
+    EXPECT_EQ(main_thread->flags, 0xf);
+    EXPECT_EQ(main_thread->wait_flags, 0xff);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ALL);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x10);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x20);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x40);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x80);
+
+    /* at this point all flags is filled */
+
+    EXPECT_EQ(main_thread->flags, 0xff);
+    EXPECT_EQ(main_thread->wait_flags, 0xff);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
 }
