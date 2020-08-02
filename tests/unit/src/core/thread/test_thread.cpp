@@ -853,7 +853,7 @@ TEST_F(TestThread, thread_flags_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
 
     EXPECT_EQ(main_thread->flags, 0);
-    EXPECT_EQ(main_thread->wait_flags, 0xf);
+    EXPECT_EQ(main_thread->waited_flags, 0xf);
 
     instance.get<ThreadScheduler>().run();
 
@@ -866,7 +866,7 @@ TEST_F(TestThread, thread_flags_test)
      * pending status */
 
     EXPECT_EQ(main_thread->flags, 0x1);
-    EXPECT_EQ(main_thread->wait_flags, 0xf);
+    EXPECT_EQ(main_thread->waited_flags, 0xf);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
@@ -883,7 +883,7 @@ TEST_F(TestThread, thread_flags_test)
      * status */
 
     EXPECT_EQ(main_thread->flags, 0);
-    EXPECT_EQ(main_thread->wait_flags, 0xf);
+    EXPECT_EQ(main_thread->waited_flags, 0xf);
 
     instance.get<ThreadScheduler>().thread_flags_wait_any(0xf);
 
@@ -891,7 +891,7 @@ TEST_F(TestThread, thread_flags_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
 
     EXPECT_EQ(main_thread->flags, 0);
-    EXPECT_EQ(main_thread->wait_flags, 0xf);
+    EXPECT_EQ(main_thread->waited_flags, 0xf);
 
     instance.get<ThreadScheduler>().run();
 
@@ -904,7 +904,7 @@ TEST_F(TestThread, thread_flags_test)
      * main_thread */
 
     EXPECT_EQ(main_thread->flags, 0x3);
-    EXPECT_EQ(main_thread->wait_flags, 0xf);
+    EXPECT_EQ(main_thread->waited_flags, 0xf);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
@@ -915,7 +915,7 @@ TEST_F(TestThread, thread_flags_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
 
     EXPECT_EQ(main_thread->flags, 0x3);
-    EXPECT_EQ(main_thread->wait_flags, 0xf);
+    EXPECT_EQ(main_thread->waited_flags, 0xf);
 
     /**
      * ------------------------------------------------------------------------------
@@ -928,7 +928,7 @@ TEST_F(TestThread, thread_flags_test)
     /* note: wait all will clear the previous main_thread flags */
 
     EXPECT_EQ(main_thread->flags, 0);
-    EXPECT_EQ(main_thread->wait_flags, 0xff);
+    EXPECT_EQ(main_thread->waited_flags, 0xff);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ALL);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -947,7 +947,7 @@ TEST_F(TestThread, thread_flags_test)
      * filled */
 
     EXPECT_EQ(main_thread->flags, 0xf);
-    EXPECT_EQ(main_thread->wait_flags, 0xff);
+    EXPECT_EQ(main_thread->waited_flags, 0xff);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ALL);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
@@ -960,12 +960,175 @@ TEST_F(TestThread, thread_flags_test)
     /* at this point all flags is filled */
 
     EXPECT_EQ(main_thread->flags, 0xff);
-    EXPECT_EQ(main_thread->wait_flags, 0xff);
+    EXPECT_EQ(main_thread->waited_flags, 0xff);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
 
     instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    instance.get<ThreadScheduler>().thread_flags_clear(0xf);
+
+    /* clear half of the flags in main_thread->flags */
+
+    EXPECT_EQ(main_thread->flags, 0xf0);
+    EXPECT_EQ(main_thread->waited_flags, 0xff);
+
+    instance.get<ThreadScheduler>().thread_flags_wait_all(0xff);
+
+    /* this function will clear all the remain flags in main_thread->flags to
+     * wait all flags to be received again and set to FLAG_BLOCKED_ALL status */
+
+    EXPECT_EQ(main_thread->flags, 0);
+    EXPECT_EQ(main_thread->waited_flags, 0xff);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ALL);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ALL);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x1);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x2);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x4);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x8);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x10);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x20);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x40);
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x80);
+
+    EXPECT_EQ(main_thread->flags, 0xff);
+    EXPECT_EQ(main_thread->waited_flags, 0xff);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->flags, 0xff);
+    EXPECT_EQ(main_thread->waited_flags, 0xff);
+
+    instance.get<ThreadScheduler>().thread_flags_wait_all(0xff); /* this will take no effect */
+
+    /* Note: previous main_thread->flags is 0xff and calling this function again
+     * will assume that the flags has been filled and clear the
+     * main_thread->flags and will not blocked main_thread. to make
+     * thread_flags_wait_all immediately taking effect we must clear the
+     * main_thread->flags first. */
+
+    EXPECT_EQ(main_thread->flags, 0x0);
+    EXPECT_EQ(main_thread->waited_flags, 0xff);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    /* main_thread->flags is cleared but main_thread is still in running status */
+
+    /**
+     * ------------------------------------------------------------------------------
+     * [TEST CASE] thread flags wait one
+     * ------------------------------------------------------------------------------
+     **/
+
+    EXPECT_EQ(main_thread->flags, 0x0);
+    EXPECT_EQ(main_thread->waited_flags, 0xff);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    instance.get<ThreadScheduler>().thread_flags_wait_one(0x3);
+
+    EXPECT_EQ(main_thread->flags, 0x0);
+    EXPECT_EQ(main_thread->waited_flags, 0x3);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ANY);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ANY);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x10);
+
+    /* Note: we set the flag that is not being wait */
+
+    EXPECT_EQ(main_thread->flags, 0x10);
+    EXPECT_EQ(main_thread->waited_flags, 0x3);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ANY);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x1);
+
+    EXPECT_EQ(main_thread->flags, 0x11);
+    EXPECT_EQ(main_thread->waited_flags, 0x3);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->flags, 0x11);
+    EXPECT_EQ(main_thread->waited_flags, 0x3);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    instance.get<ThreadScheduler>().thread_flags_wait_one(0x3);
+
+    /* previous flags is not being cleared, calling this function will assume
+     * the flags has been filled and clear the flags corresponding to waited_one 
+     * mask*/
+
+    EXPECT_EQ(main_thread->flags, 0x10);
+    EXPECT_EQ(main_thread->waited_flags, 0x3);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    instance.get<ThreadScheduler>().thread_flags_wait_one(0x3);
+
+    /* now it will blocked main_thread */
+
+    EXPECT_EQ(main_thread->flags, 0x10);
+    EXPECT_EQ(main_thread->waited_flags, 0x3);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ANY);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_FLAG_BLOCKED_ANY);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().thread_flags_set(main_thread, 0x2);
+
+    EXPECT_EQ(main_thread->flags, 0x12);
+    EXPECT_EQ(main_thread->waited_flags, 0x3);
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
+
+    instance.get<ThreadScheduler>().run();
+
+    EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
+    EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
+
+    EXPECT_EQ(main_thread->flags, 0x12);
+    EXPECT_EQ(main_thread->waited_flags, 0x3);
+
+    instance.get<ThreadScheduler>().thread_flags_clear(0xff);
+
+    /* clear main_thread (current thread) flags */
+
+    EXPECT_EQ(main_thread->flags, 0);
+    EXPECT_EQ(main_thread->waited_flags, 0x3);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);

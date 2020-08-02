@@ -45,7 +45,7 @@ typedef struct thread
     kernel_pid_t pid;
 #if VCOS_CONFIG_THREAD_FLAGS_ENABLE
     thread_flags_t flags;
-    thread_flags_t wait_flags;
+    thread_flags_t waited_flags;
 #endif
     list_node_t runqueue_entry;
     void *wait_data;

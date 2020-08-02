@@ -223,7 +223,7 @@ void Thread::init_msg(void)
 void Thread::init_flags(void)
 {
     flags = 0;
-    wait_flags = 0;
+    waited_flags = 0;
 }
 #endif
 
@@ -464,7 +464,7 @@ thread_flags_t ThreadScheduler::thread_flags_clear_atomic(Thread *thread, thread
 
 void ThreadScheduler::thread_flags_wait(thread_flags_t mask, Thread *thread, thread_status_t thread_status, unsigned irqstate)
 {
-    thread->wait_flags = mask;
+    thread->waited_flags = mask;
 
     set_thread_status(thread, thread_status);
 
@@ -511,7 +511,7 @@ int ThreadScheduler::thread_flags_wake(Thread *thread)
 {
     unsigned wakeup;
 
-    thread_flags_t mask = thread->wait_flags;
+    thread_flags_t mask = thread->waited_flags;
 
     switch (thread->get_status())
     {
