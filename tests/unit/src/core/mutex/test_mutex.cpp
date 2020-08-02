@@ -12,7 +12,7 @@ class TestMutex : public testing::Test
 {
 };
 
-TEST_F(TestMutex, single_instance_mutex)
+TEST_F(TestMutex, single_instance_mutex_test)
 {
     DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
 

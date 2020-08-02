@@ -20,14 +20,14 @@ protected:
     }
 };
 
-TEST_F(TestCib, constructor)
+TEST_F(TestCib, constructor_test)
 {
     EXPECT_TRUE(obj);
 
     EXPECT_EQ(sizeof(Cib), sizeof(cib_t));
 }
 
-TEST_F(TestCib, functions)
+TEST_F(TestCib, functions_test)
 {
     EXPECT_EQ(obj->full(), 0);
     EXPECT_EQ(obj->avail(), 0);

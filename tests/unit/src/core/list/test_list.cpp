@@ -20,14 +20,14 @@ protected:
     }
 };
 
-TEST_F(TestList, constructor)
+TEST_F(TestList, constructor_test)
 {
     EXPECT_TRUE(obj);
 
     EXPECT_EQ(sizeof(List), sizeof(list_node_t));
 }
 
-TEST_F(TestList, functions)
+TEST_F(TestList, functions_test)
 {
     List node1;
     List node2;

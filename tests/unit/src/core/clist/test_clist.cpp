@@ -20,14 +20,14 @@ protected:
     }
 };
 
-TEST_F(TestClist, constructor)
+TEST_F(TestClist, constructor_test)
 {
     EXPECT_TRUE(obj);
 
     EXPECT_EQ(sizeof(Clist), sizeof(list_node_t));
 }
 
-TEST_F(TestClist, right_push)
+TEST_F(TestClist, right_push_test)
 {
     Clist node1;
     Clist node2;
@@ -69,7 +69,7 @@ TEST_F(TestClist, right_push)
     EXPECT_EQ(obj->next->next->next->next->next, &node4);
 }
 
-TEST_F(TestClist, left_push)
+TEST_F(TestClist, left_push_test)
 {
     Clist node1;
     Clist node2;
@@ -111,7 +111,7 @@ TEST_F(TestClist, left_push)
     EXPECT_EQ(obj->next->next->next->next->next, &node1);
 }
 
-TEST_F(TestClist, left_pop)
+TEST_F(TestClist, left_pop_test)
 {
     Clist node1;
     Clist node2;
@@ -155,7 +155,7 @@ TEST_F(TestClist, left_pop)
     EXPECT_EQ(obj->next, nullptr);
 }
 
-TEST_F(TestClist, left_pop_right_push)
+TEST_F(TestClist, left_pop_right_push_test)
 {
     Clist node1;
     Clist node2;
@@ -216,7 +216,7 @@ TEST_F(TestClist, left_pop_right_push)
     EXPECT_EQ(obj->next->next->next->next->next, &node1);
 }
 
-TEST_F(TestClist, count)
+TEST_F(TestClist, count_test)
 {
     Clist node1;
     Clist node2;
@@ -239,7 +239,7 @@ TEST_F(TestClist, count)
     EXPECT_EQ(obj->count(), 4);
 }
 
-TEST_F(TestClist, remove)
+TEST_F(TestClist, remove_test)
 {
     Clist node1;
     Clist node2;
@@ -290,7 +290,7 @@ TEST_F(TestClist, remove)
     EXPECT_EQ(obj->next, nullptr);
 }
 
-TEST_F(TestClist, find)
+TEST_F(TestClist, find_test)
 {
     Clist node1;
     Clist node2;
@@ -327,7 +327,7 @@ TEST_F(TestClist, find)
     EXPECT_EQ(obj->next->next->next->next, &node1);
 }
 
-TEST_F(TestClist, find_before)
+TEST_F(TestClist, find_before_test)
 {
     Clist node1;
     Clist node2;
@@ -353,7 +353,7 @@ TEST_F(TestClist, find_before)
     EXPECT_EQ(obj->find_before(&node2), &node3);
 }
 
-TEST_F(TestClist, right_pop)
+TEST_F(TestClist, right_pop_test)
 {
     Clist node1;
     Clist node2;
@@ -404,7 +404,7 @@ TEST_F(TestClist, right_pop)
     EXPECT_EQ(obj->next, nullptr);
 }
 
-TEST_F(TestClist, left_right_peek)
+TEST_F(TestClist, left_right_peek_test)
 {
     Clist node1;
     Clist node2;

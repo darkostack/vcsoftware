@@ -13,7 +13,7 @@ class TestMsg : public testing::Test
 {
 };
 
-TEST_F(TestMsg, single_send_and_receive_msg)
+TEST_F(TestMsg, single_send_and_receive_msg_test)
 {
     DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
 
@@ -540,7 +540,7 @@ TEST_F(TestMsg, single_send_and_receive_msg)
     /* Note: reply message was sent from Isr */
 }
 
-TEST_F(TestMsg, multiple_send_and_receive_msg)
+TEST_F(TestMsg, multiple_send_and_receive_msg_test)
 {
     DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
 

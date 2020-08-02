@@ -7,17 +7,9 @@ using namespace vc;
 
 class TestInstance : public testing::Test
 {
-protected:
-    virtual void SetUp()
-    {
-    }
-
-    virtual void TearDown()
-    {
-    }
 };
 
-TEST_F(TestInstance, init)
+TEST_F(TestInstance, init_test)
 {
     DEFINE_ALIGNED_VAR(buffer1, sizeof(Instance), uint64_t);
     DEFINE_ALIGNED_VAR(buffer2, sizeof(Instance), uint64_t);
