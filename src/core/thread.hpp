@@ -93,6 +93,7 @@ class Event : public event_t
 public:
     explicit Event(event_handler_func_t func)
     {
+        list_node.next = NULL;
         handler = func;
     }
 };

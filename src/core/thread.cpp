@@ -650,7 +650,7 @@ Event *ThreadScheduler::event_get(void)
 
 Event  *ThreadScheduler::event_wait(void)
 {
-    Event *result;
+    Event *result = NULL;
 
 #ifdef UNITTEST
 
@@ -658,10 +658,12 @@ Event  *ThreadScheduler::event_wait(void)
     result = reinterpret_cast<Event *>(event_list.left_pop());
     cpu_irq_restore(state);
 
-    if (result)
+    if (result == NULL)
     {
         thread_flags_wait_any(THREAD_FLAG_EVENT);
-
+    }
+    else
+    {
         result->list_node.next = NULL;
     }
 
@@ -689,7 +691,7 @@ Event  *ThreadScheduler::event_wait(void)
 
 void ThreadScheduler::event_loop(void)
 {
-    Event *event;
+    Event *event = NULL;
 
 #ifdef UNITTEST
 
