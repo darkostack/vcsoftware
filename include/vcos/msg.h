@@ -25,19 +25,6 @@ typedef struct msg
 #endif
 } msg_t;
 
-typedef struct msg_bus
-{
-    list_node_t subs;
-    uint16_t id;
-} msg_bus_t;
-
-typedef struct msg_bus_entry
-{
-    list_node_t next;
-    uint32_t event_mask;
-    kernel_pid_t pid;
-} msg_bus_entry_t;
-
 int msg_receive(msg_t *msg);
 
 int msg_send(msg_t *msg, kernel_pid_t pid);

@@ -80,26 +80,6 @@ private:
 #endif
 };
 
-extern uint16_t msg_bus_count;
-
-class MsgBus : public msg_bus_t
-{
-public:
-
-    explicit MsgBus(void)
-    {
-        subs.next = NULL;
-        id = msg_bus_count++;
-    }
-
-private:
-
-};
-
-class MsgBusEntry : public msg_bus_entry_t
-{
-};
-
 } // namespace vc
 
 #endif /* CORE_MSG_HPP */
