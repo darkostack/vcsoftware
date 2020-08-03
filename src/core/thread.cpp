@@ -712,27 +712,6 @@ void ThreadScheduler::event_loop(void)
 
 #endif // #if VCOS_CONFIG_THREAD_EVENT_ENABLE
 
-#if 0
-extern "C" void *_event_handler(void *arg)
-{
-    ThreadScheduler *thread_scheduler = static_cast<ThreadScheduler *>(arg);
-
-    thread_scheduler->event_claim();
-
-    thread_scheduler->event_loop();
-
-    /* should not reach here */
-
-    return NULL;
-}
-
-void ThreadScheduler::event_thread_init(char *stack, size_t stack_size, unsigned priority)
-{
-    Thread::init(get_instance(), stack, stack_size, priority, 0, _event_handler, this, "event");
-}
-#endif
-
-
 extern "C" void cpu_end_of_isr(instance_t *instances)
 {
     Instance &instance = *static_cast<Instance *>(instances);
