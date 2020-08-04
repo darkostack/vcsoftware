@@ -88,7 +88,7 @@ set(unittest-includes-base
   "${PROJECT_SOURCE_DIR}/stubs"
   "${PROJECT_SOURCE_DIR}/../.."
   "${PROJECT_SOURCE_DIR}/../../include"
-  "${PROJECT_SOURCE_DIR}/../../src"
+  "${PROJECT_SOURCE_DIR}/../../source"
 )
 
 # Create a list for test suites.

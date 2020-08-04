@@ -5,7 +5,8 @@ set(unittest-sources
 )
 
 set(unittest-test-sources
-    src/core/list/test_list.cpp
+    source/core/cib/test_cib.cpp
+    stubs/assert_api_stub.c
 )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPROJECT_CONFIG_FILE='\"vcos-unittest-config.h\"'")

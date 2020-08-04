@@ -2,11 +2,18 @@ set(unittest-includes ${unittest-includes}
 )
 
 set(unittest-sources
+    ../../source/core/instance.cpp
+    ../../source/core/thread.cpp
+    ../../source/core/mutex.cpp
+    ../../source/core/msg.cpp
+    stubs/assert_api_stub.c
+    stubs/cpu_stub.c
+    stubs/thread_stub.c
+    stubs/thread_arch_stub.c
 )
 
 set(unittest-test-sources
-    src/core/cib/test_cib.cpp
-    stubs/assert_api_stub.c
+    source/core/msg/test_msg.cpp
 )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPROJECT_CONFIG_FILE='\"vcos-unittest-config.h\"'")
