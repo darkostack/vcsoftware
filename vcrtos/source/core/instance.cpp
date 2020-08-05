@@ -83,8 +83,6 @@ extern "C" void *thread_event_handler(void *arg)
 
 void Instance::after_init(void)
 {
-    initialized = true;
-
 #ifndef UNITTEST
 #if VCRTOS_CONFIG_THREAD_EVENT_ENABLE
     Thread::init(*this, event_queue_stack, ARRAY_LENGTH(event_queue_stack),
@@ -92,6 +90,8 @@ void Instance::after_init(void)
                  static_cast<void *>(this), "event");
 #endif
 #endif
+
+    initialized = true;
 }
 
 } // namespace vc
