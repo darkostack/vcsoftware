@@ -311,6 +311,18 @@ void ThreadScheduler::yield_higher_priority_thread(void)
     cpu_trigger_pendsv_interrupt();
 }
 
+/* Source: http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup */
+const uint8_t MultiplyDeBruijnBitPosition[32] =
+{
+    0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+    31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+};
+
+unsigned ThreadScheduler::bitarithm_lsb(unsigned v)
+{
+    return MultiplyDeBruijnBitPosition[((uint32_t)((v & -v) * 0x077CB531U)) >> 27];
+}
+
 uint8_t ThreadScheduler::get_lsb_index_from_runqueue(void)
 {
     uint8_t index = 0;
@@ -319,11 +331,15 @@ uint8_t ThreadScheduler::get_lsb_index_from_runqueue(void)
 
     /* [IMPORTANT]: this functions assume there will be at least 1 thread on the queue, (idle) thread */
 
+#if 1
+    index = bitarithm_lsb(queue);
+#else
     while ((queue & 0x01) == 0)
     {
         queue >>= 1;
         index += 1;
     }
+#endif
 
     return index;
 }

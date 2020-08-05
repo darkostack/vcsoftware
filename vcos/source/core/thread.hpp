@@ -197,6 +197,8 @@ private:
 
     uint8_t get_lsb_index_from_runqueue(void);
 
+    static unsigned bitarithm_lsb(unsigned v);
+
 #if VCOS_CONFIG_THREAD_FLAGS_ENABLE
     thread_flags_t thread_flags_clear_atomic(Thread *thread, thread_flags_t mask);
 

@@ -1,0 +1,118 @@
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+project(vcsoftware)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set( CMAKE_BUILD_TYPE Release CACHE STRING
+       "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel."
+       FORCE )
+endif()
+set(ORIGINAL_SRC_DIR ${CMAKE_SOURCE_DIR})
+set(INCLUDE_FILE_NAME ${CMAKE_SOURCE_DIR}/include_file.txt CACHE INTERNAL "" FORCE)
+file(WRITE ${INCLUDE_FILE_NAME} " ")
+include (${CMAKE_TOOLCHAIN_FILE})
+
+get_filename_component(NEW_CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR}/.. REALPATH)
+set(CMAKE_SOURCE_DIR ${NEW_CMAKE_SOURCE_DIR} CACHE INTERNAL "" FORCE)
+
+get_filename_component(CMAKE_PLATFORM ../platform/platform.cmake REALPATH)
+include (${CMAKE_PLATFORM})
+
+set(VCSOFTWARE_BUILD_SYS_MIN_VER_CMAKE 2)
+
+if(EXTERNAL_DEFINE_FILE)
+    include(${EXTERNAL_DEFINE_FILE})
+endif()
+
+INCLUDE(CMakeForceCompiler)
+cmake_minimum_required (VERSION 2.6)
+
+# The version number.
+set(Test_VERSION_MAJOR 1)
+set(Test_VERSION_MINOR 0)
+
+# ENABLE ASM
+ENABLE_LANGUAGE(ASM)
+
+if(DEFINED PLATFORM_DEFINED_CONFIGURATION)
+  add_definitions(-DPLATFORM_DEFINED_CONFIGURATION="${PLATFORM_DEFINED_CONFIGURATION}")
+endif()
+
+if(DEFINED PLATFORM_USER_DEFINED_CONFIGURATION)
+  add_definitions(-DPLATFORM_USER_DEFINED_CONFIGURATION="${PLATFORM_USER_DEFINED_CONFIGURATION}")
+endif()
+
+if(DEFINED PLATFORM_BOARD_SPECIFIC_CONFIG)
+  add_definitions(-DPLATFORM_BOARD_SPECIFIC_CONFIG="${PLATFORM_BOARD_SPECIFIC_CONFIG}")
+endif()
+
+get_filename_component(CMAKE_COMMON ../platform/common.cmake REALPATH)
+get_filename_component(CMAKE_PLATFORM ../platform/platform.cmake REALPATH)
+message("path to common.cmake is ${CMAKE_COMMON}")
+message("path to platform.cmake is ${CMAKE_PLATFORM}")
+
+include (${CMAKE_COMMON})
+#init compilation file
+file(WRITE "${COMPILATION_DETAILS_FILE_NAME}" "")
+
+include_directories("${PROJECT_BINARY_DIR}")
+
+if(CMAKE_BUILD_TYPE MATCHES Release)
+    set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/Release)
+    set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/Release)
+elseif(CMAKE_BUILD_TYPE MATCHES Debug)
+    set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/Debug)
+    set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/Debug)
+endif()
+
+foreach (_var ${EXTRA_CMAKE_DIRS})
+    get_filename_component(EXTRA_DIR ${_var} NAME)
+    add_subdirectory(${_var} ${CMAKE_BINARY_DIR}/${EXTRA_DIR})
+endforeach()
+
+get_filename_component(CMAKE_SOURCE_DIR_NAME ${CMAKE_SOURCE_DIR} NAME)
+add_subdirectory(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/${CMAKE_SOURCE_DIR_NAME})
+
+# add the executable
+foreach(TEST_LIB ${TEST_LIBS})
+    message ("building ${TEST_LIB} with sources ${SRC_LIBS}")
+
+    add_executable(${TEST_LIB}.elf)
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        TARGET_LINK_LIBRARIES(${TEST_LIB}.elf -Wl,--start-group)
+    endif()
+    target_link_libraries (${TEST_LIB}.elf  ${TEST_LIB} ${SRC_LIBS} ${PLATFORM_LIBS} ) # SRC_LIBS appear twice to resolve linker dependency issues between pal and tls static libraries
+
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        target_link_libraries(${TEST_LIB}.elf debug m)
+        target_link_libraries(${TEST_LIB}.elf debug c)
+        target_link_libraries(${TEST_LIB}.elf debug gcc)
+        target_link_libraries(${TEST_LIB}.elf optimized m)
+        target_link_libraries(${TEST_LIB}.elf optimized c)
+        target_link_libraries(${TEST_LIB}.elf optimized gcc)
+        if(${OS_BRAND} MATCHES FreeRTOS)
+            target_link_libraries(${TEST_LIB}.elf optimized nosys)
+            target_link_libraries(${TEST_LIB}.elf debug nosys)
+        endif()
+    endif()
+
+    if(${OS_BRAND} MATCHES Linux)
+        target_link_libraries(${TEST_LIB}.elf optimized rt)
+        target_link_libraries(${TEST_LIB}.elf debug rt)
+        target_link_libraries(${TEST_LIB}.elf optimized pthread)
+        target_link_libraries(${TEST_LIB}.elf debug pthread)
+    endif()
+
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        TARGET_LINK_LIBRARIES(${TEST_LIB}.elf -Wl,--end-group)
+    endif()
+
+    if(NOT (${OS_BRAND} MATCHES "Linux"))
+        message("name of the binary is ${TEST_LIB}")
+        ELF_TO_BIN(${TEST_LIB} ${EXECUTABLE_OUTPUT_PATH})
+    endif()
+
+    set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES  ${TEST_LIB}.elf)
+    set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES  ${TEST_LIB}.bin)
+endforeach()
+

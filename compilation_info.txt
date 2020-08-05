@@ -1,0 +1,3 @@
+
+vcsoftwareExample:
+/Users/darko/projects/vcsoftware/main.cpp;/Users/darko/projects/vcsoftware/source/application_init.cpp
