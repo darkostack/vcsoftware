@@ -9,27 +9,42 @@
 
 using namespace vc;
 
+DEFINE_ALIGNED_VAR(buffer1, sizeof(Instance), uint64_t);
+uint32_t buffer1_size = ARRAY_LENGTH(buffer1);
+
+DEFINE_ALIGNED_VAR(buffer2, sizeof(Instance), uint64_t);
+uint32_t buffer2_size = ARRAY_LENGTH(buffer2);
+
 class TestMsg : public testing::Test
 {
+protected:
+    Instance *instance1;
+    Instance *instance2;
+
+    virtual void SetUp()
+    {
+        instance1 = &Instance::init((void *)buffer1, (size_t *)&buffer1_size);
+        instance2 = &Instance::init((void *)buffer2, (size_t *)&buffer2_size);
+    }
 };
+
+TEST_F(TestMsg, constructor_test)
+{
+    EXPECT_TRUE(instance1);
+    EXPECT_TRUE(instance2);
+}
 
 TEST_F(TestMsg, single_send_and_receive_msg_test)
 {
-    DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
+    EXPECT_TRUE(instance1->is_initialized());
 
-    uint32_t size = ARRAY_LENGTH(buffer);
-
-    Instance instance = Instance::init((void *)buffer, (size_t *)&size);
-
-    EXPECT_TRUE(instance.is_initialized());
-
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 0);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_numof_threads_in_scheduler(), 0);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
     char idle_stack[128];
 
-    Thread *idle_thread = Thread::init(instance, idle_stack, sizeof(idle_stack), 15,
+    Thread *idle_thread = Thread::init(*instance1, idle_stack, sizeof(idle_stack), 15,
                                       THREAD_FLAGS_CREATE_WOUT_YIELD | \
                                       THREAD_FLAGS_CREATE_STACKMARKER,
                                       NULL, NULL, "idle");
@@ -43,7 +58,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
 
     char main_stack[128];
 
-    Thread *main_thread = Thread::init(instance, main_stack, sizeof(main_stack), 7,
+    Thread *main_thread = Thread::init(*instance1, main_stack, sizeof(main_stack), 7,
                                       THREAD_FLAGS_CREATE_WOUT_YIELD | \
                                       THREAD_FLAGS_CREATE_STACKMARKER,
                                       NULL, NULL, "main");
@@ -57,7 +72,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
 
     char task1_stack[128];
 
-    Thread *task1_thread = Thread::init(instance, task1_stack, sizeof(task1_stack), 5,
+    Thread *task1_thread = Thread::init(*instance1, task1_stack, sizeof(task1_stack), 5,
                                        THREAD_FLAGS_CREATE_WOUT_YIELD | \
                                        THREAD_FLAGS_CREATE_STACKMARKER,
                                        NULL, NULL, "task1");
@@ -69,27 +84,27 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(task1_thread->get_name(), "task1");
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(idle_thread->get_pid()), idle_thread);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(main_thread->get_pid()), main_thread);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(task1_thread->get_pid()), task1_thread);
-    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested());
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_thread_from_scheduler(idle_thread->get_pid()), idle_thread);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_thread_from_scheduler(main_thread->get_pid()), main_thread);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_thread_from_scheduler(task1_thread->get_pid()), task1_thread);
+    EXPECT_FALSE(instance1->get<ThreadScheduler>().is_context_switch_requested());
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), task1_thread);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), task1_thread->get_pid());
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_current_active_thread(), task1_thread);
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_current_active_pid(), task1_thread->get_pid());
+    EXPECT_EQ(instance1->get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
 
     /**
      * -------------------------------------------------------------------------
@@ -105,7 +120,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
      * -------------------------------------------------------------------------
      **/
 
-    Msg msg1 = Msg(instance);
+    Msg msg1 = Msg(*instance1);
 
     EXPECT_EQ(msg1.sender_pid, KERNEL_PID_UNDEF);
     EXPECT_EQ(msg1.type, 0);
@@ -121,13 +136,13 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
 
-    Msg msg2 = Msg(instance);
+    Msg msg2 = Msg(*instance1);
 
     EXPECT_EQ(msg2.sender_pid, KERNEL_PID_UNDEF);
     EXPECT_EQ(msg2.type, 0);
@@ -148,7 +163,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     /* Note: at this point, msg2 is immediately received by task1_thread because
      * it was in RECEIVE_BLOCKED status */
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -165,7 +180,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
      * -------------------------------------------------------------------------
      **/
 
-    Msg msg3 = Msg(instance);
+    Msg msg3 = Msg(*instance1);
 
     EXPECT_EQ(msg3.sender_pid, KERNEL_PID_UNDEF);
     EXPECT_EQ(msg3.type, 0);
@@ -181,7 +196,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SEND_BLOCKED);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     /* now we are in main_thread */
 
@@ -189,7 +204,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SEND_BLOCKED);
 
-    Msg msg4 = Msg(instance);
+    Msg msg4 = Msg(*instance1);
 
     EXPECT_EQ(msg4.sender_pid, KERNEL_PID_UNDEF);
     EXPECT_EQ(msg4.type, 0);
@@ -210,7 +225,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
      * task1_thread has higher priority than main_thread, kernel will context
      * switch to task1_thread */
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -223,7 +238,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
      * -------------------------------------------------------------------------
      **/
 
-    Msg msg5 = Msg(instance);
+    Msg msg5 = Msg(*instance1);
 
     EXPECT_EQ(msg5.sender_pid, KERNEL_PID_UNDEF);
     EXPECT_EQ(msg5.type, 0);
@@ -257,19 +272,19 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    instance.get<ThreadScheduler>().sleeping_current_thread();
+    instance1->get<ThreadScheduler>().sleeping_current_thread();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    Msg msg6 = Msg(instance);
+    Msg msg6 = Msg(*instance1);
 
     EXPECT_EQ(msg6.sender_pid, KERNEL_PID_UNDEF);
     EXPECT_EQ(msg6.type, 0);
@@ -282,19 +297,19 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    instance.get<ThreadScheduler>().wakeup_thread(task1_thread->get_pid());
+    instance1->get<ThreadScheduler>().wakeup_thread(task1_thread->get_pid());
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -314,7 +329,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(msg6.type, 0x22);
     EXPECT_EQ(msg6.content.value, 0xdeadbeef);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -334,7 +349,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RECEIVE_BLOCKED);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -351,9 +366,9 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    EXPECT_TRUE(instance.get<ThreadScheduler>().is_context_switch_requested());
+    EXPECT_TRUE(instance1->get<ThreadScheduler>().is_context_switch_requested());
 
-    cpu_end_of_isr((instance_t *)&instance);
+    cpu_end_of_isr(instance1);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -361,7 +376,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
 
     test_helper_reset_cpu_in_isr();
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -377,7 +392,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
 
     EXPECT_EQ(msg5.send(task1_thread->get_pid()), 0);
 
-    cpu_end_of_isr((instance_t *)&instance);
+    cpu_end_of_isr(instance1);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -385,7 +400,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
 
     test_helper_reset_cpu_in_isr();
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -398,8 +413,8 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
      * -------------------------------------------------------------------------
      **/
 
-    Msg msg7 = Msg(instance);
-    Msg msg7_reply = Msg(instance);
+    Msg msg7 = Msg(*instance1);
+    Msg msg7_reply = Msg(*instance1);
 
     EXPECT_EQ(msg7.sender_pid, KERNEL_PID_UNDEF);
     EXPECT_EQ(msg7.type, 0);
@@ -422,14 +437,14 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_REPLY_BLOCKED);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_REPLY_BLOCKED);
 
-    Msg msg8 = Msg(instance);
-    Msg msg8_reply = Msg(instance);
+    Msg msg8 = Msg(*instance1);
+    Msg msg8_reply = Msg(*instance1);
 
     EXPECT_EQ(msg8.sender_pid, KERNEL_PID_UNDEF);
     EXPECT_EQ(msg8.type, 0);
@@ -449,7 +464,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
 
     /* Note: at this point msg7 is received */
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -464,7 +479,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -491,7 +506,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_REPLY_BLOCKED);
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -505,7 +520,7 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
 
     /* Note: at this point msg7 is received */
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -522,13 +537,13 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    cpu_end_of_isr(&instance);
+    cpu_end_of_isr(instance1);
 
     test_helper_reset_cpu_in_isr(); /* ---------------------------------- exit Isr */
 
-    EXPECT_TRUE(instance.get<ThreadScheduler>().is_context_switch_requested());
+    EXPECT_TRUE(instance1->get<ThreadScheduler>().is_context_switch_requested());
 
-    instance.get<ThreadScheduler>().run();
+    instance1->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -542,21 +557,15 @@ TEST_F(TestMsg, single_send_and_receive_msg_test)
 
 TEST_F(TestMsg, multiple_send_and_receive_msg_test)
 {
-    DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
+    EXPECT_TRUE(instance2->is_initialized());
 
-    uint32_t size = ARRAY_LENGTH(buffer);
-
-    Instance instance = Instance::init((void *)buffer, (size_t *)&size);
-
-    EXPECT_TRUE(instance.is_initialized());
-
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 0);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_numof_threads_in_scheduler(), 0);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
     char idle_stack[128];
 
-    Thread *idle_thread = Thread::init(instance, idle_stack, sizeof(idle_stack), 15,
+    Thread *idle_thread = Thread::init(*instance2, idle_stack, sizeof(idle_stack), 15,
                                        THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                                        NULL, NULL, "idle");
 
@@ -569,7 +578,7 @@ TEST_F(TestMsg, multiple_send_and_receive_msg_test)
 
     char main_stack[128];
 
-    Thread *main_thread = Thread::init(instance, main_stack, sizeof(main_stack), 7,
+    Thread *main_thread = Thread::init(*instance2, main_stack, sizeof(main_stack), 7,
                                        THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                                        NULL, NULL, "main");
 
@@ -582,7 +591,7 @@ TEST_F(TestMsg, multiple_send_and_receive_msg_test)
 
     char task1_stack[128];
 
-    Thread *task1_thread = Thread::init(instance, task1_stack, sizeof(task1_stack), 5,
+    Thread *task1_thread = Thread::init(*instance2, task1_stack, sizeof(task1_stack), 5,
                                         THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                                         NULL, NULL, "task1");
 
@@ -593,27 +602,27 @@ TEST_F(TestMsg, multiple_send_and_receive_msg_test)
     EXPECT_EQ(task1_thread->get_name(), "task1");
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(idle_thread->get_pid()), idle_thread);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(main_thread->get_pid()), main_thread);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_thread_from_scheduler(task1_thread->get_pid()), task1_thread);
-    EXPECT_FALSE(instance.get<ThreadScheduler>().is_context_switch_requested());
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), nullptr);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_thread_from_scheduler(idle_thread->get_pid()), idle_thread);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_thread_from_scheduler(main_thread->get_pid()), main_thread);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_thread_from_scheduler(task1_thread->get_pid()), task1_thread);
+    EXPECT_FALSE(instance2->get<ThreadScheduler>().is_context_switch_requested());
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_current_active_thread(), nullptr);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_current_active_pid(), KERNEL_PID_UNDEF);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    instance.get<ThreadScheduler>().run();
+    instance2->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_thread(), task1_thread);
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_current_active_pid(), task1_thread->get_pid());
-    EXPECT_EQ(instance.get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_current_active_thread(), task1_thread);
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_current_active_pid(), task1_thread->get_pid());
+    EXPECT_EQ(instance2->get<ThreadScheduler>().get_numof_threads_in_scheduler(), 3);
 
     /**
      * -------------------------------------------------------------------------
@@ -627,7 +636,7 @@ TEST_F(TestMsg, multiple_send_and_receive_msg_test)
 
     for (int i = 0; i < 16; i++)
     {
-        task1_msg_array[i].init(instance);
+        task1_msg_array[i].init(*instance2);
     }
 
     task1_thread->init_msg_queue(task1_msg_array, ARRAY_LENGTH(task1_msg_array));
@@ -642,22 +651,22 @@ TEST_F(TestMsg, multiple_send_and_receive_msg_test)
      * -------------------------------------------------------------------------
      **/
 
-    instance.get<ThreadScheduler>().set_thread_status(task1_thread, THREAD_STATUS_SLEEPING);
+    instance2->get<ThreadScheduler>().set_thread_status(task1_thread, THREAD_STATUS_SLEEPING);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    instance.get<ThreadScheduler>().run();
+    instance2->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_SLEEPING);
 
-    Msg msg1 = Msg(instance);
-    Msg msg2 = Msg(instance);
-    Msg msg3 = Msg(instance);
-    Msg msg4 = Msg(instance);
+    Msg msg1 = Msg(*instance2);
+    Msg msg2 = Msg(*instance2);
+    Msg msg3 = Msg(*instance2);
+    Msg msg4 = Msg(*instance2);
 
     msg1.type = 0xff;
     msg1.content.value = 0x1;
@@ -683,13 +692,13 @@ TEST_F(TestMsg, multiple_send_and_receive_msg_test)
 
     /* Note: set task1_thread to running status and dequeque the message */
 
-    instance.get<ThreadScheduler>().set_thread_status(task1_thread, THREAD_STATUS_PENDING);
+    instance2->get<ThreadScheduler>().set_thread_status(task1_thread, THREAD_STATUS_PENDING);
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_RUNNING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(task1_thread->get_status(), THREAD_STATUS_PENDING);
 
-    instance.get<ThreadScheduler>().run();
+    instance2->get<ThreadScheduler>().run();
 
     EXPECT_EQ(main_thread->get_status(), THREAD_STATUS_PENDING);
     EXPECT_EQ(idle_thread->get_status(), THREAD_STATUS_PENDING);
@@ -697,7 +706,7 @@ TEST_F(TestMsg, multiple_send_and_receive_msg_test)
 
     EXPECT_EQ(task1_thread->get_numof_msg_in_queue(), 4);
 
-    Msg msg_intask1 = Msg(instance);
+    Msg msg_intask1 = Msg(*instance2);
 
     EXPECT_EQ(msg_intask1.receive(), 1);
 
