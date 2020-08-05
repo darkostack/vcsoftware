@@ -34,6 +34,8 @@ set(Test_VERSION_MINOR 0)
 # ENABLE ASM
 ENABLE_LANGUAGE(ASM)
 
+file(WRITE dummy.c "int cmake_dummy_reference_for_building(void) { return 0; }")
+
 if(DEFINED PLATFORM_DEFINED_CONFIGURATION)
   add_definitions(-DPLATFORM_DEFINED_CONFIGURATION="${PLATFORM_DEFINED_CONFIGURATION}")
 endif()
@@ -77,7 +79,11 @@ add_subdirectory(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/${CMAKE_SOURCE_DIR_NAME
 foreach(TEST_LIB ${TEST_LIBS})
     message ("building ${TEST_LIB} with sources ${SRC_LIBS}")
 
-    add_executable(${TEST_LIB}.elf)
+    if(NOT Additional_SRC)
+        set(Additional_SRC dummy.c)
+    endif()
+
+    add_executable(${TEST_LIB}.elf ${Additional_SRC})
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         TARGET_LINK_LIBRARIES(${TEST_LIB}.elf -Wl,--start-group)
     endif()

@@ -13,7 +13,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/source)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/source/include)
 
 # This is needed for compiling and linking SW.
-#add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/source/platform")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/source/platform")
 
 FILE(GLOB VCSOFTWARE_EXAMPLE_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
@@ -24,6 +24,6 @@ FILE(GLOB VCSOFTWARE_EXAMPLE_SRC
 
 CREATE_TEST_LIBRARY(vcsoftwareExample "${VCSOFTWARE_EXAMPLE_SRC}" "")
 
-#add_dependencies(vcsoftwareExample vcos)
+#add_dependencies(vcsoftwareExample vcrtosKernel)
 
 ADDSUBDIRS()

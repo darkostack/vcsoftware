@@ -1,3 +1,5 @@
 
+platformCommon:
+/Users/darko/projects/vcsoftware/source/platform/Linux/kernel_init.c
 vcsoftwareExample:
 /Users/darko/projects/vcsoftware/main.cpp;/Users/darko/projects/vcsoftware/source/application_init.cpp
