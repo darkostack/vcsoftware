@@ -5,12 +5,6 @@
 
 using namespace vc;
 
-DEFINE_ALIGNED_VAR(buffer1, sizeof(Instance), uint64_t);
-uint32_t buffer1_size = ARRAY_LENGTH(buffer1);
-
-DEFINE_ALIGNED_VAR(buffer2, sizeof(Instance), uint64_t);
-uint32_t buffer2_size = ARRAY_LENGTH(buffer2);
-
 class TestInstance : public testing::Test
 {
 protected:
@@ -19,8 +13,14 @@ protected:
 
     virtual void SetUp()
     {
-        instance1 = &Instance::init((void *)buffer1, (size_t *)&buffer1_size);
-        instance2 = &Instance::init((void *)buffer2, (size_t *)&buffer2_size);
+        instance1 = new Instance();
+        instance2 = new Instance();
+    }
+
+    virtual void TearDown()
+    {
+        delete instance1;
+        delete instance2;
     }
 };
 

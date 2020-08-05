@@ -18,6 +18,9 @@ namespace vc {
 class Instance : public instance_t
 {
 public:
+#ifdef UNITTEST
+    explicit Instance(void);
+#endif
 #if VCRTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE
     static Instance &init(void *buffer, size_t *size);
 #else
@@ -30,7 +33,9 @@ public:
     template <typename Type> inline Type &get(void);
 
 private:
+#ifndef UNITTEST
     explicit Instance(void);
+#endif
 
     void after_init(void);
 

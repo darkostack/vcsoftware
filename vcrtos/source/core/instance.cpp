@@ -13,6 +13,9 @@ Instance::Instance(void)
     : initialized(false)
     , thread_scheduler()
 {
+#ifdef UNITTEST
+    initialized = true;
+#endif
 }
 
 #if VCRTOS_CONFIG_MULTIPLE_INSTANCE_ENABLE

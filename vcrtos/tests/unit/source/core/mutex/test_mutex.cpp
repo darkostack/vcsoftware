@@ -8,9 +8,6 @@
 
 using namespace vc;
 
-DEFINE_ALIGNED_VAR(buffer, sizeof(Instance), uint64_t);
-uint32_t buffer_size = ARRAY_LENGTH(buffer);
-
 class TestMutex : public testing::Test
 {
 protected:
@@ -18,7 +15,12 @@ protected:
 
     virtual void SetUp()
     {
-        instance = &Instance::init((void *)buffer, (size_t *)&buffer_size);
+        instance = new Instance();
+    }
+
+    virtual void TearDown()
+    {
+        delete instance;
     }
 };
 
