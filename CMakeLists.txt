@@ -24,6 +24,6 @@ FILE(GLOB VCSOFTWARE_EXAMPLE_SRC
 
 CREATE_TEST_LIBRARY(vcsoftwareExample "${VCSOFTWARE_EXAMPLE_SRC}" "")
 
-#add_dependencies(vcsoftwareExample vcrtosKernel)
+#add_dependencies(vcsoftwareExample todo)
 
 ADDSUBDIRS()
