@@ -27,6 +27,15 @@
           "tag": "ptsl-0.0.1-psa-storage-api-1.0.0"
         },
         "to": "Middleware/trusted_storage/trusted_storage"
+      },
+      "vcdrivers": {
+        "version": "1.0.0",
+        "from": {
+          "protocol": "git",
+          "location": "https://github.com/darkostack/vcdrivers.git",
+          "tag": "vcdrivers-1.0.0"
+        },
+        "to": "Middleware/vcdrivers/vcdrivers"
       }
     }
   }

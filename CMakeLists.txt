@@ -1,5 +1,5 @@
 include(CMakeForceCompiler)
-# CROSS COMPILER SETTING
+
 cmake_minimum_required (VERSION 3.5)
 set(CMAKE_SYSTEM_NAME Generic)
 
@@ -11,9 +11,6 @@ project(vcsoftwareExample)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/source)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/source/include)
-
-# This is needed for compiling and linking SW.
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/source/platform")
 
 FILE(GLOB VCSOFTWARE_EXAMPLE_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
