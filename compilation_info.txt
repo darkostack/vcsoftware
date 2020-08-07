@@ -1,5 +1,0 @@
-
-platformCommon:
-/Users/darko/projects/vertexcom/vcsoftware/source/platform/Vertexcom_vc7300/init.c
-vcsoftwareExample:
-/Users/darko/projects/vertexcom/vcsoftware/main.cpp;/Users/darko/projects/vertexcom/vcsoftware/source/application_init.cpp
