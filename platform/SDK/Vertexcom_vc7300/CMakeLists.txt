@@ -3,13 +3,16 @@ SET(CMAKE_SYSTEM_NAME Generic)
 
 project(vertexcom_vc7300)
 
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/include)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/include/cmsis)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/include)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source)
 
 set(vcdrivers_common_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/assert_failure.c
+    #${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/assert_failure.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/cortexm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/stdiobase.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/syscalls.c
@@ -24,15 +27,31 @@ set(vcdrivers_periph_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/periph/uart.c
 )
 
+set(vcrtos_core_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/assert_failure.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/instance.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/msg.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/mutex.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/thread.cpp
+)
+
+set(vcrtos_core_api_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/thread_api.cpp
+)
+
 set(PLATFORM_LIBS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy.c
 )
 
+add_definitions(-DPROJECT_CONFIG_FILE="vcrtos-project-config.h")
+
 add_library(vcdrivers_common STATIC ${vcdrivers_common_SRCS})
 add_library(vcdrivers_periph STATIC ${vcdrivers_periph_SRCS})
+add_library(vcrtos_core STATIC ${vcrtos_core_SRCS})
+add_library(vcrtos_core_api STATIC ${vcrtos_core_api_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
-set(PLATFORM_LIBS_list vcdrivers_common vcdrivers_periph)
+set(PLATFORM_LIBS_list vcdrivers_common vcdrivers_periph vcrtos_core vcrtos_core_api)
 add_dependencies(PLATFORM_LIBS ${PLATFORM_LIBS_list})
 
 target_link_libraries(PLATFORM_LIBS -Wl,--whole-archive ${PLATFORM_LIBS_list} -Wl,--no-whole-archive)
