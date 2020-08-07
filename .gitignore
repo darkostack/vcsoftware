@@ -38,3 +38,4 @@ tags
 platform/Middleware/
 platform/VC7300_vcRTOS_mbedtls.txt
 platform/x86_x64_NativeLinux_mbedtls.txt
+__*/
