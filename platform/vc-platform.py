@@ -54,9 +54,7 @@ set (VCSOFTWARE_SDK $vcsoftware_sdk)
 set (VCSOFTWARE_OS $vcsoftware_os)
 set (VCSOFTWARE_DEVICE $vcsoftware_device)
 set (VCSOFTWARE_MIDDLEWARE $vcsoftware_mw_list)
-set (VCSOFTWARE_TOOLCHAIN $vcsoftware_toolchain)
 set (VCSOFTWARE_BUILD_SYS_MIN_VER $vcsoftware_build_sys_min_ver)
-set (VCSOFTWARE_NATIVE_SDK $vcsoftware_native_sdk)
 '''
 
 # for 2.7 compatibility:
@@ -372,7 +370,7 @@ def apply_patch(patch_file, reverse=False, **stream_kwargs):
     return is_integrated
 
 
-def generate_plat_cmake(target, native_sdk):
+def generate_plat_cmake(target):
     """
     Generate target-dependent cmake files
 
@@ -388,11 +386,6 @@ def generate_plat_cmake(target, native_sdk):
         _sdk = ''
     else:
         _sdk = target.sdk.name
-
-    if not native_sdk:
-       _native_sdk = False
-    else:
-       _native_sdk = native_sdk
 
     out_dir_name = '__' + target.name
     parent_dir = os.path.normpath(os.path.join(PLATFORM_ROOT, os.pardir))
@@ -410,9 +403,7 @@ def generate_plat_cmake(target, native_sdk):
                 vcsoftware_os=_os,
                 vcsoftware_device=_device,
                 vcsoftware_mw_list=' '.join(_mw_list),
-                vcsoftware_toolchain=' ',
                 vcsoftware_build_sys_min_ver=BUILD_SYS_MIN_VER,
-                vcsoftware_native_sdk=_native_sdk
             )
         )
     logger.info('Generated %s', autogen_file)
@@ -738,10 +729,6 @@ def json_read(file_name):
 def get_available_targets():
     return AVAILABLE_TARGETS
 
-
-def get_available_toolchains():
-    return AVAILABLE_TOOLCHAINS
-
 @click.group(context_settings=CONTEXT_SETTINGS, chain=True)
 @click.option('-v', '--verbose', is_flag=True, help='Turn ON verbose mode')
 @click.option(
@@ -759,12 +746,6 @@ def cli(config, verbose, from_file):
     config.targets = json_read(from_file)
     global AVAILABLE_TARGETS
     AVAILABLE_TARGETS = list(config.targets.keys())
-
-    parent_dir = os.path.normpath(os.path.join(from_file, os.pardir))
-    toolchain_dir = os.path.join(parent_dir, "Toolchain")
-    toolchain_list = os.listdir(toolchain_dir)
-    global AVAILABLE_TOOLCHAINS
-    AVAILABLE_TOOLCHAINS = toolchain_list
 
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
@@ -821,12 +802,8 @@ def deploy(config, target_name, skip_update, instructions):
     help='The target to generate platform-dependent files for',
     type=DynamicChoice(get_available_targets)
 )
-@click.option(
-    '-n', '--native-sdk', type=bool, required=False,
-    help='Build in the native SDK. Omit this if not sure.'
-)
 @pass_config
-def generate(config, target_name, native_sdk):
+def generate(config, target_name):
     """Generate files to be used by build-system"""
     if target_name:
         config.target_name = target_name
@@ -841,7 +818,7 @@ def generate(config, target_name, native_sdk):
                 (config.target_name, PROG_NAME, config.target_name)
             )
             raise click.Abort
-        out_dir = generate_plat_cmake(target, native_sdk)
+        out_dir = generate_plat_cmake(target)
         shutil.copy(
             os.path.join(PLATFORM_ROOT, 'vcsoftwareCmake.txt'),
             os.path.join(out_dir, 'CMakeLists.txt')

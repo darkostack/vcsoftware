@@ -1,10 +1,14 @@
 {
-  "x86_x64_NativeLinux_mbedtls": {
+  "Vertexcom_LinuxNative": {
     "device": {
       "name": "x86_x64"
     },
     "os": {
       "name": "Linux_Native"
+    },
+    "sdk": {
+      "name": "Vertexcom_LinuxNative",
+      "version": "0.0.1"
     },
     "middleware": {
       "mbedtls": {
@@ -17,7 +21,7 @@
             "crypto": {}
           }
         },
-        "to": "Middleware/mbedtls/mbedtls"
+        "to": "SDK/Vertexcom_LinuxNative/mbedtls"
       },
       "trusted_storage": {
         "version": "1.0.0",
@@ -26,25 +30,20 @@
           "location": "https://github.com/ARMmbed/psa_trusted_storage_linux.git",
           "tag": "ptsl-0.0.1-psa-storage-api-1.0.0"
         },
-        "to": "Middleware/trusted_storage/trusted_storage"
-      },
-      "vcdrivers": {
-        "version": "1.0.0",
-        "from": {
-          "protocol": "git",
-          "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.0.0"
-        },
-        "to": "Middleware/vcdrivers/vcdrivers"
+        "to": "SDK/Vertexcom_LinuxNative/trusted_storage"
       }
     }
   },
-  "VC7300_vcRTOS_mbedtls": {
+  "Vertexcom_vc7300": {
     "device": {
       "name": "vc7300"
     },
     "os": {
       "name": "vcrtos"
+    },
+    "sdk": {
+      "name": "Vertexcom_vc7300",
+      "version": "0.0.1"
     },
     "middleware": {
       "mbedtls": {
@@ -57,16 +56,16 @@
             "crypto": {}
           }
         },
-        "to": "Middleware/mbedtls/mbedtls"
+        "to": "SDK/Vertexcom_vc7300/mbedtls"
       },
       "vcdrivers": {
-        "version": "1.0.0",
+        "version": "1.0.1",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.0.0"
+          "tag": "vcdrivers-1.0.1"
         },
-        "to": "Middleware/vcdrivers/vcdrivers"
+        "to": "SDK/Vertexcom_vc7300/vcdrivers"
       }
     }
   }
