@@ -1,13 +1,9 @@
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ x86_x64_NativeLinux_mbedtls ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ VC7300_vcRTOS_mbedtls ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ##################
 # mbedtls 2.19.1
 ##################
 - Clone https://github.com/ARMmbed/mbedtls.git at mbedtls-2.19.1 to /Users/darko/projects/vertexcom/vcsoftware/platform/Middleware/mbedtls/mbedtls
-#########################
-# trusted_storage 1.0.0
-#########################
-- Clone https://github.com/ARMmbed/psa_trusted_storage_linux.git at ptsl-0.0.1-psa-storage-api-1.0.0 to /Users/darko/projects/vertexcom/vcsoftware/platform/Middleware/trusted_storage/trusted_storage
 ###################
 # vcdrivers 1.0.0
 ###################

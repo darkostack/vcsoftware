@@ -23,7 +23,6 @@ endmacro()
 
 macro(ADDSUBDIRS_CMAKE)
         SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
-        message("subdirs= ${SUBDIRS}")
         FOREACH(subdir ${SUBDIRS})
                 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/CMakeLists.txt)
                     if(NOT (${subdir} MATCHES "__.+"))

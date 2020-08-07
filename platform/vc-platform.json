@@ -38,5 +38,36 @@
         "to": "Middleware/vcdrivers/vcdrivers"
       }
     }
+  },
+  "VC7300_vcRTOS_mbedtls": {
+    "device": {
+      "name": "vc7300"
+    },
+    "os": {
+      "name": "vcrtos"
+    },
+    "middleware": {
+      "mbedtls": {
+        "version": "2.19.1",
+        "from": {
+          "protocol": "git",
+          "location": "https://github.com/ARMmbed/mbedtls.git",
+          "tag": "mbedtls-2.19.1",
+          "submodules": {
+            "crypto": {}
+          }
+        },
+        "to": "Middleware/mbedtls/mbedtls"
+      },
+      "vcdrivers": {
+        "version": "1.0.0",
+        "from": {
+          "protocol": "git",
+          "location": "https://github.com/darkostack/vcdrivers.git",
+          "tag": "vcdrivers-1.0.0"
+        },
+        "to": "Middleware/vcdrivers/vcdrivers"
+      }
+    }
   }
 }
