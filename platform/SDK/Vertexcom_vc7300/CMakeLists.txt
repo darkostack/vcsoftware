@@ -30,7 +30,6 @@ set(PLATFORM_LIBS_SRCS
 
 add_library(vcdrivers_common STATIC ${vcdrivers_common_SRCS})
 add_library(vcdrivers_periph STATIC ${vcdrivers_periph_SRCS})
-
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list vcdrivers_common vcdrivers_periph)
