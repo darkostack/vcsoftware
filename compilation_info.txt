@@ -1,3 +1,3 @@
 
 vcsoftwareExample:
-/Users/darko/projects/vertexcom/vcsoftware/main.cpp;/Users/darko/projects/vertexcom/vcsoftware/source/application_init.cpp
+/Users/darko/projects/vertexcom/vcsoftware/main.c;/Users/darko/projects/vertexcom/vcsoftware/source/application_init.cpp
