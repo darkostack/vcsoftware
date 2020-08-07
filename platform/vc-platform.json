@@ -59,11 +59,11 @@
         "to": "SDK/Vertexcom_vc7300/mbedtls"
       },
       "vcdrivers": {
-        "version": "1.0.1",
+        "version": "1.0.2",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.0.1"
+          "tag": "vcdrivers-1.0.2"
         },
         "to": "SDK/Vertexcom_vc7300/vcdrivers"
       }
