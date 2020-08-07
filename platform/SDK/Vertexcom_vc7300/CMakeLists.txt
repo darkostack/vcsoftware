@@ -10,8 +10,8 @@ ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius)
 
 set(vcdrivers_common_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/assert_failure.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/stdiobase.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/cortexm.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/stdiobase.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/syscalls.c
 )
 
