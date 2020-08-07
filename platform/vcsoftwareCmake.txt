@@ -74,6 +74,7 @@ endif()
 
 foreach (_var ${EXTRA_CMAKE_DIRS})
     get_filename_component(EXTRA_DIR ${_var} NAME)
+    message("extradir: ${CMAKE_BINARY_DIR}/${EXTRA_DIR}")
     add_subdirectory(${_var} ${CMAKE_BINARY_DIR}/${EXTRA_DIR})
 endforeach()
 
@@ -82,7 +83,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/${CMAKE_SOURCE_DIR_NAME
 
 # add the executable
 foreach(TEST_LIB ${TEST_LIBS})
-    message ("building ${TEST_LIB} with sources ${SRC_LIBS}")
+    message("building ${TEST_LIB} with sources libs ${SRC_LIBS}")
 
     if(NOT Additional_SRC)
         set(Additional_SRC dummy.c)
@@ -127,3 +128,5 @@ foreach(TEST_LIB ${TEST_LIBS})
     set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES  ${TEST_LIB}.bin)
 endforeach()
 
+UNSET(CMAKE_TOOLCHAIN_FILE_CONFIGURED CACHE)
+UNSET(CMAKE_TOOLCHAIN_FILE_CONFIGURED)
