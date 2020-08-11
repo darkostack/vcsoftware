@@ -10,7 +10,7 @@
 using namespace vc;
 using namespace utils;
 
-DEFINE_ALIGNED_VAR(uart_isrpipe_raw, sizeof(UartIsrpipe), uint64_t);
+static DEFINE_ALIGNED_VAR(uart_isrpipe_raw, sizeof(UartIsrpipe), uint64_t);
 
 UartIsrpipe *uart_isrpipe;
 

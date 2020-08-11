@@ -48,6 +48,11 @@ set(VCRTOS_UTILS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/utils/ringbuffer.cpp
 )
 
+set(VCRTOS_CLI_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/cli/cli.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/cli/cli_uart.cpp
+)
+
 set(VCRTOS_PORT_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/cortexm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/cpu_arch.c
@@ -68,6 +73,7 @@ add_library(vcdrivers_periph STATIC ${VCDRIVERS_PERIPH_SRCS})
 add_library(vcrtos_core STATIC ${VCRTOS_CORE_SRCS})
 add_library(vcrtos_core_api STATIC ${VCRTOS_CORE_API_SRCS})
 add_library(vcrtos_utils STATIC ${VCRTOS_UTILS_SRCS})
+add_library(vcrtos_cli STATIC ${VCRTOS_CLI_SRCS})
 add_library(vcrtos_port STATIC ${VCRTOS_PORT_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
@@ -77,6 +83,7 @@ set(PLATFORM_LIBS_list
     vcrtos_core
     vcrtos_core_api
     vcrtos_utils
+    vcrtos_cli
     vcrtos_port
 )
 
