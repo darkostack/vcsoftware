@@ -20,7 +20,7 @@ set(VCDRIVERS_COMMON_SRCS
 )
 
 set(VCDRIVERS_PERIPH_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/cpu.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/cpu_init.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/vectors.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/periph/gpio.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/periph/irq.c
@@ -43,8 +43,16 @@ set(VCRTOS_CORE_API_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/thread_api.cpp
 )
 
+set(VCRTOS_UTILS_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/utils/isrpipe.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/utils/ringbuffer.cpp
+)
+
 set(VCRTOS_PORT_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/cortexm.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/cpu_arch.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/kernel_init.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/stdiobase_arch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/thread_arch.c
 )
 
@@ -58,6 +66,7 @@ add_library(vcdrivers_common STATIC ${VCDRIVERS_COMMON_SRCS})
 add_library(vcdrivers_periph STATIC ${VCDRIVERS_PERIPH_SRCS})
 add_library(vcrtos_core STATIC ${VCRTOS_CORE_SRCS})
 add_library(vcrtos_core_api STATIC ${VCRTOS_CORE_API_SRCS})
+add_library(vcrtos_utils STATIC ${VCRTOS_UTILS_SRCS})
 add_library(vcrtos_port STATIC ${VCRTOS_PORT_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
@@ -66,6 +75,7 @@ set(PLATFORM_LIBS_list
     vcdrivers_periph
     vcrtos_core
     vcrtos_core_api
+    vcrtos_utils
     vcrtos_port
 )
 

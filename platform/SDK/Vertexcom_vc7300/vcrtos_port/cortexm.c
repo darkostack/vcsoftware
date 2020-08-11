@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <cpu.h>
+#include <vcdrivers/cpu.h>
 
 /**
  * Memory markers, defined in the linker script
@@ -75,10 +75,8 @@ void reset_handler_default(void)
     __libc_init_array();
 
     /* startup the kernel */
-    // TODO: startup rtos kernel here
-
-    extern int main(void);
-    main();
+    extern void kernel_init(void);
+    kernel_init();
 }
 
 void nmi_default(void)
