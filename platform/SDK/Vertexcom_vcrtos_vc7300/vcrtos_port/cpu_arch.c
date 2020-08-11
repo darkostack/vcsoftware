@@ -54,7 +54,6 @@ __attribute__((naked)) void cpu_switch_context_exit(void)
 
     while(1)
     {
-
     }
 }
 
