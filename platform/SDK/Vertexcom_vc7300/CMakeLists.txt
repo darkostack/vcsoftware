@@ -14,7 +14,7 @@ ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port)
 
 set(VCDRIVERS_COMMON_SRCS
     #${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/assert_failure.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/cortexm.c
+    #${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/cortexm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/stdiobase.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/syscalls.c
 )
@@ -44,6 +44,7 @@ set(VCRTOS_CORE_API_SRCS
 )
 
 set(VCRTOS_PORT_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/cortexm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/thread_arch.c
 )
 
