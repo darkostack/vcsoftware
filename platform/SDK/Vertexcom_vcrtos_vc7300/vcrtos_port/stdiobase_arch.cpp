@@ -26,7 +26,7 @@ void vcstdio_init(void *instance)
 
     uart_isrpipe = new (&uart_isrpipe_raw) UartIsrpipe(instances);
 
-    vcuart_init(STDIOBASE_UART_DEV,
+    vcuart_init(VCDRIVERS_CONFIG_STDIOBASE_UART_DEV,
                 115200,
                 &vcstdio_uart_rx_callback_handler,
                 static_cast<void *>(uart_isrpipe));

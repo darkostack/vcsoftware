@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.5)
 SET(CMAKE_SYSTEM_NAME Generic)
 
-project(vertexcom_vc7300)
+project(vertexcom_vcrtos_vc7300)
 
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/include)
@@ -60,7 +60,8 @@ set(PLATFORM_LIBS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy.c
 )
 
-add_definitions(-DPROJECT_CONFIG_FILE="vcrtos-project-config.h")
+add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
+add_definitions(-DVCRTOS_PROJECT_CONFIG_FILE="vcrtos-project-config.h")
 
 add_library(vcdrivers_common STATIC ${VCDRIVERS_COMMON_SRCS})
 add_library(vcdrivers_periph STATIC ${VCDRIVERS_PERIPH_SRCS})
