@@ -6,14 +6,10 @@ set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(vcsoftwareExample)
+project(vcsoftware_example)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/source)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/source/include)
-
-# This is needed for compiling and linking SW.
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/source/platform")
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR})
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/source)
 
 FILE(GLOB VCSOFTWARE_EXAMPLE_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
@@ -22,10 +18,10 @@ FILE(GLOB VCSOFTWARE_EXAMPLE_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp"
 )
 
-CREATE_TEST_LIBRARY(vcsoftwareExample "${VCSOFTWARE_EXAMPLE_SRC}" "")
+CREATE_TEST_LIBRARY(vcsoftware_example "${VCSOFTWARE_EXAMPLE_SRC}" "")
 
-add_dependencies(vcsoftwareExample PLATFORM_LIBS)
+add_dependencies(vcsoftware_example PLATFORM_LIBS)
 
-target_link_libraries(vcsoftwareExample PLATFORM_LIBS)
+target_link_libraries(vcsoftware_example PLATFORM_LIBS)
 
 ADDSUBDIRS()

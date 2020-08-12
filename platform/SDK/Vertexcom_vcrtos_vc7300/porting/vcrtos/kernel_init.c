@@ -9,41 +9,11 @@
 #include <vcrtos/instance.h>
 #include <vcrtos/thread.h>
 
-static int _loop_function_undefined = 0;
-
-__attribute__((weak)) void loop(void)
-{
-    _loop_function_undefined = 1;
-    return;
-}
-
-__attribute__((weak)) void setup(void)
-{
-    return;
-}
-
-__attribute__((weak)) int main(void)
-{
-    while (1)
-    {
-    }
-}
+extern int main(void);
 
 void *thread_main_handler(void *arg)
 {
     (void) arg;
-
-    setup();
-
-    loop();
-
-    if (_loop_function_undefined == 0)
-    {
-        while (1)
-        {
-            loop();
-        }
-    }
 
     main();
 

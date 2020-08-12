@@ -4,13 +4,17 @@ SET(CMAKE_SYSTEM_NAME Generic)
 project(vertexcom_vcrtos_vc7300)
 
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR})
+
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/include)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/include/cmsis)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius)
+
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/include)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source)
-ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port)
+
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/arduino)
 
 set(VCDRIVERS_COMMON_SRCS
     #${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/assert_failure.c
@@ -53,12 +57,17 @@ set(VCRTOS_CLI_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/cli/cli_uart.cpp
 )
 
-set(VCRTOS_PORT_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/cortexm.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/cpu_arch.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/kernel_init.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/stdiobase_arch.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_port/thread_arch.c
+set(PORTING_VCRTOS_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/cortexm.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/cpu_arch.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/kernel_init.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/stdiobase_arch.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/thread_arch.c
+)
+
+set(PORTING_ARDUINO_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/arduino/base.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/arduino/serialport.cpp
 )
 
 set(PLATFORM_LIBS_SRCS
@@ -74,7 +83,8 @@ add_library(vcrtos_core STATIC ${VCRTOS_CORE_SRCS})
 add_library(vcrtos_core_api STATIC ${VCRTOS_CORE_API_SRCS})
 add_library(vcrtos_utils STATIC ${VCRTOS_UTILS_SRCS})
 add_library(vcrtos_cli STATIC ${VCRTOS_CLI_SRCS})
-add_library(vcrtos_port STATIC ${VCRTOS_PORT_SRCS})
+add_library(porting_vcrtos STATIC ${PORTING_VCRTOS_SRCS})
+add_library(porting_arduino STATIC ${PORTING_ARDUINO_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list
@@ -84,7 +94,8 @@ set(PLATFORM_LIBS_list
     vcrtos_core_api
     vcrtos_utils
     vcrtos_cli
-    vcrtos_port
+    porting_vcrtos
+    porting_arduino
 )
 
 add_dependencies(PLATFORM_LIBS ${PLATFORM_LIBS_list})
