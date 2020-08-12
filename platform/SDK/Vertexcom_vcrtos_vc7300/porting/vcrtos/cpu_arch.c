@@ -28,8 +28,9 @@ int cpu_is_in_isr(void)
     return (__get_IPSR() & 0xff);
 }
 
-__attribute__((weak)) void cpu_end_of_isr(void)
+__attribute__((weak)) void cpu_end_of_isr(void *instances)
 {
+    (void) instances;
 }
 
 void cpu_trigger_pendsv_interrupt(void)
