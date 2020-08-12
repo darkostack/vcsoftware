@@ -1,13 +1,13 @@
 {
-  "Vertexcom_LinuxNative": {
+  "Vertexcom_vcrtos_Linux": {
     "device": {
       "name": "x86_x64"
     },
     "os": {
-      "name": "Linux_Native"
+      "name": "vcrtos"
     },
     "sdk": {
-      "name": "Vertexcom_LinuxNative",
+      "name": "Vertexcom_vcrtos_Linux",
       "version": "0.0.1"
     },
     "middleware": {
@@ -21,7 +21,7 @@
             "crypto": {}
           }
         },
-        "to": "SDK/Vertexcom_LinuxNative/mbedtls"
+        "to": "SDK/Vertexcom_vcrtos_Linux/mbedtls"
       },
       "trusted_storage": {
         "version": "1.0.0",
@@ -30,7 +30,7 @@
           "location": "https://github.com/ARMmbed/psa_trusted_storage_linux.git",
           "tag": "ptsl-0.0.1-psa-storage-api-1.0.0"
         },
-        "to": "SDK/Vertexcom_LinuxNative/trusted_storage"
+        "to": "SDK/Vertexcom_vcrtos_Linux/trusted_storage"
       }
     }
   },

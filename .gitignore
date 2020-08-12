@@ -39,6 +39,9 @@ platform/SDK/Vertexcom_vcrtos_vc7300/mbedtls/
 platform/SDK/Vertexcom_vcrtos_vc7300/vcdrivers/
 platform/SDK/Vertexcom_vcrtos_vc7300/vcrtos/
 
+platform/SDK/Vertexcom_vcrtos_Linux/mbedtls/
+platform/SDK/Vertexcom_vcrtos_Linux/trusted_storage/
+
 platform/Vertexcom_vcrtos_Linux.txt
 platform/Vertexcom_vcrtos_vc7300.txt
 platform/Vertexcom_vcrtos_vc6320.txt
