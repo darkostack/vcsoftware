@@ -50,11 +50,12 @@ PLAT_CMAKE_TEMPLATE = '''
 #                                                                               #
 #################################################################################
 
-set (VCSOFTWARE_SDK $vcsoftware_sdk)
-set (VCSOFTWARE_OS $vcsoftware_os)
-set (VCSOFTWARE_DEVICE $vcsoftware_device)
-set (VCSOFTWARE_MIDDLEWARE $vcsoftware_mw_list)
-set (VCSOFTWARE_BUILD_SYS_MIN_VER $vcsoftware_build_sys_min_ver)
+set(VCSOFTWARE_SDK $vcsoftware_sdk)
+set(VCSOFTWARE_OS $vcsoftware_os)
+set(VCSOFTWARE_OS_VER $vcsoftware_os_ver)
+set(VCSOFTWARE_DEVICE $vcsoftware_device)
+set(VCSOFTWARE_MIDDLEWARE $vcsoftware_mw_list)
+set(VCSOFTWARE_BUILD_SYS_MIN_VER $vcsoftware_build_sys_min_ver)
 '''
 
 # for 2.7 compatibility:
@@ -378,8 +379,7 @@ def generate_plat_cmake(target):
     :return: Full path of target-dependent output directory
     """
     _os = target.os.name
-    if target.os.version:
-        _os += '_' + target.os.version
+    _os_version = target.os.version
     _device = target.device.name
     _mw_list = [mw.name for mw in target.middleware]
     if not target.sdk:
@@ -401,6 +401,7 @@ def generate_plat_cmake(target):
             cmake_template.safe_substitute(
                 vcsoftware_sdk=_sdk,
                 vcsoftware_os=_os,
+                vcsoftware_os_ver=_os_version,
                 vcsoftware_device=_device,
                 vcsoftware_mw_list=' '.join(_mw_list),
                 vcsoftware_build_sys_min_ver=BUILD_SYS_MIN_VER,

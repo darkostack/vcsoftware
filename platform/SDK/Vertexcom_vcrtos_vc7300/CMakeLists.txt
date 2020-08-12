@@ -76,6 +76,7 @@ set(PLATFORM_LIBS_SRCS
 
 add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
 add_definitions(-DVCRTOS_PROJECT_CONFIG_FILE="vcrtos-project-config.h")
+add_definitions(-DVCRTOS_VERSION="${VCSOFTWARE_OS_VER}")
 
 add_library(vcdrivers_common STATIC ${VCDRIVERS_COMMON_SRCS})
 add_library(vcdrivers_periph STATIC ${VCDRIVERS_PERIPH_SRCS})

@@ -39,7 +39,8 @@
       "name": "vc7300"
     },
     "os": {
-      "name": "vcrtos"
+      "name": "vcrtos",
+      "version": "1.0.6"
     },
     "sdk": {
       "name": "Vertexcom_vcrtos_vc7300",

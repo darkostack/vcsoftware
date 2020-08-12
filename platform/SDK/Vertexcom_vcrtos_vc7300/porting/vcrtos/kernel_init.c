@@ -51,7 +51,7 @@ void kernel_init(void)
 
     vcstdio_init(instance);
 
-    printf("\r\n\r\nvcrtos kernel started\r\n\r\n");
+    printf("\r\n\r\nvcrtos-%s kernel started\r\n\r\n", VCRTOS_VERSION);
 
     (void) thread_create((void *)instance, _main_stack, sizeof(_main_stack),
                          KERNEL_THREAD_PRIORITY_MAIN,
