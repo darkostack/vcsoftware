@@ -9,6 +9,10 @@
 #include <vcrtos/instance.h>
 #include <vcrtos/thread.h>
 
+#if VCRTOS_CONFIG_THREAD_EVENT_ENABLE
+#include <vcrtos/event.h>
+#endif
+
 extern int main(void);
 
 void *thread_main_handler(void *arg)
@@ -62,6 +66,10 @@ void kernel_init(void)
                          KERNEL_THREAD_PRIORITY_IDLE,
                          THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                          thread_idle_handler, (void *)instance, "idle");
+
+#if VCRTOS_CONFIG_THREAD_EVENT_ENABLE
+    auto_init_event_thread((void *)instance);
+#endif
 
     cpu_switch_context_exit();
 }
