@@ -1,5 +1,5 @@
 {
-  "Vertexcom_vcrtos_Linux": {
+  "vertexcom_vcrtos_linux": {
     "device": {
       "name": "x86_x64"
     },
@@ -7,7 +7,7 @@
       "name": "vcrtos"
     },
     "sdk": {
-      "name": "Vertexcom_vcrtos_Linux",
+      "name": "vertexcom_vcrtos_linux",
       "version": "0.0.1"
     },
     "middleware": {
@@ -21,7 +21,7 @@
             "crypto": {}
           }
         },
-        "to": "SDK/Vertexcom_vcrtos_Linux/mbedtls"
+        "to": "SDK/vertexcom_vcrtos_linux/mbedtls"
       },
       "trusted_storage": {
         "version": "1.0.0",
@@ -30,11 +30,11 @@
           "location": "https://github.com/ARMmbed/psa_trusted_storage_linux.git",
           "tag": "ptsl-0.0.1-psa-storage-api-1.0.0"
         },
-        "to": "SDK/Vertexcom_vcrtos_Linux/trusted_storage"
+        "to": "SDK/vertexcom_vcrtos_linux/trusted_storage"
       }
     }
   },
-  "Vertexcom_vcrtos_vc7300": {
+  "vertexcom_vcrtos_vc7300": {
     "device": {
       "name": "vc7300"
     },
@@ -43,7 +43,7 @@
       "version": "1.0.9"
     },
     "sdk": {
-      "name": "Vertexcom_vcrtos_vc7300",
+      "name": "vertexcom_vcrtos_vc7300",
       "version": "0.0.1"
     },
     "middleware": {
@@ -54,7 +54,7 @@
           "location": "https://github.com/darkostack/vcdrivers.git",
           "tag": "vcdrivers-1.0.6"
         },
-        "to": "SDK/Vertexcom_vcrtos_vc7300/vcdrivers"
+        "to": "SDK/vertexcom_vcrtos_vc7300/vcdrivers"
       },
       "vcrtos": {
         "version": "1.0.9",
@@ -63,7 +63,7 @@
           "location": "https://github.com/darkostack/vcrtos.git",
           "tag": "vcrtos-1.0.9"
         },
-        "to": "SDK/Vertexcom_vcrtos_vc7300/vcrtos"
+        "to": "SDK/vertexcom_vcrtos_vc7300/vcrtos"
       }
     }
   }
