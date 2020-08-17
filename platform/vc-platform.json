@@ -40,25 +40,13 @@
     },
     "os": {
       "name": "vcrtos",
-      "version": "1.0.8"
+      "version": "1.0.9"
     },
     "sdk": {
       "name": "Vertexcom_vcrtos_vc7300",
       "version": "0.0.1"
     },
     "middleware": {
-      "mbedtls": {
-        "version": "2.19.1",
-        "from": {
-          "protocol": "git",
-          "location": "https://github.com/ARMmbed/mbedtls.git",
-          "tag": "mbedtls-2.19.1",
-          "submodules": {
-            "crypto": {}
-          }
-        },
-        "to": "SDK/Vertexcom_vcrtos_vc7300/mbedtls"
-      },
       "vcdrivers": {
         "version": "1.0.6",
         "from": {
@@ -69,11 +57,11 @@
         "to": "SDK/Vertexcom_vcrtos_vc7300/vcdrivers"
       },
       "vcrtos": {
-        "version": "1.0.8",
+        "version": "1.0.9",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcrtos.git",
-          "tag": "vcrtos-1.0.8"
+          "tag": "vcrtos-1.0.9"
         },
         "to": "SDK/Vertexcom_vcrtos_vc7300/vcrtos"
       }
