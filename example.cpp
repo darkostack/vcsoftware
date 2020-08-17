@@ -19,7 +19,7 @@ const cli_command_t user_command_list[] = {
 
 static uint32_t ctimer_counter = 0;
 
-PROCESS(test_process, "test_process", 1024);
+PROCESS(test_process, "test-process", 1024);
 
 #if 0
 void xtimer_test_handler(void *arg)

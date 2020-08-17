@@ -26,7 +26,7 @@ static void ps(void *instance)
     void *isr_start = thread_arch_isr_stack_start();
     void *isr_sp = thread_arch_isr_stack_pointer();
 
-    printf("\t  - | isr_stack            | -        - |"
+    printf("\t  - | isr-stack            | -        - |"
            "   - | %6i (%5i) | %10p | %10p\r\n",
            CPU_ISR_STACK_SIZE, isr_usage, isr_start, isr_sp);
 

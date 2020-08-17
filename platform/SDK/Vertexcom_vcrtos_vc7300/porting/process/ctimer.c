@@ -1,6 +1,6 @@
 #include "ctimer.h"
 
-PROCESS(ctimer_process, "ctimer_process", 1024);
+PROCESS(ctimer_process, "ctimer-process", 1024);
 
 PROCESS_THREAD(ctimer_process, ev, data)
 {
