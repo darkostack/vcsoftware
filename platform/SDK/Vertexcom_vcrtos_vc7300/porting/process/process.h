@@ -101,8 +101,8 @@ struct process
 
 #define PROCESS_WAIT_EVENT() \
     do { \
-        ev = PROCESS_EVENT_NONE; \
-        data = NULL; \
+        _process_data[p->pid].ev = PROCESS_EVENT_NONE; \
+        _process_data[p->pid].data = NULL; \
         while (_process_data[p->pid].ev == PROCESS_EVENT_NONE) \
         { \
             mutex_lock(_process_data[p->pid].mutex); \

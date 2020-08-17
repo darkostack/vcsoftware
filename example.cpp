@@ -9,17 +9,14 @@
 
 static instance_t *_instance;
 static xtimer_t timer_test;
-static uint32_t counter = 0;
 
-PROCESS(test, "test", 1024);
+PROCESS(test_process, "test_process", 1024);
 
 void xtimer_test_handler(void *arg)
 {
-    uint32_t *cnt = static_cast<uint32_t *>(arg);
+    struct process *p = static_cast<struct process *>(arg);
 
-    *cnt += 1;
-
-    printf("%lu\r\n", static_cast<uint32_t>(*cnt));
+    process_post(p, PROCESS_EVENT_TIMER, NULL);
 
     xtimer_set(&timer_test, 1000000);
 }
@@ -34,11 +31,11 @@ void setup(void)
 
     vccli_uart_init(_instance);
 
-    xtimer_init(_instance, &timer_test, xtimer_test_handler, static_cast<void *>(&counter));
-    xtimer_set(&timer_test, 1000000);
-
     process_init(_instance);
-    process_start(&test, NULL);
+    process_start(&test_process, NULL);
+
+    xtimer_init(_instance, &timer_test, xtimer_test_handler, static_cast<void *>(&test_process));
+    xtimer_set(&timer_test, 1000000);
 }
 
 void loop(void)
@@ -46,14 +43,16 @@ void loop(void)
     thread_yield(_instance);
 }
 
-PROCESS_THREAD(test, ev, data)
+PROCESS_THREAD(test_process, ev, data)
 {
     PROCESS_BEGIN();
 
+    uint32_t timer_counter = 0;
+
     while (1)
     {
-        PROCESS_WAIT_EVENT();
-        PROCESS_YIELD();
+        PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
+        printf("event timer: %lu\r\n", timer_counter++);
     }
 
     PROCESS_END();
