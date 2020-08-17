@@ -1,5 +1,3 @@
-#include <vcrtos/assert.h>
-
 #include "etimer.h"
 
 void etimer_callback(void *arg)

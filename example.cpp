@@ -7,6 +7,7 @@
 
 #include "process.h"
 #include "etimer.h"
+#include "ctimer.h"
 
 extern "C" void vcrtos_cmd_ps(int argc, char **argv);
 
@@ -15,6 +16,8 @@ const cli_command_t user_command_list[] = {
 };
 
 //static xtimer_t timer_test;
+
+static uint32_t ctimer_counter = 0;
 
 PROCESS(test_process, "test_process", 1024);
 
@@ -39,6 +42,7 @@ void Arduino::setup(void)
     vccli_set_user_commands(user_command_list, 1);
 
     process_init(instance);
+    ctimer_init();
     process_start(&test_process, NULL);
 
     //xtimer_init(_instance, &timer_test, xtimer_test_handler, static_cast<void *>(&test_process));
@@ -51,19 +55,31 @@ void Arduino::loop(void)
     thread_sleep(instance);
 }
 
+void ctimer_timeout(void *arg)
+{
+    struct ctimer *ct = (struct ctimer *)arg;
+
+    printf("--c: %lu\r\n", ctimer_counter++);
+
+    ctimer_reset(ct);
+}
+
 PROCESS_THREAD(test_process, ev, data)
 {
     static struct etimer timer_etimer;
+    static struct ctimer timer_ctimer;
 
     PROCESS_BEGIN();
 
-    uint32_t timer_counter = 0;
+    uint32_t etimer_counter = 0;
+
+    ctimer_set(&timer_ctimer, 2 * 1000000, ctimer_timeout, &timer_ctimer);
 
     while (1)
     {
         etimer_set(&timer_etimer, 1000000);
         PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
-        printf("event timer: %lu\r\n", timer_counter++);
+        printf("e: %lu\r\n", etimer_counter++);
     }
 
     PROCESS_END();
