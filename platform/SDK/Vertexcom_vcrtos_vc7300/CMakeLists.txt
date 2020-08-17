@@ -68,6 +68,7 @@ set(PORTING_VCRTOS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/stdiobase_arch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/thread_arch.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/xtimer_arch.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/commands.c
 )
 
 set(PORTING_ARDUINO_SRCS

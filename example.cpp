@@ -7,6 +7,12 @@
 
 #include "process.h"
 
+extern "C" void vcrtos_cmd_ps(int argc, char **argv);
+
+const cli_command_t user_command_list[] = {
+    { "ps", vcrtos_cmd_ps },
+};
+
 static instance_t *_instance;
 static xtimer_t timer_test;
 
@@ -30,6 +36,7 @@ void setup(void)
     _instance = instance_get();
 
     vccli_uart_init(_instance);
+    vccli_set_user_commands(user_command_list, 1);
 
     process_init(_instance);
     process_start(&test_process, NULL);

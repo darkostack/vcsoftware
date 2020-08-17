@@ -109,7 +109,7 @@ void thread_arch_stack_print(void)
     printf("current stack size: %i byte\n", count);
 }
 
-int thread_arch_stack_usage(void)
+int thread_arch_isr_stack_usage(void)
 {
     uint32_t *ptr = &_sstack;
 
@@ -129,7 +129,7 @@ void *thread_arch_isr_stack_pointer(void)
     return msp;
 }
 
-void *thread_arch_stack_start(void)
+void *thread_arch_isr_stack_start(void)
 {
     return (void *)&_sstack;
 }
