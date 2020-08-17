@@ -14,7 +14,6 @@ const cli_command_t user_command_list[] = {
     { "ps", vcrtos_cmd_ps },
 };
 
-static instance_t *_instance;
 //static xtimer_t timer_test;
 
 PROCESS(test_process, "test_process", 1024);
@@ -30,27 +29,26 @@ void xtimer_test_handler(void *arg)
 }
 #endif
 
-void setup(void)
+void Arduino::setup(void)
 {
     Serial.begin(115200);
 
     Serial.println("Enable command line interface");
 
-    _instance = instance_get();
-
-    vccli_uart_init(_instance);
+    vccli_uart_init(instance);
     vccli_set_user_commands(user_command_list, 1);
 
-    process_init(_instance);
+    process_init(instance);
     process_start(&test_process, NULL);
 
     //xtimer_init(_instance, &timer_test, xtimer_test_handler, static_cast<void *>(&test_process));
     //xtimer_set(&timer_test, 1000000);
 }
 
-void loop(void)
+void Arduino::loop(void)
 {
-    thread_yield(_instance);
+    //thread_yield(instance);
+    thread_sleep(instance);
 }
 
 PROCESS_THREAD(test_process, ev, data)

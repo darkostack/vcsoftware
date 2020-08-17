@@ -30,8 +30,6 @@ void *thread_main_handler(void *arg)
 
 void *thread_idle_handler(void *arg)
 {
-    printf("idle thread handler!\r\n");
-
     (void) arg;
 
     while (1)
