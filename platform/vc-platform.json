@@ -9,29 +9,6 @@
     "sdk": {
       "name": "vertexcom_vcrtos_linux",
       "version": "0.0.1"
-    },
-    "middleware": {
-      "mbedtls": {
-        "version": "2.19.1",
-        "from": {
-          "protocol": "git",
-          "location": "https://github.com/ARMmbed/mbedtls.git",
-          "tag": "mbedtls-2.19.1",
-          "submodules": {
-            "crypto": {}
-          }
-        },
-        "to": "SDK/vertexcom_vcrtos_linux/mbedtls"
-      },
-      "trusted_storage": {
-        "version": "1.0.0",
-        "from": {
-          "protocol": "git",
-          "location": "https://github.com/ARMmbed/psa_trusted_storage_linux.git",
-          "tag": "ptsl-0.0.1-psa-storage-api-1.0.0"
-        },
-        "to": "SDK/vertexcom_vcrtos_linux/trusted_storage"
-      }
     }
   },
   "vertexcom_vcrtos_vc7300": {
