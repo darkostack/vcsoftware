@@ -11,17 +11,19 @@ project(vcsoftware_example)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/source)
 
-FILE(GLOB VCSOFTWARE_EXAMPLE_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/source/*.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp"
+set(VCSOFTWARE_COMMON_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp
 )
 
-CREATE_TEST_LIBRARY(vcsoftware_example "${VCSOFTWARE_EXAMPLE_SRC}" "")
+set(VERTEXCOM_VCRTOS_VC7300_SRCS
+    ${VCSOFTWARE_COMMON_SRCS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/vertexcom_vcrtos_vc7300.cpp
+)
 
-add_dependencies(vcsoftware_example PLATFORM_LIBS)
+CREATE_TEST_LIBRARY(vertexcom_vcrtos_vc7300 "${VERTEXCOM_VCRTOS_VC7300_SRCS}" "")
 
-target_link_libraries(vcsoftware_example PLATFORM_LIBS)
+add_dependencies(vertexcom_vcrtos_vc7300 PLATFORM_LIBS)
+
+target_link_libraries(vertexcom_vcrtos_vc7300 PLATFORM_LIBS)
 
 ADDSUBDIRS()
