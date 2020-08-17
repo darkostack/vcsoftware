@@ -35,7 +35,6 @@ tags
 
 # Platform files
 ######################
-platform/SDK/Vertexcom_vcrtos_vc7300/mbedtls/
 platform/SDK/Vertexcom_vcrtos_vc7300/vcdrivers/
 platform/SDK/Vertexcom_vcrtos_vc7300/vcrtos/
 
