@@ -21,9 +21,7 @@ set(VERTEXCOM_VCRTOS_VC7300_SRCS
 )
 
 CREATE_TEST_LIBRARY(vertexcom_vcrtos_vc7300 "${VERTEXCOM_VCRTOS_VC7300_SRCS}" "")
-
 add_dependencies(vertexcom_vcrtos_vc7300 PLATFORM_LIBS)
-
 target_link_libraries(vertexcom_vcrtos_vc7300 PLATFORM_LIBS)
 
 ADDSUBDIRS()
