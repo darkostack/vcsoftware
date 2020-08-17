@@ -78,6 +78,7 @@ set(PORTING_ARDUINO_SRCS
 
 set(PORTING_PROCESS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/process.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/etimer.c
 )
 
 set(PLATFORM_LIBS_SRCS

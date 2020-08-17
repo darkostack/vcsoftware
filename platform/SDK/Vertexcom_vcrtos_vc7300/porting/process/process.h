@@ -15,6 +15,8 @@ extern "C" {
 #define PROCESS_MAX_EVENTS KERNEL_MAXTHREADS
 #endif
 
+#define PROCESS_NONE NULL
+
 typedef unsigned char process_event_t; /* event id */
 typedef void *process_data_t;
 
