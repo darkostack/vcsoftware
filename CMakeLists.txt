@@ -28,7 +28,7 @@ endif()
 
 if (VCSOFTWARE_SDK MATCHES vertexcom_vcrtos_linux)
     set(VERTEXCOM_VCRTOS_LINUX_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/vertexcom_vcrtos_linux.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/vertexcom_vcrtos_linux.c
     )
 
     CREATE_TEST_LIBRARY(vertexcom_vcrtos_linux "${VERTEXCOM_VCRTOS_LINUX_SRCS}" "")
