@@ -14,17 +14,7 @@ endmacro(SET_COMPILER_DBG_RLZ_FLAG)
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_C_FLAGS "")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_CXX_FLAGS "")
 
-########### COMPILER FLAGS  ###########
-#
-#######################################
-
-########### DEBUG ###########
-
-SET_COMPILER_DBG_RLZ_FLAG (CMAKE_ASM_FLAGS "-D__STARTUP_CLEAR_BSS")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_ASM_FLAGS "-Wall")
-SET_COMPILER_DBG_RLZ_FLAG (CMAKE_ASM_FLAGS "-mfloat-abi=hard")
-# Floating point support
-
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_ASM_FLAGS "-mthumb")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_ASM_FLAGS "-fno-common")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_ASM_FLAGS "-ffunction-sections")
@@ -40,10 +30,7 @@ if (PAL_GCOV_SUPPORT)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0  -fprofile-arcs -ftest-coverage")
 endif ()
 
-# Board specific
-
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_C_FLAGS "-Wall")
-# Board specific
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_C_FLAGS "-m32")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_C_FLAGS "-MMD")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_C_FLAGS "-MP")
@@ -55,24 +42,14 @@ SET_COMPILER_DBG_RLZ_FLAG (CMAKE_C_FLAGS "-fno-builtin")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_C_FLAGS "-std=gnu99")
 
 
-########### Release specific ###########
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Os")
-######################################
 
-########### LINKER FLAGS  ###########
-#
-#
-#####################################
-
-########### DEBUG ###########
 # Debug specific
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -g")
 if (PAL_GCOV_SUPPORT)
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -g -O0 -lgcov -fprofile-arcs")
 endif ()
-
-########### RELEASE ###########
 
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_EXE_LINKER_FLAGS "-m32")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_EXE_LINKER_FLAGS "-Wall")
