@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+extern void *_native_instance;
+
 typedef void (*_native_callback_t)(void);
 
 void native_cpu_init(void);

@@ -32,6 +32,8 @@ if (VCSOFTWARE_SDK MATCHES vertexcom_vcrtos_linux)
     )
 
     CREATE_TEST_LIBRARY(vertexcom_vcrtos_linux "${VERTEXCOM_VCRTOS_LINUX_SRCS}" "")
+    add_dependencies(vertexcom_vcrtos_linux PLATFORM_LIBS)
+    #target_link_libraries(vertexcom_vcrtos_linux PLATFORM_LIBS)
 endif()
 
 ADDSUBDIRS()
