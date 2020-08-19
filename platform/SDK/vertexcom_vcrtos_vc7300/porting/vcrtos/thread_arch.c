@@ -175,3 +175,8 @@ __attribute__((naked)) __attribute__((used)) void isr_svc(void)
         /* {r0-r3,r12,LR,PC,xPSR,s0-s15,FPSCR} are restored automatically on exception return */
     );
 }
+
+void thread_arch_yield_higher(void)
+{
+    cpu_trigger_pendsv_interrupt();
+}

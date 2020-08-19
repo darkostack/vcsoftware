@@ -14,7 +14,8 @@
 #include <ucontext.h>
 #endif
 #endif
-
+#include <netdb.h>
+#include <ifaddrs.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/stat.h>
