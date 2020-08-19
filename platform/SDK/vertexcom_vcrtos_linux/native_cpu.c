@@ -13,6 +13,7 @@
 
 #include <vcrtos/cpu.h>
 #include <vcrtos/thread.h>
+#include <vcrtos/instance.h>
 
 #include "native_internal.h"
 

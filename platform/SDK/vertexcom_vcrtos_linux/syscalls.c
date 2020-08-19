@@ -18,6 +18,7 @@
 
 #include <vcrtos/cpu.h>
 #include <vcrtos/thread.h>
+#include <vcrtos/instance.h>
 #include <vcrtos/xtimer.h>
 
 #include "native_internal.h"
