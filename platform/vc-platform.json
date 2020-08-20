@@ -5,7 +5,7 @@
     },
     "os": {
       "name": "vcrtos",
-      "version": "1.0.9"
+      "version": "1.1.0"
     },
     "sdk": {
       "name": "vertexcom_vcrtos_linux",
@@ -13,11 +13,11 @@
     },
     "middleware": {
       "vcrtos": {
-        "version": "1.0.9",
+        "version": "1.1.0",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcrtos.git",
-          "tag": "vcrtos-1.0.9"
+          "tag": "vcrtos-1.1.0"
         },
         "to": "SDK/vertexcom_vcrtos_linux/vcrtos"
       }

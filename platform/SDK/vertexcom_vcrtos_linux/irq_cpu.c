@@ -275,7 +275,7 @@ void native_isr_entry(int sig, siginfo_t *info, void *context)
     isr_set_sigmask((ucontext_t *)context);
     _native_in_isr = 1;
 
-    _native_saved_eip = ((ucontext_t *)context)->uc_mcontext.gregs[REG_IEP];
+    _native_saved_eip = ((ucontext_t *)context)->uc_mcontext.gregs[REG_EIP];
     ((ucontext_t *)context)->uc_mcontext.gregs[REG_EIP] = (unsigned int)&_native_sig_leave_tramp;
 }
 

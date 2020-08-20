@@ -1,6 +1,6 @@
 #include <vcrtos/instance.h>
 
-void kernel_init(void *instance)
+void _kernel_init(void *instance)
 {
-
+    (void) instance;
 }

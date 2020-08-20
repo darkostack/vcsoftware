@@ -4,7 +4,6 @@
 #else
 #include <dlfcn.h>
 #endif
-#include "byteorder.h"
 #include <assert.h>
 #include <getopt.h>
 #include <stdbool.h>
@@ -24,8 +23,6 @@
 #include "native_internal.h"
 
 void *_native_instance;
-
-extern void kernel_init(void *instance);
 
 const char *_progname;
 char **_native_argv;
@@ -95,6 +92,6 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
 
     cpu_irq_enable();
 
-    extern void kernel_init(void *);
-    kernel_init(_native_instance);
+    extern void _kernel_init(void *);
+    _kernel_init(_native_instance);
 }

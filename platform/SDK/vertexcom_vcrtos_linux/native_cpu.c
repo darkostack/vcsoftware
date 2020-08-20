@@ -61,7 +61,7 @@ char *thread_arch_stack_init(thread_handler_func_t func, void *arg, void *stack_
         err(EXIT_FAILURE, "thread_stack_init: sigemptyset");
     }
 
-    makecontext(p, (void (*)(void)) task_func, 1, arg);
+    makecontext(p, (void (*)(void))func, 1, arg);
 
     return (char *) p;
 }

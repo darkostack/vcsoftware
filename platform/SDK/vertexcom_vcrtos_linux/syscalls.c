@@ -312,6 +312,10 @@ int getpid(void)
     return -1;
 }
 
+#ifndef US_PER_SEC
+#define US_PER_SEC 1000000
+#endif
+
 int _gettimeofday(struct timeval *tp, void *restrict tzp)
 {
     (void) tzp;
