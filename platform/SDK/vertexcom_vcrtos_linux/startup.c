@@ -95,5 +95,6 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
 
     cpu_irq_enable();
 
+    extern void kernel_init(void *);
     kernel_init(_native_instance);
 }
