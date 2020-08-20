@@ -36,13 +36,19 @@ extern init_func_t __init_array_end;
 
 static void _reset_handler(void)
 {
-    //cpu_reboot();
+    printf("\n\n\t\t!!! REBOOT !!!\n\n");
+
+    if (real_execve(_native_argv[0], _native_argv, NULL) == -1)
+    {
+        err(EXIT_FAILURE, "reset_handler: execve");
+    }
+
+    errx(EXIT_FAILURE, "reset_handler: this should not have been reached");
 }
 
 __attribute__((constructor)) static void startup(int argc, char **argv, char **envp)
 {
     _native_init_syscalls();
-    //stdio_init();
 
     _native_argv = argv;
     _progname = argv[0];
@@ -87,6 +93,8 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
     native_interrupt_init();
 
     _native_instance = instance_init_single();
+
+    register_interrupt(SIGUSR1, _reset_handler);
 
     puts("native hardware initialization complete.\n");
 

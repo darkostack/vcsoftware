@@ -109,6 +109,8 @@ foreach(TEST_LIB ${TEST_LIBS})
     endif()
 
     if(${OS_BRAND} MATCHES Linux)
+        target_link_libraries(${TEST_LIB}.elf optimized dl)
+        target_link_libraries(${TEST_LIB}.elf debug dl)
         target_link_libraries(${TEST_LIB}.elf optimized rt)
         target_link_libraries(${TEST_LIB}.elf debug rt)
         target_link_libraries(${TEST_LIB}.elf optimized pthread)
