@@ -174,7 +174,7 @@ void cpu_irq_restore(unsigned state)
     return;
 }
 
-int irq_is_in(void)
+int cpu_is_in_isr(void)
 {
     return _native_in_isr;
 }

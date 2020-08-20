@@ -18,6 +18,8 @@ void *thread_main_handler(void *arg)
 
     main();
 
+    /* should not reach here! */
+
     vcassert(0);
 
     return NULL;
@@ -40,6 +42,8 @@ void *thread_idle_handler(void *arg)
 {
     (void) arg;
 
+    printf("idle handler!!!\n");
+
     while (1)
     {
         native_cpu_sleep();
@@ -59,15 +63,19 @@ void _kernel_init(void *instance)
 
     printf("\n\nvcrtos-%s kernel started\n\n", VCRTOS_VERSION);
 
-    (void) thread_create((void *)instance, _main_stack, sizeof(_main_stack),
+    kernel_pid_t main_pid = thread_create((void *)instance, _main_stack, sizeof(_main_stack),
                          KERNEL_THREAD_PRIORITY_MAIN,
                          THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                          thread_main_handler, (void *)instance, "main");
 
-    (void) thread_create((void *)instance, _idle_stack, sizeof(_idle_stack),
+    printf("main pid: %d\n", (int)main_pid);
+
+    kernel_pid_t idle_pid = thread_create((void *)instance, _idle_stack, sizeof(_idle_stack),
                          KERNEL_THREAD_PRIORITY_IDLE,
                          THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                          thread_idle_handler, (void *)instance, "idle");
+
+    printf("idle pid: %d\n", (int)idle_pid);
 
     cpu_switch_context_exit();
 }

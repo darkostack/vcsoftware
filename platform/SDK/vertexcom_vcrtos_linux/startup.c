@@ -89,10 +89,10 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
         ++init_array_ptr;
     }
 
+    _native_instance = instance_init_single();
+
     native_cpu_init();
     native_interrupt_init();
-
-    _native_instance = instance_init_single();
 
     register_interrupt(SIGUSR1, _reset_handler);
 
