@@ -96,7 +96,7 @@ __attribute__((constructor)) static void startup(int argc, char **argv, char **e
 
     register_interrupt(SIGUSR1, _reset_handler);
 
-    puts("native hardware initialization complete.\n");
+    //puts("native hardware initialization complete.");
 
     cpu_irq_enable();
 

@@ -446,5 +446,5 @@ void native_interrupt_init(void)
         err(EXIT_FAILURE, "native_interrupt_init: sigaction");
     }
 
-    puts("native interrupts/signals initialized.");
+    //puts("native interrupts/signals initialized.");
 }
