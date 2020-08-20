@@ -9,7 +9,7 @@ int main(void)
 
     while (1)
     {
-        thread_yield(instance);
+        thread_sleep(instance);
     }
 
     return 0;

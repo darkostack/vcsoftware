@@ -133,18 +133,11 @@ void isr_thread_yield(void)
 
 void thread_arch_yield_higher(void)
 {
-    printf("thread_arch_yield_higher: start\n");
-
     thread_scheduler_set_context_switch_request(_native_instance, 1);
-
-    printf("current pid: %d\n", (int)thread_current(_native_instance)->pid);
 
     if (_native_in_isr == 0)
     {
-        printf("context: start\n");
         ucontext_t *ctx = (ucontext_t *)(thread_current(_native_instance)->stack_pointer);
-        printf("context: %p\n", (void *)ctx);
-        printf("context: end\n");
         _native_in_isr = 1;
         if (!native_interrupts_enabled)
         {
@@ -161,8 +154,6 @@ void thread_arch_yield_higher(void)
         }
         cpu_irq_enable();
     }
-
-    printf("thread_arch_yield_higher: end\n");
 }
 
 void sched_task_exit(void)

@@ -12,7 +12,7 @@
 
 extern int main(void);
 
-void *thread_main_handler(void *arg)
+static void *thread_main_handler(void *arg)
 {
     (void) arg;
 
@@ -38,11 +38,9 @@ void native_cpu_sleep(void)
     }
 }
 
-void *thread_idle_handler(void *arg)
+static void *thread_idle_handler(void *arg)
 {
     (void) arg;
-
-    printf("idle handler!!!\n");
 
     while (1)
     {
@@ -52,8 +50,8 @@ void *thread_idle_handler(void *arg)
     return NULL;
 }
 
-char _main_stack[VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE];
-char _idle_stack[VCRTOS_CONFIG_IDLE_THREAD_STACK_SIZE];
+static char _main_stack[VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE];
+static char _idle_stack[VCRTOS_CONFIG_IDLE_THREAD_STACK_SIZE];
 
 void _kernel_init(void *instance)
 {
@@ -61,21 +59,17 @@ void _kernel_init(void *instance)
 
     vcassert(instance_is_initialized(instance));
 
-    printf("\n\nvcrtos-%s kernel started\n\n", VCRTOS_VERSION);
+    real_printf("\n\nvcrtos-%s kernel started\n\n", VCRTOS_VERSION);
 
-    kernel_pid_t main_pid = thread_create((void *)instance, _main_stack, sizeof(_main_stack),
+    (void) thread_create((void *)instance, _main_stack, sizeof(_main_stack),
                          KERNEL_THREAD_PRIORITY_MAIN,
                          THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                          thread_main_handler, (void *)instance, "main");
 
-    printf("main pid: %d\n", (int)main_pid);
-
-    kernel_pid_t idle_pid = thread_create((void *)instance, _idle_stack, sizeof(_idle_stack),
+    (void) thread_create((void *)instance, _idle_stack, sizeof(_idle_stack),
                          KERNEL_THREAD_PRIORITY_IDLE,
                          THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                          thread_idle_handler, (void *)instance, "idle");
-
-    printf("idle pid: %d\n", (int)idle_pid);
 
     cpu_switch_context_exit();
 }
