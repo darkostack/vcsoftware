@@ -15,6 +15,7 @@ set(NATIVE_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/native_cpu.c
     ${CMAKE_CURRENT_SOURCE_DIR}/syscalls.c
     ${CMAKE_CURRENT_SOURCE_DIR}/startup.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/stdio_native.c
 )
 
 set_property(SOURCE tramp.S PROPERTY LANGUAGE C)
