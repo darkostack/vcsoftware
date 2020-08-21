@@ -8,6 +8,8 @@ ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/include)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source)
 
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/include)
+
 set(NATIVE_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/tramp.S
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel_init.c
@@ -15,7 +17,13 @@ set(NATIVE_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/native_cpu.c
     ${CMAKE_CURRENT_SOURCE_DIR}/syscalls.c
     ${CMAKE_CURRENT_SOURCE_DIR}/startup.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stdio_native.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/stdio_native.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/async_read.c
+)
+
+set(NATIVE_PERIPH_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/periph/uart.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/periph/gpio.c
 )
 
 set_property(SOURCE tramp.S PROPERTY LANGUAGE C)
@@ -52,10 +60,12 @@ set(PLATFORM_LIBS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy.c
 )
 
+add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
 add_definitions(-DVCRTOS_PROJECT_CONFIG_FILE="vcrtos-project-config.h")
 add_definitions(-DVCRTOS_VERSION="${VCSOFTWARE_OS_VER}")
 
 add_library(native_common STATIC ${NATIVE_COMMON_SRCS})
+add_library(native_periph STATIC ${NATIVE_PERIPH_SRCS})
 add_library(vcrtos_core STATIC ${VCRTOS_CORE_SRCS})
 add_library(vcrtos_core_api STATIC ${VCRTOS_CORE_API_SRCS})
 add_library(vcrtos_utils STATIC ${VCRTOS_UTILS_SRCS})
@@ -64,6 +74,7 @@ add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list
     native_common
+    native_periph
     vcrtos_core
     vcrtos_core_api
     vcrtos_utils

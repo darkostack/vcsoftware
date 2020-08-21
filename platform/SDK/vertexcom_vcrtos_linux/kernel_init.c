@@ -4,6 +4,8 @@
 #include <vcrtos/instance.h>
 #include <vcrtos/thread.h>
 
+#include <vcdrivers/stdiobase.h>
+
 #if VCRTOS_CONFIG_THREAD_EVENT_ENABLE
 #include <vcrtos/event.h>
 #endif
