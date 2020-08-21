@@ -38,7 +38,7 @@
     },
     "os": {
       "name": "vcrtos",
-      "version": "1.0.9"
+      "version": "1.1.2"
     },
     "sdk": {
       "name": "vertexcom_vcrtos_vc7300",
@@ -55,11 +55,11 @@
         "to": "SDK/vertexcom_vcrtos_vc7300/vcdrivers"
       },
       "vcrtos": {
-        "version": "1.0.9",
+        "version": "1.1.2",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcrtos.git",
-          "tag": "vcrtos-1.0.9"
+          "tag": "vcrtos-1.1.2"
         },
         "to": "SDK/vertexcom_vcrtos_vc7300/vcrtos"
       }
