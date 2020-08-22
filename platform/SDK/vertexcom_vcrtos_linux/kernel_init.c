@@ -5,11 +5,24 @@
 
 #include <vcdrivers/stdiobase.h>
 
+#if VCRTOS_CONFIG_ZTIMER_ENABLE
+#include <vcrtos/ztimer.h>
+#include <vcrtos/ztimer/periph_timer.h>
+#endif
+
 #if VCRTOS_CONFIG_THREAD_EVENT_ENABLE
 #include <vcrtos/event.h>
 #endif
 
 #include "native_internal.h"
+
+#if VCRTOS_CONFIG_ZTIMER_ENABLE
+#define WIDTH_TO_MAXVAL(width) (UINT32_MAX >> (32 - width))
+static ztimer_periph_timer_t _ztimer_periph_timer_usec = {
+    .min = VCRTOS_CONFIG_ZTIMER_USEC_MIN
+};
+ztimer_clock_t *const ZTIMER_USEC = &_ztimer_periph_timer_usec.super;
+#endif
 
 extern int main(void);
 
@@ -59,6 +72,15 @@ void _kernel_init(void *instance)
     (void) cpu_irq_disable();
 
     vcassert(instance_is_initialized(instance));
+
+    vcstdio_init(instance);
+
+#if VCRTOS_CONFIG_ZTIMER_ENABLE
+    ztimer_periph_timer_init(&_ztimer_periph_timer_usec,
+                             VCRTOS_CONFIG_ZTIMER_USEC_DEV,
+                             VCRTOS_CONFIG_ZTIMER_USEC_BASE_FREQ,
+                             WIDTH_TO_MAXVAL(VCRTOS_CONFIG_ZTIMER_USEC_WIDTH));
+#endif
 
     real_printf("\n\nvcrtos-%s kernel started\n\n", VCRTOS_VERSION);
 

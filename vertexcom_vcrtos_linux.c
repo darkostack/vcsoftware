@@ -25,8 +25,6 @@ const cli_command_t user_command_list[] = {
 
 int main(void)
 {
-    vcstdio_init(_native_instance);
-
     vccli_uart_init(_native_instance);
     vccli_set_user_commands(user_command_list, 1);
 
