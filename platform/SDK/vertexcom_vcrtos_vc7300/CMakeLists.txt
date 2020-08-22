@@ -61,6 +61,12 @@ set(VCRTOS_CLI_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/cli/cli_uart.cpp
 )
 
+set(VCRTOS_ZTIMER_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/ztimer/core.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/ztimer/overhead.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/ztimer/util.c
+)
+
 set(PORTING_VCRTOS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/cortexm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/cpu_arch.c
@@ -96,6 +102,7 @@ add_library(vcrtos_core STATIC ${VCRTOS_CORE_SRCS})
 add_library(vcrtos_core_api STATIC ${VCRTOS_CORE_API_SRCS})
 add_library(vcrtos_utils STATIC ${VCRTOS_UTILS_SRCS})
 add_library(vcrtos_cli STATIC ${VCRTOS_CLI_SRCS})
+add_library(vcrtos_ztimer STATIC ${VCRTOS_ZTIMER_SRCS})
 add_library(porting_vcrtos STATIC ${PORTING_VCRTOS_SRCS})
 add_library(porting_arduino STATIC ${PORTING_ARDUINO_SRCS})
 add_library(porting_process STATIC ${PORTING_PROCESS_SRCS})
@@ -108,6 +115,7 @@ set(PLATFORM_LIBS_list
     vcrtos_core_api
     vcrtos_utils
     vcrtos_cli
+    vcrtos_ztimer
     porting_vcrtos
     porting_arduino
     porting_process
