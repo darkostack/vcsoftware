@@ -5,7 +5,7 @@
 #include <termios.h>
 #include <fcntl.h>
 
-#include <vcdrivers/config.h>
+#include <vcrtos/cpu.h>
 #include <vcdrivers/periph/uart.h>
 
 #include "native_internal.h"
@@ -51,10 +51,7 @@ static void io_signal_handler(int fd, void *arg)
         if (status == 1)
         {
             uart_config[uart].callback(uart_config[uart].arg, c);
-#if VCDRIVERS_CONFIG_RTOS_ENABLE
-            extern void cpu_end_of_isr(void *instance);
-            cpu_end_of_isr(_native_instance);
-#endif
+            cpu_end_of_isr();
         }
         else
         {

@@ -19,7 +19,6 @@
 #include <vcrtos/cpu.h>
 #include <vcrtos/thread.h>
 #include <vcrtos/instance.h>
-#include <vcrtos/xtimer.h>
 
 #include "native_internal.h"
 
@@ -312,15 +311,11 @@ int getpid(void)
     return -1;
 }
 
-#ifndef US_PER_SEC
-#define US_PER_SEC 1000000
-#endif
-
 int _gettimeofday(struct timeval *tp, void *restrict tzp)
 {
     (void) tzp;
-    uint64_t now = xtimer_now_usec64(_native_instance);
-    tp->tv_sec  = now / US_PER_SEC;
+    uint64_t now = 0; /* TODO: use ztimer */
+    tp->tv_sec  = now / 1000000;
     tp->tv_usec = now - tp->tv_sec;
     return 0;
 }

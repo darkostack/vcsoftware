@@ -1,4 +1,3 @@
-#include <vcrtos/config.h>
 #include <vcrtos/assert.h>
 #include <vcrtos/cpu.h>
 #include <vcrtos/instance.h>

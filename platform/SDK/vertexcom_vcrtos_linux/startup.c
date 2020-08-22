@@ -16,9 +16,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <vcdrivers/config.h>
-#include <vcrtos/config.h>
-
 #include <vcrtos/instance.h>
 #include <vcrtos/cpu.h>
 #include <vcrtos/thread.h>
