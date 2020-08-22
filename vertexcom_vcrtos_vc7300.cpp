@@ -2,12 +2,12 @@
 
 #include <vcrtos/instance.h>
 #include <vcrtos/thread.h>
-#include <vcrtos/xtimer.h>
+//#include <vcrtos/xtimer.h>
 #include <vcrtos/cli.h>
 
-#include "process.h"
-#include "etimer.h"
-#include "ctimer.h"
+//#include "process.h"
+//#include "etimer.h"
+//#include "ctimer.h"
 
 extern "C" void vcrtos_cmd_ps(int argc, char **argv);
 
@@ -17,9 +17,9 @@ const cli_command_t user_command_list[] = {
 
 //static xtimer_t timer_test;
 
-static uint32_t ctimer_counter = 0;
+//static uint32_t ctimer_counter = 0;
 
-PROCESS(test_process, "test-process", 1024);
+//PROCESS(test_process, "test-process", 1024);
 
 #if 0
 void xtimer_test_handler(void *arg)
@@ -41,9 +41,9 @@ void Arduino::setup(void)
     vccli_uart_init(instance);
     vccli_set_user_commands(user_command_list, 1);
 
-    process_init(instance);
-    ctimer_init();
-    process_start(&test_process, NULL);
+    //process_init(instance);
+    //ctimer_init();
+    //process_start(&test_process, NULL);
 
     //xtimer_init(_instance, &timer_test, xtimer_test_handler, static_cast<void *>(&test_process));
     //xtimer_set(&timer_test, 1000000);
@@ -55,6 +55,7 @@ void Arduino::loop(void)
     thread_sleep(instance);
 }
 
+#if 0
 void ctimer_timeout(void *arg)
 {
     struct ctimer *ct = (struct ctimer *)arg;
@@ -84,3 +85,4 @@ PROCESS_THREAD(test_process, ev, data)
 
     PROCESS_END();
 }
+#endif
