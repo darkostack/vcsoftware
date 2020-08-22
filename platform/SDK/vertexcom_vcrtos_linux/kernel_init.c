@@ -82,7 +82,7 @@ void _kernel_init(void *instance)
                              WIDTH_TO_MAXVAL(VCRTOS_CONFIG_ZTIMER_USEC_WIDTH));
 #endif
 
-    real_printf("\n\nvcrtos-%s kernel started\n\n", VCRTOS_VERSION);
+    real_printf("\r\n\r\nvcrtos-%s kernel started\r\n\r\n", VCRTOS_VERSION);
 
     (void) thread_create((void *)instance, _main_stack, sizeof(_main_stack),
                          KERNEL_THREAD_PRIORITY_MAIN,
