@@ -16,7 +16,7 @@ static void _ztimer_periph_timer_set(ztimer_clock_t *clock, uint32_t val)
 
     unsigned state = cpu_irq_disable();
 
-    vctim_set_absolute(TIM_DEV(ztimer_periph->dev), 0, val);
+    vctim_set(TIM_DEV(ztimer_periph->dev), 0, val);
 
     cpu_irq_restore(state);
 }

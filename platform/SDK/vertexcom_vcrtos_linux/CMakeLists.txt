@@ -19,6 +19,7 @@ set(NATIVE_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/startup.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stdio_native.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/async_read.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ztimer_periph.c
 )
 
 set_property(SOURCE tramp.S PROPERTY LANGUAGE C)
@@ -26,6 +27,7 @@ set_property(SOURCE tramp.S PROPERTY LANGUAGE C)
 set(NATIVE_PERIPH_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/periph/uart.c
     ${CMAKE_CURRENT_SOURCE_DIR}/periph/gpio.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/periph/tim.c
 )
 
 set(VCRTOS_CORE_SRCS
