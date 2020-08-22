@@ -9,6 +9,8 @@
 #include <vcrtos/cpu.h>
 #include <vcdrivers/periph/tim.h>
 
+#include "native_internal.h"
+
 #define TIMER_NUMOF 1
 #define NATIVE_TIMER_MIN_RES 200
 
@@ -16,7 +18,7 @@
 
 static unsigned long time_null;
 
-static timer_cb_t _callback;
+static vctim_callback_func_t _callback;
 static void *_cb_arg;
 
 static struct itimerval itv;
@@ -48,10 +50,12 @@ int vctim_init(vctim_t dev, unsigned long freq, vctim_callback_func_t callback, 
     time_null = 0;
     time_null = vctim_read(dev);
 
-    _callback = cb;
+    _callback = callback;
     _cb_arg = arg;
 
     register_interrupt(SIGALRM, native_isr_timer);
+
+    return 0;
 }
 
 static void do_timer_set(unsigned int offset)
@@ -73,7 +77,7 @@ static void do_timer_set(unsigned int offset)
     _native_syscall_leave();
 }
 
-int vctim_set(vctim_t dev, int channel, unsigned int offset)
+int vctim_set(vctim_t dev, unsigned channel, unsigned int offset)
 {
     (void)dev;
 
@@ -90,13 +94,13 @@ int vctim_set(vctim_t dev, int channel, unsigned int offset)
     return 0;
 }
 
-int vctim_set_absolute(vctim_t dev, int channel, unsigned int value)
+int vctim_set_absolute(vctim_t dev, unsigned channel, unsigned int value)
 {
     uint32_t now = vctim_read(dev);
     return vctim_set(dev, channel, value - now);
 }
 
-int vctim_clear(vctim_t dev, int channel)
+int vctim_clear(vctim_t dev, unsigned channel)
 {
     (void)dev;
     (void)channel;
