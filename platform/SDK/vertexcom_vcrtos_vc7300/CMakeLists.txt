@@ -25,7 +25,7 @@ set(VCDRIVERS_COMMON_SRCS
 )
 
 set(VCDRIVERS_PERIPH_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/cpu_init.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/cpu.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/vectors.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/periph/gpio.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/periph/irq.c
