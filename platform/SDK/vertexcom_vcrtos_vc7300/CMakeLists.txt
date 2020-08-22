@@ -72,6 +72,7 @@ set(PORTING_VCRTOS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/stdiobase_arch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/thread_arch.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/commands.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/ztimer_periph.c
 )
 
 set(PORTING_ARDUINO_SRCS
@@ -81,8 +82,8 @@ set(PORTING_ARDUINO_SRCS
 
 set(PORTING_PROCESS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/process.c
-    #${CMAKE_CURRENT_SOURCE_DIR}/porting/process/etimer.c
-    #${CMAKE_CURRENT_SOURCE_DIR}/porting/process/ctimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/etimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/ctimer.c
 )
 
 set(PLATFORM_LIBS_SRCS

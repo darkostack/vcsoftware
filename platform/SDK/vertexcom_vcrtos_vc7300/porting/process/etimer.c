@@ -13,22 +13,22 @@ void etimer_callback(void *arg)
 
 void etimer_set(struct etimer *et, clock_time_t interval)
 {
-    et->p = PROCESS_CURRENT();
+    et->super.callback = etimer_callback;
+    et->super.arg = (void *)et;
 
-    et->start = xtimer_now_usec(process_instance);
+    et->p = PROCESS_CURRENT();
+    et->start = ztimer_now(ZTIMER_USEC);
     et->interval = interval;
 
-    xtimer_init(process_instance, &et->xtimer, etimer_callback, (void *)et);
-    xtimer_set(&et->xtimer, (uint32_t)interval);
+    ztimer_set(ZTIMER_USEC, &et->super, (uint32_t)interval);
 }
 
 void etimer_reset(struct etimer *et)
 {
     if (et->p != PROCESS_NONE)
     {
-        xtimer_remove(&et->xtimer);
+        ztimer_remove(ZTIMER_USEC, &et->super);
     }
-
     etimer_set(et, et->interval);
 }
 
@@ -36,7 +36,7 @@ void etimer_reset_with_new_interval(struct etimer *et, clock_time_t interval)
 {
     if (et->p != PROCESS_NONE)
     {
-        xtimer_remove(&et->xtimer);
+        ztimer_remove(ZTIMER_USEC, &et->super);
     }
 
     etimer_set(et, interval);

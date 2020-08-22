@@ -4,7 +4,7 @@
 #include "process.h"
 
 #include <vcrtos/config.h>
-#include <vcrtos/xtimer.h>
+#include <vcrtos/ztimer.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +14,7 @@ typedef uint32_t clock_time_t;
 
 struct etimer
 {
-    xtimer_t xtimer;
+    ztimer_t super;
     uint64_t start;
     uint32_t interval;
     struct process *p;

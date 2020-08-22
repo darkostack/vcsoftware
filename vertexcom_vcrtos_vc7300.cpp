@@ -2,7 +2,7 @@
 
 #include <vcrtos/instance.h>
 #include <vcrtos/thread.h>
-//#include <vcrtos/xtimer.h>
+#include <vcrtos/ztimer.h>
 #include <vcrtos/cli.h>
 
 //#include "process.h"
@@ -15,22 +15,24 @@ const cli_command_t user_command_list[] = {
     { "ps", vcrtos_cmd_ps },
 };
 
-//static xtimer_t timer_test;
+static void _timer_test_handler(void *arg);
+static uint32_t _timer_test_counter = 0;
+static ztimer_t _timer_test;
 
 //static uint32_t ctimer_counter = 0;
 
 //PROCESS(test_process, "test-process", 1024);
 
-#if 0
-void xtimer_test_handler(void *arg)
+static void _timer_test_handler(void *arg)
 {
-    struct process *p = static_cast<struct process *>(arg);
+    //struct process *p = static_cast<struct process *>(arg);
+    //process_post(p, PROCESS_EVENT_TIMER, NULL);
 
-    process_post(p, PROCESS_EVENT_TIMER, NULL);
-
-    xtimer_set(&timer_test, 1000000);
+    uint32_t *counter = static_cast<uint32_t *>(arg);
+    *counter += 1;
+    printf("fired: %lu\n", static_cast<uint32_t>(*counter));
+    ztimer_set(ZTIMER_USEC, &_timer_test, 1000000);
 }
-#endif
 
 void Arduino::setup(void)
 {
@@ -45,8 +47,10 @@ void Arduino::setup(void)
     //ctimer_init();
     //process_start(&test_process, NULL);
 
-    //xtimer_init(_instance, &timer_test, xtimer_test_handler, static_cast<void *>(&test_process));
-    //xtimer_set(&timer_test, 1000000);
+    _timer_test.callback = _timer_test_handler;
+    _timer_test.arg = &_timer_test_counter;
+
+    ztimer_set(ZTIMER_USEC, &_timer_test, 1000000);
 }
 
 void Arduino::loop(void)
