@@ -3,8 +3,6 @@
 #include <vcrtos/instance.h>
 #include <vcrtos/thread.h>
 
-#include <vcdrivers/stdiobase.h>
-
 #if VCRTOS_CONFIG_ZTIMER_ENABLE
 #include <vcrtos/ztimer.h>
 #include <vcrtos/ztimer/periph_timer.h>
@@ -73,15 +71,6 @@ void _kernel_init(void *instance)
 
     vcassert(instance_is_initialized(instance));
 
-    vcstdio_init(instance);
-
-#if VCRTOS_CONFIG_ZTIMER_ENABLE
-    ztimer_periph_timer_init(&_ztimer_periph_timer_usec,
-                             VCRTOS_CONFIG_ZTIMER_USEC_DEV,
-                             VCRTOS_CONFIG_ZTIMER_USEC_BASE_FREQ,
-                             WIDTH_TO_MAXVAL(VCRTOS_CONFIG_ZTIMER_USEC_WIDTH));
-#endif
-
     real_printf("\r\n\r\nvcrtos-%s kernel started\r\n\r\n", VCRTOS_VERSION);
 
     (void) thread_create((void *)instance, _main_stack, sizeof(_main_stack),
@@ -93,6 +82,13 @@ void _kernel_init(void *instance)
                          KERNEL_THREAD_PRIORITY_IDLE,
                          THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
                          thread_idle_handler, (void *)instance, "idle");
+
+#if VCRTOS_CONFIG_ZTIMER_ENABLE
+    ztimer_periph_timer_init(&_ztimer_periph_timer_usec,
+                             VCRTOS_CONFIG_ZTIMER_USEC_DEV,
+                             VCRTOS_CONFIG_ZTIMER_USEC_BASE_FREQ,
+                             WIDTH_TO_MAXVAL(VCRTOS_CONFIG_ZTIMER_USEC_WIDTH));
+#endif
 
     cpu_switch_context_exit();
 }
