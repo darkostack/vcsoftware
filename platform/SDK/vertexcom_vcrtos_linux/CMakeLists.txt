@@ -62,6 +62,12 @@ set(VCRTOS_CLI_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/cli/cli_uart.cpp
 )
 
+set(NATIVE_PORTING_PROCESS_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/process.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/etimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/ctimer.c
+)
+
 set(PLATFORM_LIBS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy.c
 )
@@ -77,6 +83,7 @@ add_library(vcrtos_core_api STATIC ${VCRTOS_CORE_API_SRCS})
 add_library(vcrtos_utils STATIC ${VCRTOS_UTILS_SRCS})
 add_library(vcrtos_ztimer STATIC ${VCRTOS_ZTIMER_SRCS})
 add_library(vcrtos_cli STATIC ${VCRTOS_CLI_SRCS})
+add_library(native_porting_process STATIC ${NATIVE_PORTING_PROCESS_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list
@@ -87,6 +94,7 @@ set(PLATFORM_LIBS_list
     vcrtos_utils
     vcrtos_ztimer
     vcrtos_cli
+    native_porting_process
 )
 
 add_dependencies(PLATFORM_LIBS ${PLATFORM_LIBS_list})
