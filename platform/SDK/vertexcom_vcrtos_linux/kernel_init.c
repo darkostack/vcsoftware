@@ -65,6 +65,64 @@ static void *thread_idle_handler(void *arg)
 static char _main_stack[VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE];
 static char _idle_stack[VCRTOS_CONFIG_IDLE_THREAD_STACK_SIZE];
 
+#if VCRTOS_CONFIG_THREAD_EVENT_ENABLE
+static void *_thread_event_handler(void *arg)
+{
+    event_queue_t *queue = (event_queue_t *)arg;
+    event_queue_claim(queue);
+    event_loop(queue);
+    return NULL;
+}
+
+event_queue_t event_queue_highest;
+static char _event_queue_highest_stack[VCRTOS_CONFIG_THREAD_EVENT_HIGHEST_STACK_SIZE];
+
+event_queue_t event_queue_medium;
+static char _event_queue_medium_stack[VCRTOS_CONFIG_THREAD_EVENT_MEDIUM_STACK_SIZE];
+
+event_queue_t event_queue_lowest;
+static char _event_queue_lowest_stack[VCRTOS_CONFIG_THREAD_EVENT_LOWEST_STACK_SIZE];
+
+typedef struct
+{
+    event_queue_t *queue;
+    char *stack;
+    size_t stack_size;
+    unsigned priority;
+} event_threads_t;
+
+const event_threads_t _event_threads[] = {
+    { &event_queue_highest,
+      _event_queue_highest_stack,
+      sizeof(_event_queue_highest_stack),
+      VCRTOS_CONFIG_THREAD_EVENT_HIGHEST_PRIORITY
+    },
+    { &event_queue_medium,
+      _event_queue_medium_stack,
+      sizeof(_event_queue_medium_stack),
+      VCRTOS_CONFIG_THREAD_EVENT_MEDIUM_PRIORITY
+    },
+    { &event_queue_lowest,
+      _event_queue_lowest_stack,
+      sizeof(_event_queue_lowest_stack),
+      VCRTOS_CONFIG_THREAD_EVENT_LOWEST_PRIORITY
+    }
+};
+
+void event_thread_init(void *instance,
+                       event_queue_t *queue,
+                       char *stack,
+                       size_t stack_size,
+                       unsigned priority)
+{
+    event_queue_init(instance, queue);
+
+    (void) thread_create(instance, stack, stack_size, priority,
+                THREAD_FLAGS_CREATE_WOUT_YIELD | THREAD_FLAGS_CREATE_STACKMARKER,
+                _thread_event_handler, (void *)queue, "event");
+}
+#endif
+
 void _kernel_init(void *instance)
 {
     (void) cpu_irq_disable();
@@ -88,6 +146,15 @@ void _kernel_init(void *instance)
                              VCRTOS_CONFIG_ZTIMER_USEC_DEV,
                              VCRTOS_CONFIG_ZTIMER_USEC_BASE_FREQ,
                              WIDTH_TO_MAXVAL(VCRTOS_CONFIG_ZTIMER_USEC_WIDTH));
+#endif
+
+#if VCRTOS_CONFIG_THREAD_EVENT_ENABLE
+    for (unsigned i = 0; i < (sizeof(_event_threads) / sizeof(_event_threads[0])); i++)
+    {
+        event_thread_init(instance, _event_threads[i].queue,
+                          _event_threads[i].stack, _event_threads[i].stack_size,
+                          _event_threads[i].priority);
+    }
 #endif
 
     cpu_switch_context_exit();
