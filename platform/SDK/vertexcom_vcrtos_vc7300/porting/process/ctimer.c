@@ -1,45 +1,23 @@
 #include "ctimer.h"
 
-PROCESS(ctimer_process, "ctimer-process", 1024);
-
-PROCESS_THREAD(ctimer_process, ev, data)
+static void _ctimer_callback(void *arg)
 {
-    PROCESS_BEGIN();
-
-    while (1)
-    {
-        PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
-
-        if (data != NULL)
-        {
-            struct ctimer *ct = (struct ctimer *)data;
-            ct->cb(ct->arg);
-        }
-    }
-
-    PROCESS_END();
-}
-
-void ctimer_callback(void *arg)
-{
-    process_post(&ctimer_process, PROCESS_EVENT_TIMER, (process_data_t)arg);
+    struct ctimer *ct = (struct ctimer *)arg;
+    ct->cb(ct->arg);
 }
 
 void ctimer_init(void)
 {
-    process_start(&ctimer_process, NULL);
 }
 
 static void _ctimer_set(struct ctimer *ct, clock_time_t interval, void (*cb)(void *), void *arg)
 {
-    ct->super.callback = ctimer_callback;
+    ct->super.callback = _ctimer_callback;
     ct->super.arg = (void *)ct;
-
     ct->start = ztimer_now(ZTIMER_USEC);
     ct->interval = interval;
     ct->cb = cb;
     ct->arg = arg;
-
     ztimer_set(ZTIMER_USEC, &ct->super, (uint32_t)interval);
 }
 
@@ -52,7 +30,7 @@ void ctimer_set(struct ctimer *ct, clock_time_t interval, void (*cb)(void *), vo
 void ctimer_reset(struct ctimer *ct)
 {
     ztimer_remove(ZTIMER_USEC, &ct->super);
-    ctimer_set(ct, ct->interval, ct->cb, ct->arg);
+    _ctimer_set(ct, ct->interval, ct->cb, ct->arg);
 }
 
 void ctimer_set_with_process(struct ctimer *ct, clock_time_t interval,
@@ -68,7 +46,7 @@ void ctimer_stop(struct ctimer *ct)
     ct->start = 0;
 }
 
-static int _is_strictly_before(uint32_t time_a, uint32_t time_b)
+static int _ctimer_strictly_before(uint32_t time_a, uint32_t time_b)
 {
     uint32_t diff = time_a - time_b;
 
@@ -85,5 +63,5 @@ static int _is_strictly_before(uint32_t time_a, uint32_t time_b)
 
 int ctimer_expired(struct ctimer *ct)
 {
-    return _is_strictly_before((ct->start + ct->interval), ztimer_now(ZTIMER_USEC));
+    return _ctimer_strictly_before((ct->start + ct->interval), ztimer_now(ZTIMER_USEC));
 }

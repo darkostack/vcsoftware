@@ -1,44 +1,35 @@
 #include "etimer.h"
 
-void etimer_callback(void *arg)
+static void _etimer_callback(void *arg)
 {
     struct etimer *et = (struct etimer *)arg;
+    process_post(et->p, PROCESS_EVENT_TIMER, NULL);
+}
 
-    if (et->p != PROCESS_NONE)
-    {
-        process_post(et->p, PROCESS_EVENT_TIMER, NULL);
-        et->p = PROCESS_NONE;
-    }
+static void _etimer_set(struct etimer *et, clock_time_t interval)
+{
+    et->super.callback = _etimer_callback;
+    et->super.arg = (void *)et;
+    et->start = ztimer_now(ZTIMER_USEC);
+    et->interval = interval;
+    ztimer_set(ZTIMER_USEC, &et->super, (uint32_t)interval);
 }
 
 void etimer_set(struct etimer *et, clock_time_t interval)
 {
-    et->super.callback = etimer_callback;
-    et->super.arg = (void *)et;
-
     et->p = PROCESS_CURRENT();
-    et->start = ztimer_now(ZTIMER_USEC);
-    et->interval = interval;
-
-    ztimer_set(ZTIMER_USEC, &et->super, (uint32_t)interval);
+    _etimer_set(et, interval);
 }
 
 void etimer_reset(struct etimer *et)
 {
-    if (et->p != PROCESS_NONE)
-    {
-        ztimer_remove(ZTIMER_USEC, &et->super);
-    }
-    etimer_set(et, et->interval);
+    ztimer_remove(ZTIMER_USEC, &et->super);
+    _etimer_set(et, et->interval);
 }
 
 void etimer_reset_with_new_interval(struct etimer *et, clock_time_t interval)
 {
-    if (et->p != PROCESS_NONE)
-    {
-        ztimer_remove(ZTIMER_USEC, &et->super);
-    }
-
+    ztimer_remove(ZTIMER_USEC, &et->super);
     etimer_set(et, interval);
 }
 
@@ -57,12 +48,19 @@ clock_time_t etimer_start_time(struct etimer *et)
     return et->start;
 }
 
+static int _etimer_strictly_before(uint32_t time_a, uint32_t time_b)
+{
+    uint32_t diff = time_a - time_b;
+    return ((diff & (1UL << 31)) != 0);
+}
+
 int etimer_expired(struct etimer *et)
 {
-    return et->p == PROCESS_NONE;
+    return _etimer_strictly_before(etimer_expiration_time(et), ztimer_now(ZTIMER_USEC));
 }
 
 void etimer_stop(struct etimer *et)
 {
-    et->p = PROCESS_NONE;
+    ztimer_remove(ZTIMER_USEC, &et->super);
+    et->start = 0;
 }

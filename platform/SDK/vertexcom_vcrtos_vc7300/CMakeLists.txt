@@ -18,8 +18,6 @@ ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/arduino)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/process)
 
 set(VCDRIVERS_COMMON_SRCS
-    #${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/assert_failure.c
-    #${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/cortexm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/stdiobase.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/syscalls.c
 )
@@ -34,7 +32,6 @@ set(VCDRIVERS_PERIPH_SRCS
 )
 
 set(VCRTOS_CORE_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/assert_failure.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/instance.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/msg.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/mutex.cpp
@@ -73,6 +70,7 @@ set(PORTING_VCRTOS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/thread_arch.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/commands.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/ztimer_periph.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/assert_failure.c
 )
 
 set(PORTING_ARDUINO_SRCS
