@@ -21,6 +21,10 @@ if(VCSOFTWARE_SDK MATCHES vertexcom_vcrtos_vc7300)
         ${CMAKE_CURRENT_SOURCE_DIR}/vertexcom_vcrtos_vc7300.cpp
     )
 
+    add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
+    add_definitions(-DVCRTOS_PROJECT_CONFIG_FILE="vcrtos-project-config.h")
+    add_definitions(-DVCRTOS_VERSION="${VCSOFTWARE_OS_VER}")
+
     CREATE_TEST_LIBRARY(vertexcom_vcrtos_vc7300 "${VERTEXCOM_VCRTOS_VC7300_SRCS}" "")
     add_dependencies(vertexcom_vcrtos_vc7300 PLATFORM_LIBS)
     target_link_libraries(vertexcom_vcrtos_vc7300 PLATFORM_LIBS)
@@ -30,6 +34,10 @@ if (VCSOFTWARE_SDK MATCHES vertexcom_vcrtos_linux)
     set(VERTEXCOM_VCRTOS_LINUX_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/vertexcom_vcrtos_linux.c
     )
+
+    add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
+    add_definitions(-DVCRTOS_PROJECT_CONFIG_FILE="vcrtos-project-config.h")
+    add_definitions(-DVCRTOS_VERSION="${VCSOFTWARE_OS_VER}")
 
     CREATE_TEST_LIBRARY(vertexcom_vcrtos_linux "${VERTEXCOM_VCRTOS_LINUX_SRCS}" "")
     add_dependencies(vertexcom_vcrtos_linux PLATFORM_LIBS)
