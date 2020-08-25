@@ -183,9 +183,6 @@ class CommandInterface(object):
         else:
             raise CmdException("Unrecognized chip id 0x%x for flash erase" % chip_id)
 
-    def cmd_reset_device(self, chip_id):
-        self.cmd_remap_to_flash(chip_id)
-
     def cmd_flash_write(self, addr, data):
         assert((len(data) <= 256) and ((len(data) % 4) == 0))
         send_bytes = []
@@ -252,7 +249,6 @@ class CommandInterface(object):
     def flash_read(self, chip_id, addr, lng):
         data = bytes([])
         if chip_id == 0x18041901:
-            FLASH_MEMORY_BASE = 0x04000000
             if usepbar:
                 widgets = ['Reading: ', Percentage(),' ', ETA(), ' ', Bar()]
                 pbar = ProgressBar(widgets=widgets,maxval=lng, term_width=79).start()
@@ -261,7 +257,7 @@ class CommandInterface(object):
                     pbar.update(pbar.maxval-lng)
                 else:
                     mdebug(5, "Read %(len)d bytes at 0x%(addr)X" % {'addr': addr, 'len': 256})
-                data += self.cmd_flash_read(FLASH_MEMORY_BASE + addr, 256)
+                data += self.cmd_flash_read(addr, 256)
                 addr = addr + 256
                 lng = lng - 256
             if usepbar:
@@ -269,7 +265,7 @@ class CommandInterface(object):
                 pbar.finish()
             else:
                 mdebug(5, "Read %(len)d bytes at 0x%(addr)X" % {'addr': addr, 'len': 256})
-            data += self.cmd_flash_read(FLASH_MEMORY_BASE + addr, lng + (256-lng))
+            data += self.cmd_flash_read(addr, lng + (256-lng))
             return data
         else:
             raise CmdException("Unrecognized chip id 0x%x for flash read " % chip_id)
@@ -283,18 +279,18 @@ def usage():
     -E          Erase entire flash
     -w          Write
     -v          Verify
-    -X          Reset after and remap to flash
+    -X          Remap to flash
     -r          Read
     -u          Use sector erase instead of global erase. You need to specify the amount of sectors with '-l'
-    -l length   Length of read or erase when using sector erase
+    -l length   Length of read
     -p port     Serial port (default: first USB-like port in /dev)
     -b baud     Baudrate (default 115200)
     -a addr     Target address
     -s n        Skip writing N bytes from beginning of the binary (does not affect start address)
 
-    Example: ./vcloader.py -e -w -v example/main.bin
+    Example: ./vcloader.py -E -w -v example/main.bin
 
-    To use sector erase instead of global: ./vcloader.py -e -u -w -v -l 0x1ff example/main.bin
+    To use partial erase instead of global: ./vcloader.py -e -u -w -v example/main.bin
 
     """ % sys.argv[0])
 
@@ -334,18 +330,17 @@ if __name__ == "__main__":
     conf = {
         'port': 'auto',
         'baud': 115200,
-        'address': 0x00000000,
+        'address': 0x04000000,
         'skip': 0,
         'partial_erase': 0,
         'chip_erase': 0,
         'write': 0,
         'verify': 0,
         'read': 0,
-        'reset': 0,
-        'len': 512,
+        'remap': 0,
+        'len': 16,
         'fname': '',
     }
-
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hqVeEwvXru:l:p:b:a:s")
@@ -374,7 +369,7 @@ if __name__ == "__main__":
         elif o == '-r':
             conf['read'] = 1
         elif o == '-X':
-            conf['reset'] = 1
+            conf['remap'] = 1
         elif o == '-p':
             conf['port'] = a
         elif o == '-b':
@@ -452,14 +447,15 @@ if __name__ == "__main__":
                 had_error = True
 
         if not conf['write'] and conf['read']:
-            ADDR = 0x04000000
-            for _ in range(16):
-                print(hex(cmd.cmd_word_read(ADDR)))
-                ADDR += 4
+            addr = conf['address']
+            # TODO: properly print memory data
+            for _ in range(conf['len']):
+                print(hex(cmd.cmd_word_read(addr)))
+                addr += 4
 
-        if conf['reset']:
-            print("Reset and remap to flash")
-            cmd.cmd_reset_device(chip_id_num)
+        if conf['remap']:
+            print("Remap to flash")
+            cmd.cmd_remap_to_flash(chip_id_num)
 
     finally:
         cmd.sp.close()
