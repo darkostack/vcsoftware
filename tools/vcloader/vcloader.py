@@ -440,6 +440,7 @@ if __name__ == "__main__":
         if conf['verify']:
             mdebug(5, "%s -- verifying flash" % chip_id_str)
             verify = cmd.flash_read(chip_id_num, conf['address'], len(data))
+            verify = verify[:len(data)]
             if data == verify:
                 print("Verification OK")
             else:
