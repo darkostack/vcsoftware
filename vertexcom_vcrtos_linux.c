@@ -126,7 +126,6 @@ int main(void)
     vccli_set_user_commands(user_command_list, 4);
 
     process_init(_native_instance);
-    ctimer_init();
 
     while (1)
     {
