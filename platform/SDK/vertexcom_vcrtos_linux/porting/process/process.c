@@ -103,8 +103,8 @@ int process_post(struct process *p, process_event_t event, process_data_t data)
 process_event_t process_alloc_event(process_event_prio_t prio)
 {
     vcassert(lastevent < KERNEL_MAXTHREADS);
-    unsigned char event_id = lastevent++;
     unsigned state = cpu_irq_disable();
+    unsigned char event_id = lastevent++;
     _process_events[event_id].priority = prio;
     cpu_irq_restore(state);
     return event_id;
