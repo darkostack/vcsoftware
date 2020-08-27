@@ -13,11 +13,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.0.9",
+        "version": "1.1.0",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.0.9"
+          "tag": "vcdrivers-1.1.0"
         },
         "to": "SDK/vertexcom_vcrtos_linux/vcdrivers"
       },
@@ -46,11 +46,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.0.9",
+        "version": "1.1.0",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.0.9"
+          "tag": "vcdrivers-1.1.0"
         },
         "to": "SDK/vertexcom_vcrtos_vc7300/vcdrivers"
       },
@@ -62,6 +62,15 @@
           "tag": "vcrtos-1.1.3"
         },
         "to": "SDK/vertexcom_vcrtos_vc7300/vcrtos"
+      },
+      "contiki-ng": {
+        "version": "4.5",
+        "from": {
+          "protocol": "git",
+          "location": "https://github.com/darkostack/contiki-ng.git",
+          "tag": "release/v4.5"
+        },
+        "to": "SDK/vertexcom_vcrtos_vc7300/contiki-ng"
       }
     }
   }
