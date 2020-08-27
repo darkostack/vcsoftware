@@ -71,6 +71,7 @@ set(PORTING_VCRTOS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/commands.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/ztimer_periph.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/assert_failure.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos/simple_malloc.c
 )
 
 set(PORTING_ARDUINO_SRCS
