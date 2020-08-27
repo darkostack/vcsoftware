@@ -13,11 +13,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.1.0",
+        "version": "1.1.1",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.1.0"
+          "tag": "vcdrivers-1.1.1"
         },
         "to": "SDK/vertexcom_vcrtos_linux/vcdrivers"
       },
@@ -46,11 +46,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.1.0",
+        "version": "1.1.1",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.1.0"
+          "tag": "vcdrivers-1.1.1"
         },
         "to": "SDK/vertexcom_vcrtos_vc7300/vcdrivers"
       },
