@@ -64,5 +64,38 @@
         "to": "SDK/vcrtos_vc7300/vcrtos"
       }
     }
+  },
+  "vcrtos_contiki_vc7300": {
+    "device": {
+      "name": "vc7300"
+    },
+    "os": {
+      "name": "vcrtos",
+      "version": "1.1.3"
+    },
+    "sdk": {
+      "name": "vcrtos_contiki_vc7300",
+      "version": "0.0.1"
+    },
+    "middleware": {
+      "vcdrivers": {
+        "version": "1.1.1",
+        "from": {
+          "protocol": "git",
+          "location": "https://github.com/darkostack/vcdrivers.git",
+          "tag": "vcdrivers-1.1.1"
+        },
+        "to": "SDK/vcrtos_contiki_vc7300/vcdrivers"
+      },
+      "vcrtos": {
+        "version": "1.1.3",
+        "from": {
+          "protocol": "git",
+          "location": "https://github.com/darkostack/vcrtos.git",
+          "tag": "vcrtos-1.1.3"
+        },
+        "to": "SDK/vcrtos_contiki_vc7300/vcrtos"
+      }
+    }
   }
 }
