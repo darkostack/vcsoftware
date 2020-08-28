@@ -58,7 +58,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 " CACHE INTERNAL "cx
 set(CMAKE_ASM_FLAGS_RELEASE "${CMAKE_ASM_FLAGS_RELEASE}" CACHE INTERNAL "asm compiler flags release")
 set(CMAKE_EXE_LINKER_FLAGS_RELESE "${CMAKE_EXE_LINKER_FLAGS_RELESE}" CACHE INTERNAL "linker flags release")
 
-set(TOOLCHAIN_FLAGS_FILE "${CMAKE_SOURCE_DIR}/../platform/SDK/vertexcom_vcrtos_linux/GCC-flags.cmake" CACHE INTERNAL "linker flags file")
+set(TOOLCHAIN_FLAGS_FILE "${CMAKE_SOURCE_DIR}/../platform/SDK/vcrtos_linux/GCC-flags.cmake" CACHE INTERNAL "linker flags file")
 
 ########### DEBUG ###########
 # Debug specific

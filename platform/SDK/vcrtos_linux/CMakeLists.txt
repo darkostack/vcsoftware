@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.5)
 SET(CMAKE_SYSTEM_NAME Generic)
 
-project(vertexcom_vcrtos_linux)
+project(vcrtos_linux)
 
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/include)
