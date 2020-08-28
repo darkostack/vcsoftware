@@ -2,22 +2,20 @@
 #include "core/instance.hpp"
 #include "core/new.hpp"
 
-#include <arduino/base.hpp>
+#include "main.hpp"
 
-static DEFINE_ALIGNED_VAR(arduino_raw, sizeof(Arduino), uint64_t);
-
-Arduino *arduino_base;
+static DEFINE_ALIGNED_VAR(main_raw, sizeof(Main), uint64_t);
 
 int main(void)
 {
     void *instance = static_cast<void *>(instance_get());
 
-    arduino_base = new (&arduino_raw) Arduino(instance);
+    Main *base = new (&main_raw) Main(instance);
 
-    arduino_base->setup();
+    base->setup();
 
     while (1)
     {
-        arduino_base->loop();
+        base->loop();
     }
 }

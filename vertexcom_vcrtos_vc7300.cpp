@@ -9,6 +9,8 @@
 #include "etimer.h"
 #include "ctimer.h"
 
+#include "main.hpp"
+
 static ztimer_t _timer1;
 static uint32_t _timer1_counter = 0;
 
@@ -66,7 +68,7 @@ PROCESS_THREAD(test_process, ev, data)
     PROCESS_END();
 }
 
-void Arduino::setup(void)
+void Main::setup(void)
 {
     Serial.begin(115200);
 
@@ -84,7 +86,7 @@ void Arduino::setup(void)
     ztimer_set(ZTIMER_USEC, &_timer1, 1000000);
 }
 
-void Arduino::loop(void)
+void Main::loop(void)
 {
     thread_sleep(instance);
 }

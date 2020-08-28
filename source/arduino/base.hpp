@@ -38,19 +38,4 @@ unsigned long micros();
 
 int analogRead(int pin);
 
-class Arduino
-{
-public:
-    explicit Arduino(void *instances)
-        : instance(instances)
-    {
-    }
-
-    void setup(void);
-
-    void loop(void);
-
-    void *instance;
-};
-
 #endif /* ARDUINO_BASE_HPP */
