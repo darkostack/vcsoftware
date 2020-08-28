@@ -37,7 +37,6 @@ tags
 ######################
 platform/SDK/vertexcom_vcrtos_vc7300/vcdrivers/
 platform/SDK/vertexcom_vcrtos_vc7300/vcrtos/
-platform/SDK/vertexcom_vcrtos_vc7300/contiki-ng/
 
 platform/SDK/vertexcom_vcrtos_linux/mbedtls/
 platform/SDK/vertexcom_vcrtos_linux/trusted_storage/
