@@ -41,72 +41,68 @@ typedef enum
 
 #define PROCESS_EVENT_LAST 10
 
+struct process
+{
+    kernel_pid_t pid;
+    mutex_t mutex;
+    process_event_t event;
+    process_data_t data;
+    char *stack;
+    size_t stack_size;
+    const char *process_name;
+    thread_handler_func_t thread_handler;
+    void *instance;
+};
+
 typedef struct
 {
     event_t super;
-    kernel_pid_t target;
+    struct process *process;
     process_event_prio_t priority;
     unsigned char event_id;
     void *data;
 } process_custom_event_t;
 
-typedef struct
-{
-    mutex_t *mutex;
-    process_event_t ev;
-    process_data_t data;
-} process_custom_data_t;
-
-struct process
-{
-    kernel_pid_t pid;
-    char *stack;
-    size_t stack_size;
-    const char *process_name;
-    thread_handler_func_t thread_handler;
-};
-
 #define PROCESS(name, strname, size) \
     static char process_stack_##name[size]; \
-    void *thread_handler_##name(void *arg); \
+    void *process_handler_##name(void *arg); \
     struct process name = {  \
         .pid = KERNEL_PID_UNDEF, \
         .stack = process_stack_##name, \
         .stack_size = size, \
         .process_name = strname, \
-        .thread_handler = thread_handler_##name \
+        .thread_handler = process_handler_##name, \
+        .instance = NULL \
     }; \
     static void process_func_##name(struct process *p, process_event_t ev, process_data_t data)
 
 #define PROCESS_NAME(name) extern struct process name
 
 #define PROCESS_THREAD(name, ev, data) \
-    void *thread_handler_##name(void *arg) \
+    void *process_handler_##name(void *arg) \
     { \
-        name.pid = thread_current_pid(process_instance); \
-        process_event_t start_event = PROCESS_EVENT_INIT; \
-        process_data_t start_data = (process_data_t *)arg; \
-        process_func_##name(&name, start_event, start_data); \
+        process_func_##name(&name, PROCESS_EVENT_INIT, (process_data_t *)arg); \
         return NULL; \
     } \
     static void process_func_##name(struct process *p, process_event_t ev, process_data_t data)
 
 #define PROCESS_BEGIN() \
-    _process_data[p->pid].ev = ev; \
-    _process_data[p->pid].data = data; \
+    p->event = ev; \
+    p->data = data; \
     process_current = p; \
-    if (_process_data[p->pid].mutex->queue.next == NULL) mutex_lock(_process_data[p->pid].mutex)
+    mutex_init(p->instance, &p->mutex); \
+    if (p->mutex.queue.next == NULL) mutex_lock(&p->mutex)
 
 #define PROCESS_END() \
     process_current = NULL; \
-    thread_exit(process_instance)
+    thread_exit(p->instance)
 
 #define PROCESS_WAIT_EVENT() \
     do { \
-        mutex_lock(_process_data[p->pid].mutex); \
+        mutex_lock(&p->mutex); \
         process_current = p; \
-        ev = _process_data[p->pid].ev; \
-        data = _process_data[p->pid].data; \
+        ev = p->event; \
+        data = p->data; \
     } while (0)
 
 #define PROCESS_WAIT_EVENT_UNTIL(cond) \
@@ -130,7 +126,6 @@ int process_post(struct process *p, process_event_t event, process_data_t data);
 
 process_event_t process_alloc_event(process_event_prio_t prio);
 
-extern process_custom_data_t _process_data[KERNEL_MAXTHREADS];
 extern process_custom_event_t _process_events[KERNEL_MAXTHREADS];
 extern void *process_instance;
 extern struct process *process_current;

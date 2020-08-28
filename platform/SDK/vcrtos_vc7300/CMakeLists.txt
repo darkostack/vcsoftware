@@ -15,7 +15,6 @@ ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source)
 
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/arduino)
-ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/process)
 
 set(VCDRIVERS_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/stdiobase.c
@@ -79,12 +78,6 @@ set(PORTING_ARDUINO_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/arduino/serialport.cpp
 )
 
-set(PORTING_PROCESS_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/process.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/etimer.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/porting/process/ctimer.c
-)
-
 set(PLATFORM_LIBS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy.c
 )
@@ -102,7 +95,6 @@ add_library(vcrtos_cli STATIC ${VCRTOS_CLI_SRCS})
 add_library(vcrtos_ztimer STATIC ${VCRTOS_ZTIMER_SRCS})
 add_library(porting_vcrtos STATIC ${PORTING_VCRTOS_SRCS})
 add_library(porting_arduino STATIC ${PORTING_ARDUINO_SRCS})
-add_library(porting_process STATIC ${PORTING_PROCESS_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list
@@ -115,7 +107,6 @@ set(PLATFORM_LIBS_list
     vcrtos_ztimer
     porting_vcrtos
     porting_arduino
-    porting_process
 )
 
 add_dependencies(PLATFORM_LIBS ${PLATFORM_LIBS_list})
