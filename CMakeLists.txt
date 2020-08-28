@@ -35,7 +35,6 @@ if(VCSOFTWARE_SDK MATCHES vcrtos_vc7300)
     set(VCRTOS_VC7300_SRCS
         ${VCSOFTWARE_COMMON_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_vc7300.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos_processes.c
     )
 
     add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
