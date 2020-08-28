@@ -14,6 +14,8 @@
 #include "etimer.h"
 #include "ctimer.h"
 
+#include "main.hpp"
+
 PROCESS(test_process, "test-process", 12288);
 
 void cli_cmd_exit(int argc, char **argv)
@@ -118,19 +120,17 @@ PROCESS_THREAD(test_process, ev, data)
     PROCESS_END();
 }
 
-int main(void)
+void Main::setup(void)
 {
-    vcstdio_init(_native_instance);
+    vcstdio_init(instance);
 
-    vccli_uart_init(_native_instance);
+    vccli_uart_init(instance);
     vccli_set_user_commands(user_command_list, 4);
 
-    process_init(_native_instance);
+    process_init(instance);
+}
 
-    while (1)
-    {
-        thread_sleep(_native_instance);
-    }
-
-    return 0;
+void Main::loop(void)
+{
+    thread_sleep(instance);
 }
