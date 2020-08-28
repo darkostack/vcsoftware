@@ -30,17 +30,11 @@ void cli_cmd_exit(int argc, char **argv)
 
 static int _timer1_counter = 0;
 static void _timer1_handler(void *arg);
-static ztimer_t _timer1 = {
-    .callback = _timer1_handler,
-    .arg = &_timer1_counter
-};
+static ztimer_t _timer1;
 
 static int _timer2_counter = 0;
 static void _timer2_handler(void *arg);
-static ztimer_t _timer2 = {
-    .callback = _timer2_handler,
-    .arg = &_timer2_counter
-};
+static ztimer_t _timer2;
 
 static void _timer1_handler(void *arg)
 {
@@ -128,6 +122,12 @@ void Main::setup(void)
     vccli_set_user_commands(user_command_list, 4);
 
     process_init(instance);
+
+    _timer1.callback = _timer1_handler;
+    _timer1.arg = &_timer1_counter;
+
+    _timer2.callback = _timer2_handler;
+    _timer2.arg = &_timer2_counter;
 }
 
 void Main::loop(void)
