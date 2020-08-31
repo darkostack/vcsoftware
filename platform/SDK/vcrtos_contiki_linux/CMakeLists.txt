@@ -4,9 +4,14 @@ SET(CMAKE_SYSTEM_NAME Generic)
 project(vcrtos_linux)
 
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR})
+
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/include)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source)
+
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/include)
+
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys)
 
 set(NATIVE_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/tramp.S
@@ -60,6 +65,16 @@ set(VCRTOS_CLI_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/cli/cli_uart.cpp
 )
 
+set(PORTING_CONTIKI_NG_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/process.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/etimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/ctimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/timer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/clock.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/int-master.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/watchdog.c
+)
+
 set(PLATFORM_LIBS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy.c
 )
@@ -75,6 +90,7 @@ add_library(vcrtos_core_api STATIC ${VCRTOS_CORE_API_SRCS})
 add_library(vcrtos_utils STATIC ${VCRTOS_UTILS_SRCS})
 add_library(vcrtos_ztimer STATIC ${VCRTOS_ZTIMER_SRCS})
 add_library(vcrtos_cli STATIC ${VCRTOS_CLI_SRCS})
+add_library(vcrtos_contiki_ng STATIC ${PORTING_CONTIKI_NG_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list
@@ -85,6 +101,7 @@ set(PLATFORM_LIBS_list
     vcrtos_utils
     vcrtos_ztimer
     vcrtos_cli
+    vcrtos_contiki_ng
 )
 
 add_dependencies(PLATFORM_LIBS ${PLATFORM_LIBS_list})
