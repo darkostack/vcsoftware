@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <inttypes.h>
 
 #include <vcrtos/instance.h>
 #include <vcrtos/thread.h>
@@ -9,7 +10,7 @@
 #include "etimer.h"
 #include "ctimer.h"
 
-PROCESS(test_process, "test-process", 1024);
+PROCESS(test_process, "test-process", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
 
 static uint32_t _ctimer_counter = 0;
 static void _ctimer_handler(void *arg)
@@ -34,8 +35,8 @@ PROCESS_THREAD(test_process, ev, data)
     {
         etimer_set(&timer_etimer, 1000000);
         PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
-        printf("e: %lu\r\n", etimer_counter++);
-        printf("c: %lu\r\n", _ctimer_counter);
+        printf("e: %" PRIu32 "\r\n", etimer_counter++);
+        printf("c: %" PRIu32 "\r\n", _ctimer_counter);
     }
 
     PROCESS_END();

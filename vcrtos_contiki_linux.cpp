@@ -12,6 +12,10 @@
 
 #include "main.hpp"
 
+#include "process.h"
+
+PROCESS_NAME(test_process);
+
 void cli_cmd_exit(int argc, char **argv)
 {
     (void) argc;
@@ -32,6 +36,9 @@ void Main::setup(void)
 
     vccli_uart_init(instance);
     vccli_set_user_commands(user_command_list, 1);
+
+    process_init(instance);
+    process_start(&test_process, NULL);
 }
 
 void Main::loop(void)

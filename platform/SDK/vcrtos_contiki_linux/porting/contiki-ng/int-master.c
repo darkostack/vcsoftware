@@ -1,8 +1,9 @@
 #include "contiki.h"
 #include "sys/int-master.h"
 
-#include <vcdrivers/cpu.h>
 #include <vcrtos/cpu.h>
+
+#include "native_internal.h"
 
 void int_master_enable(void)
 {
@@ -21,5 +22,5 @@ void int_master_status_set(int_master_status_t status)
 
 bool int_master_is_enable(void)
 {
-    return __get_PRIMASK() ? 1 : 0;
+    return native_interrupts_enabled;
 }
