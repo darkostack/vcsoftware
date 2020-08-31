@@ -104,6 +104,15 @@
           "tag": "release/v4.5"
         },
         "to": "SDK/vcrtos_contiki_vc7300/contiki-ng"
+      },
+      "mbed-client-pal": {
+        "version": "0.0.1",
+        "from": {
+          "protocol": "git",
+          "location": "https://github.com/darkostack/mbed-client-pal.git",
+          "tag": "v0.0.1"
+        },
+        "to": "../mbed-client-pal"
       }
     }
   },
