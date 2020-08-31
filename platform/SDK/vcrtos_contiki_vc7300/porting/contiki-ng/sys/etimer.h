@@ -1,22 +1,16 @@
 #ifndef ETIMER_H
 #define ETIMER_H
 
-#include "process.h"
-
-#include <vcrtos/config.h>
-#include <vcrtos/ztimer.h>
+#include "contiki.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef uint32_t clock_time_t;
-
 struct etimer
 {
     ztimer_t super;
-    uint64_t start;
-    uint32_t interval;
+    struct timer timer;
     struct process *p;
 };
 

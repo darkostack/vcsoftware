@@ -1,7 +1,7 @@
 #include <vcrtos/assert.h>
 #include <vcrtos/cpu.h>
 
-#include "process.h"
+#include "sys/process.h"
 
 extern event_queue_t event_queue_highest;
 extern event_queue_t event_queue_medium;

@@ -85,6 +85,10 @@ set(PORTING_CONTIKI_NG_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/process.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/etimer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/ctimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/timer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/clock.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/int-master.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/watchdog.c
 )
 
 set(PLATFORM_LIBS_SRCS

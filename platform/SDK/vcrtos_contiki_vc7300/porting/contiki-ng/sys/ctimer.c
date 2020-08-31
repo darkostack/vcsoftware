@@ -14,8 +14,7 @@ static void _ctimer_set(struct ctimer *ct, clock_time_t interval, void (*cb)(voi
 {
     ct->super.callback = _ctimer_callback;
     ct->super.arg = (void *)ct;
-    ct->start = ztimer_now(ZTIMER_USEC);
-    ct->interval = interval;
+    timer_set(&ct->timer, interval);
     ct->cb = cb;
     ct->arg = arg;
     ztimer_set(ZTIMER_USEC, &ct->super, (uint32_t)interval);
@@ -30,7 +29,7 @@ void ctimer_set(struct ctimer *ct, clock_time_t interval, void (*cb)(void *), vo
 void ctimer_reset(struct ctimer *ct)
 {
     ztimer_remove(ZTIMER_USEC, &ct->super);
-    _ctimer_set(ct, ct->interval, ct->cb, ct->arg);
+    _ctimer_set(ct, ct->timer.interval, ct->cb, ct->arg);
 }
 
 void ctimer_set_with_process(struct ctimer *ct, clock_time_t interval,
@@ -43,7 +42,7 @@ void ctimer_set_with_process(struct ctimer *ct, clock_time_t interval,
 void ctimer_stop(struct ctimer *ct)
 {
     ztimer_remove(ZTIMER_USEC, &ct->super);
-    ct->start = 0;
+    ct->timer.start = 0;
 }
 
 static int _ctimer_strictly_before(uint32_t time_a, uint32_t time_b)
@@ -63,5 +62,5 @@ static int _ctimer_strictly_before(uint32_t time_a, uint32_t time_b)
 
 int ctimer_expired(struct ctimer *ct)
 {
-    return _ctimer_strictly_before((ct->start + ct->interval), ztimer_now(ZTIMER_USEC));
+    return _ctimer_strictly_before((ct->timer.start + ct->timer.interval), ztimer_now(ZTIMER_USEC));
 }

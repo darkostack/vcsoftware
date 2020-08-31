@@ -10,8 +10,7 @@ static void _etimer_set(struct etimer *et, clock_time_t interval)
 {
     et->super.callback = _etimer_callback;
     et->super.arg = (void *)et;
-    et->start = ztimer_now(ZTIMER_USEC);
-    et->interval = interval;
+    timer_set(&et->timer, interval);
     ztimer_set(ZTIMER_USEC, &et->super, (uint32_t)interval);
 }
 
@@ -24,7 +23,7 @@ void etimer_set(struct etimer *et, clock_time_t interval)
 void etimer_reset(struct etimer *et)
 {
     ztimer_remove(ZTIMER_USEC, &et->super);
-    _etimer_set(et, et->interval);
+    _etimer_set(et, et->timer.interval);
 }
 
 void etimer_reset_with_new_interval(struct etimer *et, clock_time_t interval)
@@ -40,12 +39,12 @@ void etimer_restart(struct etimer *et)
 
 clock_time_t etimer_expiration_time(struct etimer *et)
 {
-    return et->start + et->interval;
+    return et->timer.start + et->timer.interval;
 }
 
 clock_time_t etimer_start_time(struct etimer *et)
 {
-    return et->start;
+    return et->timer.start;
 }
 
 static int _etimer_strictly_before(uint32_t time_a, uint32_t time_b)
@@ -62,5 +61,5 @@ int etimer_expired(struct etimer *et)
 void etimer_stop(struct etimer *et)
 {
     ztimer_remove(ZTIMER_USEC, &et->super);
-    et->start = 0;
+    et->timer.start = 0;
 }

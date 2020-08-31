@@ -15,8 +15,7 @@ extern "C" {
 struct ctimer
 {
     ztimer_t super;
-    uint64_t start;
-    uint32_t interval;
+    struct timer timer;
     struct process *p;
     void (*cb)(void *);
     void *arg;
