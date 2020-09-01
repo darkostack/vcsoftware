@@ -29,11 +29,11 @@ PROCESS_THREAD(test_process, ev, data)
 
     uint32_t etimer_counter = 0;
 
-    ctimer_set(&timer_ctimer, 500000, _ctimer_handler, &timer_ctimer);
+    ctimer_set(&timer_ctimer, CLOCK_SECOND / 2, _ctimer_handler, &timer_ctimer);
 
     while (1)
     {
-        etimer_set(&timer_etimer, 1000000);
+        etimer_set(&timer_etimer, CLOCK_SECOND);
         PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
         printf("e: %" PRIu32 "\r\n", etimer_counter++);
         printf("c: %" PRIu32 "\r\n", _ctimer_counter);
