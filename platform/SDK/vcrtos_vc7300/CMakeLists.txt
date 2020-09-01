@@ -21,7 +21,7 @@ set(VCDRIVERS_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/syscalls.c
 )
 
-set(VCDRIVERS_PERIPH_SRCS
+set(VCDRIVERS_CPU_PERIPH_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/cpu.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/vectors.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/periph/gpio.c
@@ -87,7 +87,7 @@ add_definitions(-DVCRTOS_PROJECT_CONFIG_FILE="vcrtos-project-config.h")
 add_definitions(-DVCRTOS_VERSION="${VCSOFTWARE_OS_VER}")
 
 add_library(vcdrivers_common STATIC ${VCDRIVERS_COMMON_SRCS})
-add_library(vcdrivers_periph STATIC ${VCDRIVERS_PERIPH_SRCS})
+add_library(vcdrivers_cpu_periph STATIC ${VCDRIVERS_CPU_PERIPH_SRCS})
 add_library(vcrtos_core STATIC ${VCRTOS_CORE_SRCS})
 add_library(vcrtos_core_api STATIC ${VCRTOS_CORE_API_SRCS})
 add_library(vcrtos_utils STATIC ${VCRTOS_UTILS_SRCS})
@@ -99,7 +99,7 @@ add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list
     vcdrivers_common
-    vcdrivers_periph
+    vcdrivers_cpu_periph
     vcrtos_core
     vcrtos_core_api
     vcrtos_utils
