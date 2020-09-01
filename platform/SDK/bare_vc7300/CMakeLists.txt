@@ -13,6 +13,8 @@ ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius)
 set(VCDRIVERS_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/stdiobase.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/syscalls.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/assert_failure.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/cortexm.c
 )
 
 set(VCDRIVERS_CPU_PERIPH_SRCS
@@ -29,7 +31,7 @@ set(PLATFORM_LIBS_SRCS
 )
 
 add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
-add_definitions(-DVCRTOS_VERSION="${VCSOFTWARE_OS_VER}")
+add_definitions(-DVCDRIVERS_VERSION="${VCSOFTWARE_OS_VER}")
 
 add_library(vcdrivers_common STATIC ${VCDRIVERS_COMMON_SRCS})
 add_library(vcdrivers_cpu_periph STATIC ${VCDRIVERS_CPU_PERIPH_SRCS})

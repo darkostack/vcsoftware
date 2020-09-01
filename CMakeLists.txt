@@ -15,6 +15,19 @@ set(VCSOFTWARE_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp
 )
 
+if(VCSOFTWARE_SDK MATCHES bare_vc7300)
+    SET(BARE_VC7300_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/bare_vc7300.c
+    )
+
+    add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
+    add_definitions(-DVCDRIVERS_VERSION="${VCSOFTWARE_OS_VER}")
+
+    CREATE_TEST_LIBRARY(bare_vc7300 "${BARE_VC7300_SRCS}" "")
+    add_dependencies(bare_vc7300 PLATFORM_LIBS)
+    target_link_libraries(bare_vc7300 PLATFORM_LIBS)
+endif()
+
 if(VCSOFTWARE_SDK MATCHES vcrtos_contiki_linux)
     set(VCRTOS_CONTIKI_LINUX_SRCS
         ${VCSOFTWARE_COMMON_SRCS}
