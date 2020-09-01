@@ -89,6 +89,42 @@
       }
     }
   },
+  "freertos_vc7300": {
+    "device": {
+      "name": "vc7300"
+    },
+    "os": {
+      "name": "FreeRTOS",
+      "version": "202002.00"
+    },
+    "sdk": {
+      "name": "bare_vc7300",
+      "version": "0.0.1"
+    },
+    "middleware": {
+      "vcdrivers": {
+        "version": "1.1.1",
+        "from": {
+          "protocol": "git",
+          "location": "https://github.com/darkostack/vcdrivers.git",
+          "tag": "vcdrivers-1.1.1"
+        },
+        "to": "SDK/freertos_vc7300/vcdrivers"
+      },
+      "freertos": {
+        "version": "202002.00",
+        "from": {
+          "protocol": "git",
+          "location": "https://github.com/aws/amazon-freertos.git",
+          "tag": "202002.00",
+          "submodules": {
+            "freertos_kernel": {}
+          }
+        },
+        "to": "SDK/freertos_vc7300/amazon-freertos"
+      }
+    }
+  },
   "vcrtos_contiki_vc7300": {
     "device": {
       "name": "vc7300"

@@ -15,6 +15,19 @@ set(VCSOFTWARE_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/source/main.cpp
 )
 
+if(VCSOFTWARE_SDK MATCHES freertos_vc7300)
+    SET(FREERTOS_VC7300_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/freertos_vc7300.c
+    )
+
+    add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
+    add_definitions(-DVCDRIVERS_VERSION="${VCSOFTWARE_OS_VER}")
+
+    CREATE_TEST_LIBRARY(freertos_vc7300 "${FREERTOS_VC7300_SRCS}" "")
+    add_dependencies(freertos_vc7300 PLATFORM_LIBS)
+    target_link_libraries(freertos_vc7300 PLATFORM_LIBS)
+endif()
+
 if(VCSOFTWARE_SDK MATCHES bare_vc7300)
     SET(BARE_VC7300_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/bare_vc7300.c
