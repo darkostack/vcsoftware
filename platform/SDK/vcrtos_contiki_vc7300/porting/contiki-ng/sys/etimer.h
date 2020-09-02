@@ -1,7 +1,12 @@
 #ifndef ETIMER_H
 #define ETIMER_H
 
-#include "contiki.h"
+#include "sys/process.h"
+
+#include <vcrtos/config.h>
+#include <vcrtos/ztimer.h>
+
+#include "sys/timer.h"
 
 #ifdef __cplusplus
 extern "C" {

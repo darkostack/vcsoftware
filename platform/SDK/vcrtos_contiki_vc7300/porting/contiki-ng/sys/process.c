@@ -87,6 +87,11 @@ int process_post(struct process *p, process_event_t event, process_data_t data)
     return 0;
 }
 
+void process_post_synch(struct process *p, process_event_t event, process_data_t data)
+{
+    process_post(p, event, data);
+}
+
 process_event_t process_alloc_event(process_event_prio_t prio)
 {
     vcassert(lastevent < KERNEL_MAXTHREADS);

@@ -118,11 +118,19 @@ typedef struct
 
 #define PROCESS_YIELD() thread_yield(process_instance)
 
+#define PROCESS_CONTEXT_BEGIN(p) { \
+    struct process *tmp_current = PROCESS_CURRENT(); \
+    process_current = p
+
+#define PROCESS_CONTEXT_END(p) process_current = tmp_current; }
+
 void process_init(void *instance);
 
 void process_start(struct process *p, process_data_t data);
 
 int process_post(struct process *p, process_event_t event, process_data_t data);
+
+void process_post_synch(struct process *p, process_event_t event, process_data_t data);
 
 process_event_t process_alloc_event(process_event_prio_t prio);
 
