@@ -4,6 +4,9 @@
 #include "contiki.h"
 #include "sys/process.h"
 
+#define AUTOSTART_PROCESSES(...) \
+    struct process * const autostart_processes[] = { __VA_ARGS__, NULL }
+
 extern struct process * const autostart_processes[];
 
 void autostart_start(struct process * const processes[]);

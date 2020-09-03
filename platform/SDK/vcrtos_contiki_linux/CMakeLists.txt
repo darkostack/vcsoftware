@@ -66,13 +66,78 @@ set(VCRTOS_CLI_SRCS
 )
 
 set(PORTING_CONTIKI_NG_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/process.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/etimer.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/ctimer.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/timer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/clock.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/int-master.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/watchdog.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/process.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/etimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/ctimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/stimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/timer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/autostart.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/log.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/node-id.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/list.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/memb.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/random.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/assert.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/ccm-star.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/aes-128.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/crc16.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/dev/nullradio.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/link-stats.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/linkaddr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/nbr-table.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/net-debug.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/packetbuf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/queuebuf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/netstack.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/nullnet/nullnet.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/nullrouting/nullrouting.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/sicslowpan.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/simple-udp.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/tcp-socket.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/tcpip.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/udp-socket.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip-ds6-nbr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip-ds6-route.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip-ds6.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip-icmp6.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip-nameserver.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip-nd6.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip-packetqueue.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip-sr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip-udp-packet.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uip6.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uipbuf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/ipv6/uiplib.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/rpl-classic/rpl-dag-root.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/rpl-classic/rpl-dag.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/rpl-classic/rpl-ext-header.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/rpl-classic/rpl-icmp6.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/rpl-classic/rpl-mrhof.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/rpl-classic/rpl-nbr-policy.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/rpl-classic/rpl-of0.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/rpl-classic/rpl-timers.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/routing/rpl-classic/rpl.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/mac/mac-sequence.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/mac/mac.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/mac/framer/frame802154.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/mac/framer/framer-802154.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/mac/framer/nullframer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/mac/csma/csma-output.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/mac/csma/csma-security.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/mac/csma/csma.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/mac/nullmac/nullmac.c
 )
 
 set(PLATFORM_LIBS_SRCS
@@ -83,6 +148,10 @@ add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
 add_definitions(-DVCRTOS_PROJECT_CONFIG_FILE="vcrtos-project-config.h")
 add_definitions(-DVCRTOS_VERSION="${VCSOFTWARE_OS_VER}")
 
+add_definitions(-DMAC_CONF_WITH_CSMA=1)
+add_definitions(-DNETSTACK_CONF_WITH_IPV6=1)
+add_definitions(-DROUTING_CONF_RPL_CLASSIC=1)
+
 add_library(native_common STATIC ${NATIVE_COMMON_SRCS})
 add_library(native_periph STATIC ${NATIVE_PERIPH_SRCS})
 add_library(vcrtos_core STATIC ${VCRTOS_CORE_SRCS})
@@ -90,7 +159,7 @@ add_library(vcrtos_core_api STATIC ${VCRTOS_CORE_API_SRCS})
 add_library(vcrtos_utils STATIC ${VCRTOS_UTILS_SRCS})
 add_library(vcrtos_ztimer STATIC ${VCRTOS_ZTIMER_SRCS})
 add_library(vcrtos_cli STATIC ${VCRTOS_CLI_SRCS})
-add_library(vcrtos_contiki_ng STATIC ${PORTING_CONTIKI_NG_SRCS})
+add_library(porting_contiki_ng STATIC ${PORTING_CONTIKI_NG_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list
@@ -101,7 +170,7 @@ set(PLATFORM_LIBS_list
     vcrtos_utils
     vcrtos_ztimer
     vcrtos_cli
-    vcrtos_contiki_ng
+    porting_contiki_ng
 )
 
 add_dependencies(PLATFORM_LIBS ${PLATFORM_LIBS_list})

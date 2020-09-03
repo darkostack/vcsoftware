@@ -1,12 +1,8 @@
 #ifndef CTIMER_H
 #define CTIMER_H
 
-#include "process.h"
-
-#include <vcrtos/config.h>
-#include <vcrtos/ztimer.h>
-
-#include "etimer.h"
+#include "sys/process.h"
+#include "sys/etimer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,8 +10,7 @@ extern "C" {
 
 struct ctimer
 {
-    ztimer_t super;
-    struct timer timer;
+    struct etimer etimer;
     struct process *p;
     void (*cb)(void *);
     void *arg;
