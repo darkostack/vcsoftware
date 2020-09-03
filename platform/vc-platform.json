@@ -13,11 +13,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.1.1",
+        "version": "1.1.2",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.1.1"
+          "tag": "vcdrivers-1.1.2"
         },
         "to": "SDK/vcrtos_linux/vcdrivers"
       },
@@ -46,11 +46,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.1.1",
+        "version": "1.1.2",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.1.1"
+          "tag": "vcdrivers-1.1.2"
         },
         "to": "SDK/vcrtos_vc7300/vcdrivers"
       },
@@ -79,11 +79,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.1.1",
+        "version": "1.1.2",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.1.1"
+          "tag": "vcdrivers-1.1.2"
         },
         "to": "SDK/bare_vc7300/vcdrivers"
       }
@@ -103,11 +103,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.1.1",
+        "version": "1.1.2",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.1.1"
+          "tag": "vcdrivers-1.1.2"
         },
         "to": "SDK/freertos_vc7300/vcdrivers"
       },
@@ -139,11 +139,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.1.1",
+        "version": "1.1.2",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.1.1"
+          "tag": "vcdrivers-1.1.2"
         },
         "to": "SDK/vcrtos_contiki_vc7300/vcdrivers"
       },
@@ -190,11 +190,11 @@
     },
     "middleware": {
       "vcdrivers": {
-        "version": "1.1.1",
+        "version": "1.1.2",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/vcdrivers.git",
-          "tag": "vcdrivers-1.1.1"
+          "tag": "vcdrivers-1.1.2"
         },
         "to": "SDK/vcrtos_contiki_linux/vcdrivers"
       },
