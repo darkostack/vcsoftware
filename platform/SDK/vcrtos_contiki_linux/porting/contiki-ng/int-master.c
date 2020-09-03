@@ -4,6 +4,8 @@
 #include <vcdrivers/cpu.h>
 #include <vcrtos/cpu.h>
 
+#include "native_internal.h"
+
 void int_master_enable(void)
 {
     cpu_irq_enable();
@@ -21,5 +23,5 @@ void int_master_status_set(int_master_status_t status)
 
 bool int_master_is_enable(void)
 {
-    return __get_PRIMASK() ? 1 : 0;
+    return native_interrupts_enabled;
 }
