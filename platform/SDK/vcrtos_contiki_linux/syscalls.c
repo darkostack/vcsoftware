@@ -106,6 +106,75 @@ void _native_syscall_leave(void)
     }
 }
 
+int _native_in_malloc = 0;
+
+void *malloc(size_t size)
+{
+    /* dynamically load malloc when it's needed - this is necessary to
+     * support g++ 5.2.0 as it uses malloc before startup runs */
+    if (!real_malloc) {
+        if (_native_in_malloc) {
+            /* XXX: This is a dirty hack for behaviour that came along
+             * with g++ 5.2.0.
+             * Throw it out when whatever made it necessary it is fixed. */
+            return NULL;
+        }
+        else {
+            _native_in_malloc = 1;
+            *(void **)(&real_malloc) = dlsym(RTLD_NEXT, "malloc");
+            _native_in_malloc = 0;
+        }
+    }
+
+    void *r;
+    _native_syscall_enter();
+    r = real_malloc(size);
+    _native_syscall_leave();
+    return r;
+}
+
+void free(void *ptr)
+{
+    _native_syscall_enter();
+    real_free(ptr);
+    _native_syscall_leave();
+}
+
+int _native_in_calloc = 0;
+
+void *calloc(size_t nmemb, size_t size)
+{
+    /* dynamically load calloc when it's needed - this is necessary to
+     * support profiling as it uses calloc before startup runs */
+    if (!real_calloc) {
+        if (_native_in_calloc) {
+            /* XXX: This is a dirty hack to enable old dlsym versions to run.
+             * Throw it out when Ubuntu 12.04 support runs out (in 2017-04)! */
+            return NULL;
+        }
+        else {
+            _native_in_calloc = 1;
+            *(void **)(&real_calloc) = dlsym(RTLD_NEXT, "calloc");
+            _native_in_calloc = 0;
+        }
+    }
+
+    void *r;
+    _native_syscall_enter();
+    r = real_calloc(nmemb, size);
+    _native_syscall_leave();
+    return r;
+}
+
+void *realloc(void *ptr, size_t size)
+{
+    void *r;
+    _native_syscall_enter();
+    r = real_realloc(ptr, size);
+    _native_syscall_leave();
+    return r;
+}
+
 ssize_t _native_read(int fd, void *buf, size_t count)
 {
     ssize_t r;
