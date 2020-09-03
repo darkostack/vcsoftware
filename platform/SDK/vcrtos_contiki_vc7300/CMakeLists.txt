@@ -89,9 +89,11 @@ set(PORTING_CONTIKI_NG_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/process.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/etimer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/ctimer.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/stimer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/timer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/autostart.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/log.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/sys/node-id.c
 
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/list.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/memb.c
@@ -101,12 +103,15 @@ set(PORTING_CONTIKI_NG_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/aes-128.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/lib/crc16.c
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/dev/nullradio.c
+
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/link-stats.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/linkaddr.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/nbr-table.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/net-debug.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/packetbuf.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/queuebuf.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/netstack.c
 
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/net/nullnet/nullnet.c
 

@@ -68,6 +68,10 @@ if(VCSOFTWARE_SDK MATCHES vcrtos_contiki_vc7300)
     add_definitions(-DVCRTOS_PROJECT_CONFIG_FILE="vcrtos-project-config.h")
     add_definitions(-DVCRTOS_VERSION="${VCSOFTWARE_OS_VER}")
 
+    add_definitions(-DMAC_CONF_WITH_CSMA=1)
+    add_definitions(-DNETSTACK_CONF_WITH_IPV6=1)
+    add_definitions(-DROUTING_CONF_RPL_CLASSIC=1)
+
     CREATE_TEST_LIBRARY(vcrtos_contiki_vc7300 "${VCRTOS_CONTIKI_VC7300_SRCS}" "")
     add_dependencies(vcrtos_contiki_vc7300 PLATFORM_LIBS)
     target_link_libraries(vcrtos_contiki_vc7300 PLATFORM_LIBS)

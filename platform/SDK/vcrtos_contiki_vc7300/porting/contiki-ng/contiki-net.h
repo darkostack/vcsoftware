@@ -12,7 +12,7 @@
 #include "net/routing/routing.h"
 
 #include "net/ipv6/uip-icmp6.h"
-//#include "net/ipv6/uip-ds6.h"
+#include "net/ipv6/uip-ds6.h"
 //#include "net/ipv6/psock.h"
 #include "net/ipv6/udp-socket.h"
 #include "net/ipv6/tcp-socket.h"
