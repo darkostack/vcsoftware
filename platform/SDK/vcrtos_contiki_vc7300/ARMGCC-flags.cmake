@@ -16,7 +16,8 @@ endmacro(SET_COMPILER_DBG_RLZ_COMMON_FLAG)
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_C_FLAGS "")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_CXX_FLAGS "")
 
-SET(CMAKE_FLAGS_COMMON_DEBUG "-DDEBUG -g -Og")
+#SET(CMAKE_FLAGS_COMMON_DEBUG "-DDEBUG -g -Og")
+SET(CMAKE_FLAGS_COMMON_DEBUG "-g Og")
 SET(CMAKE_FLAGS_COMMON_RELEASE "-Og")
 
 SET(CMAKE_COMPILE_FLAGS_BASIS "-mcpu=cortex-m3 -mthumb -mfloat-abi=soft -ffunction-sections -fdata-sections -Wunused -Wuninitialized -Wall -Wextra -Wshadow -Wlogical-op -Waggregate-return -MMD -MP")

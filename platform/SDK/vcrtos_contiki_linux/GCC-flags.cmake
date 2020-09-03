@@ -19,7 +19,8 @@ endmacro(SET_COMPILER_DBG_RLZ_COMMON_FLAG)
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_C_FLAGS "")
 SET_COMPILER_DBG_RLZ_FLAG (CMAKE_CXX_FLAGS "")
 
-set(CMAKE_FLAGS_COMMON_DEBUG "-DDEBUG -g -Og")
+#set(CMAKE_FLAGS_COMMON_DEBUG "-DDEBUG -g -Og")
+set(CMAKE_FLAGS_COMMON_DEBUG "-g -Og")
 set(CMAKE_FLAGS_COMMON_RELEASE "-Og")
 
 set(CMAKE_COMPILE_FLAGS_BASIS "-fno-common -ffunction-sections -fdata-sections -Wunused -Wuninitialized -Wall -Wextra -Wshadow -Wlogical-op -Waggregate-return -MD -MP")
