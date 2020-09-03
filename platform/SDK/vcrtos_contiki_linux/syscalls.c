@@ -95,7 +95,7 @@ void _native_syscall_leave(void)
         _native_in_isr = 1;
         _native_cur_ctx = (ucontext_t *)thread_current(_native_instance)->stack_pointer;
         native_isr_context.uc_stack.ss_sp = __isr_stack;
-        native_isr_context.uc_stack.ss_size = SIGSTKSZ;
+        native_isr_context.uc_stack.ss_size = sizeof(__isr_stack);
         native_isr_context.uc_stack.ss_flags = 0;
         native_interrupts_enabled = 0;
         makecontext(&native_isr_context, native_irq_handler, 0);

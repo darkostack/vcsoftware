@@ -18,7 +18,7 @@
 #include "native_internal.h"
 
 ucontext_t end_context;
-char __end_stack[SIGSTKSZ];
+char __end_stack[VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE];
 
 static void _native_mod_ctx_leave_sigh(ucontext_t *ctx)
 {
@@ -145,7 +145,7 @@ void thread_arch_yield_higher(void)
         }
         cpu_irq_disable();
         native_isr_context.uc_stack.ss_sp = __isr_stack;
-        native_isr_context.uc_stack.ss_size = SIGSTKSZ;
+        native_isr_context.uc_stack.ss_size = sizeof(__isr_stack);
         native_isr_context.uc_stack.ss_flags = 0;
         makecontext(&native_isr_context, isr_thread_yield, 0);
         if (swapcontext(ctx, &native_isr_context) == -1)
@@ -169,7 +169,7 @@ void native_cpu_init(void)
     }
 
     end_context.uc_stack.ss_sp = __end_stack;
-    end_context.uc_stack.ss_size = SIGSTKSZ;
+    end_context.uc_stack.ss_size = sizeof(__end_stack);
     end_context.uc_stack.ss_flags = 0;
     makecontext(&end_context, sched_task_exit, 0);
 }

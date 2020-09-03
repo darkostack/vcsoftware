@@ -21,6 +21,8 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
+#include <vcrtos/config.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -111,8 +113,8 @@ extern volatile int _native_sigpend;
 extern volatile int _native_in_isr;
 extern volatile int _native_in_syscall;
 
-extern char __isr_stack[SIGSTKSZ];
-extern char __end_stack[SIGSTKSZ];
+extern char __isr_stack[VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE];
+extern char __end_stack[VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE];
 extern ucontext_t native_isr_context;
 extern ucontext_t end_context;
 extern ucontext_t *_native_cur_ctx, *_native_isr_ctx;
