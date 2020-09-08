@@ -35,6 +35,8 @@ void Main::setup(void)
 
     process_init(instance);
 
+    ctimer_init();
+
     uint16_t uid = 0x1234;
 
     linkaddr_node_addr.u8[LINKADDR_SIZE - 1] = (uid & 0xff);
