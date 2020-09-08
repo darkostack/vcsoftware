@@ -2,16 +2,23 @@
 
 PROCESS(ctimer_process, "ctimer-process", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
 
+static process_event_t ctimer_callback_event;
+
 PROCESS_THREAD(ctimer_process, ev, data)
 {
     PROCESS_BEGIN();
 
+    ctimer_callback_event = process_alloc_event(PROCESS_EVENT_PRIO_MEDIUM);
+
     while (1)
     {
-        PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
+        PROCESS_WAIT_EVENT_UNTIL(ev == ctimer_callback_event);
         struct ctimer *ct = (struct ctimer *)data;
         PROCESS_CONTEXT_BEGIN(ct->p);
-        ct->cb(ct->arg);
+        if (ct->cb != NULL)
+        {
+            ct->cb(ct->arg);
+        }
         PROCESS_CONTEXT_END(ct->p);
     }
 
@@ -20,7 +27,7 @@ PROCESS_THREAD(ctimer_process, ev, data)
 
 static void _ctimer_callback(void *arg)
 {
-    process_post(&ctimer_process, PROCESS_EVENT_TIMER, arg);
+    process_post(&ctimer_process, ctimer_callback_event, arg);
 }
 
 void ctimer_init(void)
