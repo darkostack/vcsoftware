@@ -17,6 +17,11 @@ extern "C" {
 
 #define PROCESS_NONE NULL
 
+#define PT_WAITING 0
+#define PT_YIELDED 1
+#define PT_EXITED  2
+#define PT_ENDED   3
+
 typedef unsigned char process_event_t; /* event id */
 typedef void *process_data_t;
 
@@ -43,6 +48,7 @@ typedef enum
 
 struct process
 {
+    unsigned short lc;
     kernel_pid_t pid;
     mutex_t mutex;
     process_event_t event;
@@ -74,49 +80,67 @@ typedef struct
         .thread_handler = process_handler_##name, \
         .instance = NULL \
     }; \
-    static void process_func_##name(struct process *p, process_event_t ev, process_data_t data)
+    static unsigned process_func_##name(struct process *p, process_event_t ev, process_data_t data)
 
 #define PROCESS_NAME(name) extern struct process name
 
 #define PROCESS_THREAD(name, ev, data) \
     void *process_handler_##name(void *arg) \
     { \
-        process_func_##name(&name, PROCESS_EVENT_INIT, (process_data_t *)arg); \
+        process_event_t _event = PROCESS_EVENT_INIT; \
+        process_data_t _data = (process_data_t *)arg; \
+        struct process *p = &name; \
+        unsigned state = process_func_##name(p, _event, _data); \
+        while (state != PT_ENDED) { \
+            if (state == PT_WAITING || state == PT_YIELDED) { \
+                mutex_lock(&p->mutex); \
+                _event = p->event; \
+                _data = p->data; \
+                state = process_func_##name(p, _event, _data); \
+            } \
+        } \
+        thread_exit(p->instance); \
         return NULL; \
     } \
-    static void process_func_##name(struct process *p, process_event_t ev, process_data_t data)
+    static unsigned process_func_##name(struct process *p, process_event_t ev, process_data_t data)
 
 #define PROCESS_BEGIN() \
-    p->event = ev; \
-    p->data = data; \
-    process_current = p; \
-    mutex_init(p->instance, &p->mutex); \
-    if (p->mutex.queue.next == NULL) mutex_lock(&p->mutex)
-
-#define PROCESS_END() \
-    process_current = NULL; \
-    thread_exit(p->instance)
-
-#define PROCESS_WAIT_EVENT() \
     do { \
-        mutex_lock(&p->mutex); \
-        process_current = p; \
-        ev = p->event; \
-        data = p->data; \
-    } while (0)
-
-#define PROCESS_WAIT_EVENT_UNTIL(cond) \
-    do { \
-        PROCESS_WAIT_EVENT(); \
-        if (cond) \
+        if (ev == PROCESS_EVENT_INIT) \
         { \
-            break; \
+            p->event = ev; \
+            p->data = data; \
+            mutex_init(p->instance, &p->mutex); \
+            if (p->mutex.queue.next == NULL) mutex_lock(&p->mutex); \
+        } \
+    } while(0); \
+    { char PT_YIELD_FLAG = 1; if (PT_YIELD_FLAG) {;} process_current = p;  switch(p->lc) { case 0:
+
+#define PROCESS_YIELD() \
+    do { \
+        PT_YIELD_FLAG = 0; \
+        p->lc = __LINE__; case __LINE__: \
+        if (PT_YIELD_FLAG == 0) { \
+            return PT_YIELDED; \
         } \
     } while (0)
 
-#define PROCESS_CURRENT() process_current
+#define PROCESS_YIELD_UNTIL(condition) \
+    do { \
+        PT_YIELD_FLAG = 0; \
+        p->lc = __LINE__; case __LINE__: \
+        if ((PT_YIELD_FLAG == 0) || !(condition)) { \
+            return PT_YIELDED; \
+        } \
+    } while (0)
 
-#define PROCESS_YIELD() thread_yield(process_instance)
+#define PROCESS_END()  } PT_YIELD_FLAG = 0; process_current = NULL; return PT_ENDED; } \
+
+#define PROCESS_WAIT_EVENT() PROCESS_YIELD()
+
+#define PROCESS_WAIT_EVENT_UNTIL(condition) PROCESS_YIELD_UNTIL(condition)
+
+#define PROCESS_CURRENT() process_current
 
 #define PROCESS_CONTEXT_BEGIN(p) { \
     struct process *tmp_current = PROCESS_CURRENT(); \
