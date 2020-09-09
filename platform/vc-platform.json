@@ -208,11 +208,11 @@
         "to": "SDK/vcrtos_contiki_linux/vcrtos"
       },
       "contiki-ng": {
-        "version": "v4.5",
+        "version": "1.0.1",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/contiki-ng.git",
-          "tag": "release/v4.5"
+          "tag": "vcrtos_contiki-1.0.1"
         },
         "to": "SDK/vcrtos_contiki_linux/contiki-ng"
       }
