@@ -157,11 +157,11 @@
         "to": "SDK/vcrtos_contiki_vc7300/vcrtos"
       },
       "contiki-ng": {
-        "version": "1.0.2",
+        "version": "1.0.3",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/contiki-ng.git",
-          "tag": "vcrtos_contiki-1.0.2"
+          "tag": "vcrtos_contiki-1.0.3"
         },
         "to": "SDK/vcrtos_contiki_vc7300/contiki-ng"
       },
@@ -208,11 +208,11 @@
         "to": "SDK/vcrtos_contiki_linux/vcrtos"
       },
       "contiki-ng": {
-        "version": "1.0.2",
+        "version": "1.0.3",
         "from": {
           "protocol": "git",
           "location": "https://github.com/darkostack/contiki-ng.git",
-          "tag": "vcrtos_contiki-1.0.2"
+          "tag": "vcrtos_contiki-1.0.3"
         },
         "to": "SDK/vcrtos_contiki_linux/contiki-ng"
       }
