@@ -17,17 +17,16 @@
 
 #include <stdio.h>
 
-#include <vcdrivers/stdiobase.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 int main(void)
 {
-    vcstdio_init(NULL);
-
-    printf("vcdrivers-%s started\r\n", VCDRIVERS_VERSION);
+    printf("main task entry\r\n");
 
     while (1)
     {
-
+        vTaskDelay(portMAX_DELAY);
     }
 
     return 0;
