@@ -21,7 +21,6 @@ set(VCDRIVERS_COMMON_SRCS
 )
 
 set(VCDRIVERS_CPU_PERIPH_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/cpu.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/vectors.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/periph/gpio.c
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/sirius/periph/irq.c
@@ -44,6 +43,7 @@ set(FREERTOS_PORT_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_hook.c
     ${CMAKE_CURRENT_SOURCE_DIR}/cortexm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel_init.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpu.c
 )
 
 set(PLATFORM_LIBS_SRCS
