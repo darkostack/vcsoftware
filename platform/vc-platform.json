@@ -172,7 +172,7 @@
           "location": "https://github.com/darkostack/mbed-client-pal.git",
           "tag": "v0.0.1"
         },
-        "to": "../mbed-client-pal"
+        "to": "SDK/vcrtos_contiki_vc7300/mbed-client-pal"
       }
     }
   },
