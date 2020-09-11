@@ -98,7 +98,7 @@
       "version": "202002.00"
     },
     "sdk": {
-      "name": "bare_vc7300",
+      "name": "freertos_vc7300",
       "version": "0.0.1"
     },
     "middleware": {
