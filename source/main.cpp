@@ -35,4 +35,6 @@ int main(void)
     {
         base->loop();
     }
+
+    return 0;
 }
