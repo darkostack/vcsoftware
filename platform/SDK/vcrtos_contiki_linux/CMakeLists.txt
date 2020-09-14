@@ -49,11 +49,13 @@ set(VCRTOS_CORE_API_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/mutex_api.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/thread_api.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/event_api.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/heap_api.cpp
 )
 
 set(VCRTOS_UTILS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/utils/isrpipe.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/utils/ringbuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/utils/heap.cpp
 )
 
 set(VCRTOS_ZTIMER_SRCS
