@@ -16,9 +16,16 @@ ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/contiki-ng/os)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/contiki-ng/os/sys)
 
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/mbed-client-pal/Source)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/mbed-client-pal/Source/PAL-Impl)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/mbed-client-pal/Source/PAL-Impl/Services-API)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/mbed-client-pal/Source/port/Platform-API)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/mbed-trace)
+
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/arduino)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/mbed-client-pal)
 
 set(VCDRIVERS_COMMON_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcdrivers/source/stdiobase.c
@@ -47,11 +54,13 @@ set(VCRTOS_CORE_API_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/mutex_api.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/thread_api.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/event_api.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/api/heap_api.cpp
 )
 
 set(VCRTOS_UTILS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/utils/isrpipe.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/utils/ringbuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/utils/heap.cpp
 )
 
 set(VCRTOS_CLI_SRCS
@@ -159,6 +168,10 @@ set(PORTING_CONTIKI_NG_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/watchdog.c
 )
 
+set(PORTING_MBED_CLIENT_PAL_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/mbed-client-pal/RTOS/pal_plat_rtos.c
+)
+
 set(PLATFORM_LIBS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy.c
 )
@@ -166,6 +179,8 @@ set(PLATFORM_LIBS_SRCS
 add_definitions(-DVCDRIVERS_PROJECT_CONFIG_FILE="vcdrivers-project-config.h")
 add_definitions(-DVCRTOS_PROJECT_CONFIG_FILE="vcrtos-project-config.h")
 add_definitions(-DVCRTOS_VERSION="${VCSOFTWARE_OS_VER}")
+
+add_definitions(-DPAL_PLATFORM_DEFINED_CONFIGURATION="vcrtos-project-config.h")
 
 add_definitions(-DMAC_CONF_WITH_CSMA=1)
 add_definitions(-DNETSTACK_CONF_WITH_IPV6=1)
@@ -182,6 +197,7 @@ add_library(contiki_ng STATIC ${CONTIKI_NG_SRCS})
 add_library(porting_vcrtos STATIC ${PORTING_VCRTOS_SRCS})
 add_library(porting_arduino STATIC ${PORTING_ARDUINO_SRCS})
 add_library(porting_contiki_ng STATIC ${PORTING_CONTIKI_NG_SRCS})
+add_library(porting_mbed_client_pal STATIC ${PORTING_MBED_CLIENT_PAL_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list
