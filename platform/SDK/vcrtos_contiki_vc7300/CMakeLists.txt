@@ -46,6 +46,8 @@ set(VCRTOS_CORE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/msg.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/mutex.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/thread.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/rmutex.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/vcrtos/source/core/sema.c
 )
 
 set(VCRTOS_CORE_API_SRCS
