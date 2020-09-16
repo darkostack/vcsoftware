@@ -136,7 +136,7 @@ make
 ```
 
 #### Notes:
-Initial Mbed-Clien-PAL API will be implemented on this project.
+Initial Mbed-Client-PAL API will be implemented on this project.
 
 
 ## vcrtos_linux
