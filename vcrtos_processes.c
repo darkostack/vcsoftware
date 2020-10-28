@@ -25,9 +25,6 @@
 
 #include "contiki.h"
 
-#include "shell/serial-line.h"
-#include "shell/serial-shell.h"
-
 PROCESS(app_process, "app-process", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
 
 AUTOSTART_PROCESSES(&app_process);
@@ -44,11 +41,6 @@ PROCESS_THREAD(app_process, ev, data)
     printf("app-process start\r\n");
 
     etimer_set(&timer_etimer, CLOCK_SECOND);
-
-#if !VCRTOS_CONFIG_CLI_ENABLE
-    serial_line_init();
-    serial_shell_init();
-#endif
 
     while (1)
     {

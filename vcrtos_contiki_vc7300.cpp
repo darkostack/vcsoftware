@@ -37,6 +37,11 @@ extern "C" {
 #include "sys/node-id.h"
 #include "lib/random.h"
 
+#if !VCRTOS_CONFIG_CLI_ENABLE
+#include "shell/serial-line.h"
+#include "shell/serial-shell.h"
+#endif
+
 #include "sys/log.h"
 #define LOG_MODULE "Main"
 #define LOG_LEVEL LOG_LEVEL_MAIN
@@ -57,6 +62,11 @@ void Main::setup(void)
 #endif
 
     process_init(instance);
+
+#if !VCRTOS_CONFIG_CLI_ENABLE
+    serial_line_init();
+    serial_shell_init();
+#endif
 
     ctimer_init();
 
