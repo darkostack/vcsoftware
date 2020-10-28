@@ -24,6 +24,12 @@
 
 #include "utils/isrpipe.hpp"
 
+#if !VCRTOS_CONFIG_CLI_ENABLE
+#include "contiki.h"
+#include "shell/serial-line.h"
+#include "shell/serial-shell.h"
+#endif
+
 using namespace vc;
 using namespace utils;
 
@@ -35,6 +41,10 @@ void vcstdio_uart_rx_callback_handler(void *arg, uint8_t data)
 {
     UartIsrpipe *isrpipe = static_cast<UartIsrpipe *>(arg);
     isrpipe->write_one(static_cast<char>(data));
+
+#if !VCRTOS_CONFIG_CLI_ENABLE
+    process_poll(&serial_line_process);
+#endif
 }
 
 void vcstdio_init(void *instance)

@@ -25,26 +25,37 @@
 
 #include "contiki.h"
 
+#include "shell/serial-line.h"
+#include "shell/serial-shell.h"
+
 PROCESS(app_process, "app-process", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
 
 AUTOSTART_PROCESSES(&app_process);
 
-static struct etimer timer_etimer;
-static uint32_t etimer_counter = 0;
+//static struct etimer timer_etimer;
+//static uint32_t etimer_counter = 0;
 
 PROCESS_THREAD(app_process, ev, data)
 {
+    (void) ev;
+
     PROCESS_BEGIN();
 
     printf("app-process start\r\n");
 
-    etimer_set(&timer_etimer, CLOCK_SECOND);
+    //etimer_set(&timer_etimer, CLOCK_SECOND);
+
+#if !VCRTOS_CONFIG_CLI_ENABLE
+    serial_line_init();
+    serial_shell_init();
+#endif
 
     while (1)
     {
-        PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
-        etimer_set(&timer_etimer, CLOCK_SECOND);
-        printf("e: %" PRIu32 "\r\n", etimer_counter++);
+        PROCESS_YIELD();
+        //PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
+        //etimer_set(&timer_etimer, CLOCK_SECOND);
+        //printf("e: %" PRIu32 "\r\n", etimer_counter++);
     }
 
     PROCESS_END();

@@ -25,6 +25,7 @@ ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/mbed-trace)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/vcrtos)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/arduino)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng)
+ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/shell)
 ADD_GLOBALDIR(${CMAKE_CURRENT_SOURCE_DIR}/porting/mbed-client-pal)
 
 set(VCDRIVERS_COMMON_SRCS
@@ -93,6 +94,7 @@ set(CONTIKI_NG_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/contiki-ng/os/lib/ccm-star.c
     ${CMAKE_CURRENT_SOURCE_DIR}/contiki-ng/os/lib/aes-128.c
     ${CMAKE_CURRENT_SOURCE_DIR}/contiki-ng/os/lib/crc16.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/contiki-ng/os/lib/ringbuf.c
 
     ${CMAKE_CURRENT_SOURCE_DIR}/contiki-ng/os/dev/nullradio.c
 
@@ -168,6 +170,9 @@ set(PORTING_CONTIKI_NG_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/clock.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/int-master.c
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/watchdog.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/shell/serial-line.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/shell/serial-shell.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/shell/shell.c
 )
 
 set(PORTING_MBED_CLIENT_PAL_SRCS

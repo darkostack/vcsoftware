@@ -20,7 +20,10 @@
 #include <vcrtos/instance.h>
 #include <vcrtos/thread.h>
 #include <vcrtos/ztimer.h>
+
+#if VCRTOS_CONFIG_CLI_ENABLE
 #include <vcrtos/cli.h>
+#endif
 
 #include "main.hpp"
 
@@ -39,16 +42,19 @@ extern "C" {
 #define LOG_LEVEL LOG_LEVEL_MAIN
 }
 
+#if VCRTOS_CONFIG_CLI_ENABLE
 extern "C" void vcrtos_cmd_ps(int argc, char **argv);
-
 const cli_command_t user_command_list[] = {
     { "ps", vcrtos_cmd_ps },
 };
+#endif
 
 void Main::setup(void)
 {
+#if VCRTOS_CONFIG_CLI_ENABLE
     vccli_uart_init(instance);
     vccli_set_user_commands(user_command_list, 1);
+#endif
 
     process_init(instance);
 
