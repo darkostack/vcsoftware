@@ -41,6 +41,25 @@ SHELL_COMMAND(quit_command, "quit", "quit: exit shell", &shell_exit_process);
 PROCESS(shell_ps_process, "ps", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
 SHELL_COMMAND(ps_command, "ps", "ps: shows current threads info", &shell_ps_process);
 
+PROCESS(shell_test_process, "test", VCRTOS_CONFIG_MAIN_THREAD_STACK_SIZE);
+SHELL_COMMAND(test_command, "test", "test: test command", &shell_test_process);
+
+PROCESS_THREAD(shell_test_process, ev, data)
+{
+    (void)ev;
+
+    PROCESS_BEGIN();
+
+    shell_output_str(&test_command, "test command started", "");
+
+    while (1)
+    {
+        PROCESS_WAIT_EVENT();
+    }
+
+    PROCESS_END();
+}
+
 extern void vcrtos_cmd_ps(int argc, char **argv);
 
 PROCESS_THREAD(shell_ps_process, ev, data)
@@ -498,6 +517,7 @@ void shell_init(void)
     shell_register_command(&exit_command);
     shell_register_command(&quit_command);
     shell_register_command(&ps_command);
+    shell_register_command(&test_command);
 
     shell_event_input = process_alloc_event();
 
