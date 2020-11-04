@@ -17,13 +17,27 @@
 
 #include "contiki.h"
 
+#include <vcdrivers/cpu.h>
+
+extern uint32_t SystemCoreClock;
+
+static volatile uint32_t _systick_count = 0;
+
 void clock_init(void)
 {
+    SysTick_Config(SystemCoreClock / 1000); /* 1 millisecond systick */
+
+    NVIC_EnableIRQ(SysTick_IRQn);
 }
 
 clock_time_t clock_time(void)
 {
-    return ztimer_now(ZTIMER_USEC);
+    return _systick_count;
+}
+
+uint32_t clock_time_usec(void)
+{
+    return (_systick_count * 1000) + 1000 - (SysTick->VAL / (SystemCoreClock / 1000000));
 }
 
 unsigned long clock_seconds(void)
@@ -33,17 +47,28 @@ unsigned long clock_seconds(void)
 
 void clock_wait(clock_time_t i)
 {
-    ztimer_sleep(ZTIMER_USEC, i);
+    while (clock_time() < i);
 }
 
 void clock_delay_usec(uint16_t dt)
 {
-    (void) dt;
-    vcassert(0); /* use clock_wait */
+    uint32_t timeout = clock_time_usec() + dt;
+    while (clock_time_usec() < timeout);
 }
 
 void clock_delay(unsigned int i)
 {
-    (void) i;
-    vcassert(0); /* use clock_wait */
+    clock_wait(i);
+}
+
+void isr_systick(void)
+{
+    _systick_count++;
+
+    if (etimer_pending())
+    {
+        etimer_request_poll();
+    }
+
+    cpu_end_of_isr();
 }

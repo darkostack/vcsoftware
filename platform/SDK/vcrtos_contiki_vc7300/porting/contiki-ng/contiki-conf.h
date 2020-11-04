@@ -23,7 +23,9 @@
 #include <inttypes.h>
 
 #include <vcrtos/config.h>
+#if VCRTOS_CONFIG_ZTIMER_ENABLE
 #include <vcrtos/ztimer.h>
+#endif
 #include <vcrtos/thread.h>
 #include <vcrtos/instance.h>
 #include <vcrtos/assert.h>
@@ -32,12 +34,12 @@
 extern "C" {
 #endif
 
-#define CLOCK_CONF_SECOND ZTIMER_CLOCK_SECOND
-#define RTIMER_ARCH_SECOND ZTIMER_CLOCK_SECOND
+#define CLOCK_CONF_SECOND 1000
+#define RTIMER_ARCH_SECOND 1000
 
 #define INT_MASTER_CONF_STATUS_DATATYPE unsigned
 
-typedef ztimer_now_t clock_time_t;
+typedef uint32_t clock_time_t;
 typedef unsigned int uip_stats_t;
 
 // CSMA config

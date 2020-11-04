@@ -63,12 +63,14 @@ void Main::setup(void)
 
     process_init(instance);
 
+    clock_init();
+    process_start(&etimer_process, NULL);
+    ctimer_init();
+
 #if !VCRTOS_CONFIG_CLI_ENABLE
     serial_line_init();
     serial_shell_init();
 #endif
-
-    ctimer_init();
 
     uint16_t uid = 0x1234;
 

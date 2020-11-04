@@ -31,6 +31,8 @@
 #include <vcrtos/ztimer/periph_timer.h>
 #endif
 
+#include "sys/process.h"
+
 #if VCRTOS_CONFIG_ZTIMER_ENABLE
 #define WIDTH_TO_MAXVAL(width) (UINT32_MAX >> (32 - width))
 static ztimer_periph_timer_t _ztimer_periph_timer_usec = {
@@ -60,6 +62,7 @@ void *thread_idle_handler(void *arg)
 
     while (1)
     {
+        process_paused_continue();
         cpu_sleep(0);
     }
 

@@ -175,9 +175,9 @@ set(PORTING_CONTIKI_NG_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/porting/contiki-ng/shell/shell.c
 )
 
-set(PORTING_MBED_CLIENT_PAL_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/porting/mbed-client-pal/RTOS/pal_plat_rtos.c
-)
+#set(PORTING_MBED_CLIENT_PAL_SRCS
+#    ${CMAKE_CURRENT_SOURCE_DIR}/porting/mbed-client-pal/RTOS/pal_plat_rtos.c
+#)
 
 set(PLATFORM_LIBS_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/dummy.c
@@ -204,7 +204,7 @@ add_library(contiki_ng STATIC ${CONTIKI_NG_SRCS})
 add_library(porting_vcrtos STATIC ${PORTING_VCRTOS_SRCS})
 add_library(porting_arduino STATIC ${PORTING_ARDUINO_SRCS})
 add_library(porting_contiki_ng STATIC ${PORTING_CONTIKI_NG_SRCS})
-add_library(porting_mbed_client_pal STATIC ${PORTING_MBED_CLIENT_PAL_SRCS})
+#add_library(porting_mbed_client_pal STATIC ${PORTING_MBED_CLIENT_PAL_SRCS})
 add_library(PLATFORM_LIBS STATIC ${PLATFORM_LIBS_SRCS})
 
 set(PLATFORM_LIBS_list
